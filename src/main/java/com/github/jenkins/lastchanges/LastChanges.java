@@ -78,7 +78,7 @@ public class LastChanges {
             try {
                 previousHead = repository.resolve("HEAD~^{tree}");
                 if (previousHead == null) {
-                    throw new RuntimeException("Could not find previous repository head.");
+                    throw new RuntimeException("Could not find previous repository head. Its your first commit?");
                 }
             } catch (IOException e) {
                 throw new RuntimeException("Could not resolve previous repository head.", e);
