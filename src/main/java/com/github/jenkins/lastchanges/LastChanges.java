@@ -3,26 +3,21 @@
  */
 package com.github.jenkins.lastchanges;
 
+import com.github.jenkins.lastchanges.api.CommitInfo;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
-import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
-import org.eclipse.jgit.treewalk.AbstractTreeIterator;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
-import org.eclipse.jgit.treewalk.FileTreeIterator;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 
 public class LastChanges {
@@ -74,6 +69,14 @@ public class LastChanges {
             } catch (IOException e) {
                 throw new RuntimeException("Could not resolve repository head.", e);
             }
+            try {
+                CommitInfo lastCommitInfo = CommitInfo.Builder.buildCommitInfo(repository, head);
+                if (lastCommitInfo != null) {
+                    target.write(lastCommitInfo.toString().getBytes("UTF-8"));
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Could not get commit information", e);
+            }
             ObjectId previousHead = null;
             try {
                 previousHead = repository.resolve("HEAD~^{tree}");
@@ -104,11 +107,11 @@ public class LastChanges {
             } catch (Exception e) {
                 throw new RuntimeException("Could not get repository changes.", e);
             }
-        }finally {
-            if(git != null){
+        } finally {
+            if (git != null) {
                 git.close();
             }
-            if(repository != null){
+            if (repository != null) {
                 repository.close();
             }
         }
