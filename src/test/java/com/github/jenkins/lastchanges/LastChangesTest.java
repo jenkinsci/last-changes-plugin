@@ -1,5 +1,6 @@
 package com.github.jenkins.lastchanges;
 
+import com.github.jenkins.lastchanges.exception.GitTreeNotFoundException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,6 +10,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.nio.file.Paths;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import static com.github.jenkins.lastchanges.LastChanges.lastChanges;
 import static com.github.jenkins.lastchanges.LastChanges.repository;
@@ -34,7 +37,10 @@ public class LastChangesTest {
             diffFile.delete();
         }
 
-        gitRepoPath = LastChangesTest.class.getResource("/git-sample-repo").getPath();
+        gitRepoPath = LastChangesTest.class.getResource("/git-sample-repo").getFile();
+
+        Locale.setDefault(Locale.ENGLISH);
+        TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
     }
 
     @Test
@@ -66,7 +72,7 @@ public class LastChangesTest {
     public void shouldWriteLastChanges() throws FileNotFoundException {
         lastChanges(repository(gitRepoPath), new FileOutputStream(diffFile));
         assertThat(diffFile).exists().isFile();
-        assertThat(contentOf(diffFile)).isEqualToIgnoringWhitespace("Commit: bb8a132b314888f2e8bee83bf534fa3e3f2815f9"+newLine +
+        assertThat(contentOf(diffFile)).isEqualToIgnoringWhitespace(("Commit: bb8a132b314888f2e8bee83bf534fa3e3f2815f9"+newLine +
                 "Author: Martin Vysny"+newLine +
                 "E-mail: mvy@whitestein.com"+newLine +
                 "Date: May 30, 2016 10:49:58 AM GMT+02:00"+newLine +
@@ -102,8 +108,14 @@ public class LastChangesTest {
                 "+"+newLine +
                 " /**"+newLine +
                 "  * Walks over this component and all descendants of this component, breadth-first."+newLine +
-                "  * @return iterable which iteratively walks over this component and all of its descendants.");
+                "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", ""));
 
+    }
+
+
+    @Test(expected = GitTreeNotFoundException.class)
+    public void shouldNotWriteLastChangesFromInitialCommitRepo() throws FileNotFoundException {
+        lastChanges(repository(LastChangesTest.class.getResource("/git-initial-commit-repo").getFile()), new FileOutputStream(diffFile));
     }
 
 }

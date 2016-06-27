@@ -8,16 +8,15 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
-import org.eclipse.jgit.lib.*;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectReader;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
+import com.github.jenkins.lastchanges.exception.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 
 public class LastChanges {
@@ -31,9 +30,9 @@ public class LastChanges {
             throw new RuntimeException("Path cannot be empty.");
         }
 
-        Path repositoryPath = Paths.get(path);
+        File repositoryPath = new File(path);
 
-        if (!Files.exists(repositoryPath)) {
+        if (!repositoryPath.exists()) {
             throw new RuntimeException(String.format("Repo path not found at location %s.", repositoryPath));
         }
 
@@ -67,7 +66,7 @@ public class LastChanges {
             try {
                 head = repository.resolve("HEAD^{tree}");
             } catch (IOException e) {
-                throw new RuntimeException("Could not resolve repository head.", e);
+                throw new GitTreeNotFoundException("Could not resolve repository head.", e);
             }
             try {
                 CommitInfo lastCommitInfo = CommitInfo.Builder.buildCommitInfo(repository, head);
@@ -75,16 +74,16 @@ public class LastChanges {
                     target.write(lastCommitInfo.toString().getBytes("UTF-8"));
                 }
             } catch (Exception e) {
-                throw new RuntimeException("Could not get commit information", e);
+                throw new CommitInfoException("Could not get commit information", e);
             }
             ObjectId previousHead = null;
             try {
                 previousHead = repository.resolve("HEAD~^{tree}");
                 if (previousHead == null) {
-                    throw new RuntimeException("Could not find previous repository head. Its your first commit?");
+                    throw new GitTreeNotFoundException("Could not find previous repository head. Its your first commit?");
                 }
             } catch (IOException e) {
-                throw new RuntimeException("Could not resolve previous repository head.", e);
+                throw new GitTreeNotFoundException("Could not resolve previous repository head.", e);
             }
             ObjectReader reader = repository.newObjectReader();
             // Create the tree iterator for each commit
@@ -92,20 +91,20 @@ public class LastChanges {
             try {
                 oldTreeIter.reset(reader, previousHead);
             } catch (Exception e) {
-                throw new RuntimeException("Previous commit not found.", e);
+                throw new GitTreeParseException("Could not parse previous commit tree.", e);
             }
             CanonicalTreeParser newTreeIter = new CanonicalTreeParser();
             try {
                 newTreeIter.reset(reader, head);
             } catch (IOException e) {
-                throw new RuntimeException("Could not parse repository tree.", e);
+                throw new GitTreeParseException("Could not parse current commit tree.", e);
             }
             try {
                 for (DiffEntry change : git.diff().setOldTree(oldTreeIter).setNewTree(newTreeIter).call()) {
                     formatter.format(change);
                 }
             } catch (Exception e) {
-                throw new RuntimeException("Could not get repository changes.", e);
+                throw new GitDiffException("Could not get repository changes.", e);
             }
         } finally {
             if (git != null) {
