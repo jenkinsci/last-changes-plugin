@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.contentOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  * Created by rmpestano on 6/5/16.
@@ -113,9 +114,14 @@ public class LastChangesTest {
     }
 
 
-    @Test(expected = GitTreeNotFoundException.class)
+    @Test
     public void shouldNotWriteLastChangesFromInitialCommitRepo() throws FileNotFoundException {
-        lastChanges(repository(LastChangesTest.class.getResource("/git-initial-commit-repo").getFile()), new FileOutputStream(diffFile));
+        try {
+            lastChanges(repository(LastChangesTest.class.getResource("/git-initial-commit-repo").getFile()), new FileOutputStream(diffFile));
+            fail("Should not get here");
+        }catch (GitTreeNotFoundException e){
+            assertThat(e.getMessage()).isEqualTo("Could not find previous repository head. Its your first commit?");
+        }
     }
 
 }
