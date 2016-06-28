@@ -1,0 +1,4 @@
+<?jelly escape-by-default='true'?>
+<div>
+  This plugin reads workspace <b>.git</b> folder and generated rich html diffs from current and previous git revisions.
+</div>

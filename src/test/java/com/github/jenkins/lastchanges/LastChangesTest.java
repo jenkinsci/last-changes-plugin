@@ -54,7 +54,7 @@ public class LastChangesTest {
         try {
             repository("");
         } catch (RuntimeException e) {
-            assertEquals("Path cannot be empty.", e.getMessage());
+            assertEquals("Git repository path cannot be empty.", e.getMessage());
         }
     }
 
