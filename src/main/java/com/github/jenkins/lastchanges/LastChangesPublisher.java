@@ -79,6 +79,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             OutputStream diffFileStream = new FileOutputStream(new File(workspaceTargetDir + "/diff.txt"));
             lastChanges(repository(gitRepoTargetDir.getPath() + GIT_DIR), diffFileStream);
             listener.hyperlink("../" + LastChangesBaseAction.BASE_URL, "Last changes generated successfully!");
+            listener.getLogger().println("");
         } catch (LastChangesException e) {
             listener.error(String.format("Last Changes NOT generated for build %s due to following error", "#" + build.getNumber()), e);
         }
