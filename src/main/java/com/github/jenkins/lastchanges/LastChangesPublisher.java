@@ -50,9 +50,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     private LastChangesProjectAction lastChangesProjectAction;
     private static final String GIT_DIR = "/.git";
 
-    private PrintStream logger;
-
-
     @DataBoundConstructor
     public LastChangesPublisher() {
     }
