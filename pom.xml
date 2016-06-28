@@ -56,11 +56,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.jenkins-ci.main</groupId>
-            <artifactId>jenkins-core</artifactId>
-            <version>1.577</version>
-        </dependency>
-        <dependency>
             <groupId>org.eclipse.jgit</groupId>
             <artifactId>org.eclipse.jgit</artifactId>
             <version>4.3.1.201605051710-r</version>
