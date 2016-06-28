@@ -78,7 +78,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         FileUtils.copyDirectoryToDirectory(gitRepoSourceDir, gitRepoTargetDir);
         //workspace.copyRecursiveTo("**/*.git", workspaceTargetDir);//not helps because it can't copy .git dir
 
-        logger = listener.getLogger();
         try {
             OutputStream diffFileStream = new FileOutputStream(new File(workspaceTargetDir + "/diff.txt"));
             lastChanges(repository(gitRepoTargetDir.getPath() + GIT_DIR), diffFileStream);
