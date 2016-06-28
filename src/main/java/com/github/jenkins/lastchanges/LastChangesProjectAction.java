@@ -8,7 +8,7 @@ import java.io.File;
 
 public class LastChangesProjectAction extends LastChangesBaseAction implements ProminentProjectAction {
 
-    private static final String LAST_CHANGES_PAGE = "last-changes.html";
+    private static final String LAST_CHANGES_PAGE = "sample.html";
     private final AbstractProject<?, ?> project;
 
     private String jobName;

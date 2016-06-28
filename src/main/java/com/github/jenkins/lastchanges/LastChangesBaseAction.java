@@ -21,7 +21,7 @@ public abstract class LastChangesBaseAction implements Action {
     }
 
     public String getDisplayName() {
-        return "View last changes";
+        return "View Last Changes";
     }
 
     public String getIconFileName() {

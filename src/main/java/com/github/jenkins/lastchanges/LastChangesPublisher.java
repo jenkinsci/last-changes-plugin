@@ -84,6 +84,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             listener.error(String.format("Last Changes NOT generated for build %s due to following error", "#" + build.getNumber()), e);
         }
         //always success (only warn when no diff was generated)
+        build.addAction(new LastChangesBuildAction(build));
         build.setResult(Result.SUCCESS);
 
     }
@@ -123,7 +124,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
          * This human readable name is used in the configuration screen.
          */
         public String getDisplayName() {
-            return "Last Changes";
+            return "Publish Last Changes";
         }
 
     }

@@ -1,0 +1,285 @@
+<?jelly escape-by-default='false'?>
+<j:jelly trim="false" xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<l:layout>
+			<l:main-panel>
+			<link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/github.min.css" />
+			<link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/diff2html.min.css" />
+			<script type="text/javascript" src="${rootURL}/plugin/last-changes/js/jquery.min.js" />
+			<script type="text/javascript" src="${rootURL}/plugin/last-changes/js/highlight.min.js" />
+			<script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html.min.js" />
+			<script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-ui.min.js" />
+			<script type="text/javascript" src="${rootURL}/plugin/last-changes/js/scala.min.js" />
+
+			<h2>View Last Changes of build number ${build.key.number}</h2>
+
+			<script>
+                            var lineDiffExample =
+                                        "diff --git a/src/main/java/com/github/jenkins/lastchanges/LastChanges.java b/src/main/java/com/github/jenkins/lastchanges/LastChanges.java\n" +
+                                        "index 551113b..13feec7 100644\n" +
+                                        "--- a/src/main/java/com/github/jenkins/lastchanges/LastChanges.java\n" +
+                                        "+++ b/src/main/java/com/github/jenkins/lastchanges/LastChanges.java\n" +
+                                        "@@ -3,26 +3,21 @@\n" +
+                                        "  */\n" +
+                                        " package com.github.jenkins.lastchanges;\n" +
+                                        " \n" +
+                                        "+import com.github.jenkins.lastchanges.api.CommitInfo;\n" +
+                                        " import org.eclipse.jgit.api.Git;\n" +
+                                        " import org.eclipse.jgit.diff.DiffEntry;\n" +
+                                        " import org.eclipse.jgit.diff.DiffFormatter;\n" +
+                                        "-import org.eclipse.jgit.errors.IncorrectObjectTypeException;\n" +
+                                        " import org.eclipse.jgit.internal.storage.file.FileRepository;\n" +
+                                        " import org.eclipse.jgit.lib.*;\n" +
+                                        " import org.eclipse.jgit.revwalk.RevCommit;\n" +
+                                        "-import org.eclipse.jgit.revwalk.RevTree;\n" +
+                                        " import org.eclipse.jgit.revwalk.RevWalk;\n" +
+                                        "-import org.eclipse.jgit.treewalk.AbstractTreeIterator;\n" +
+                                        " import org.eclipse.jgit.treewalk.CanonicalTreeParser;\n" +
+                                        "-import org.eclipse.jgit.treewalk.FileTreeIterator;\n" +
+                                        " \n" +
+                                        "-import java.io.ByteArrayOutputStream;\n" +
+                                        " import java.io.IOException;\n" +
+                                        " import java.io.OutputStream;\n" +
+                                        " import java.nio.file.Files;\n" +
+                                        " import java.nio.file.Path;\n" +
+                                        " import java.nio.file.Paths;\n" +
+                                        "-import java.util.List;\n" +
+                                        " \n" +
+                                        " \n" +
+                                        " public class LastChanges {\n" +
+                                        "@@ -74,6 +69,14 @@\n" +
+                                        "             } catch (IOException e) {\n" +
+                                        "                 throw new RuntimeException(\"Could not resolve repository head.\", e);\n" +
+                                        "             }\n" +
+                                        "+            try {\n" +
+                                        "+                CommitInfo lastCommitInfo = CommitInfo.Builder.buildCommitInfo(repository, head);\n" +
+                                        "+                if (lastCommitInfo != null) {\n" +
+                                        "+                    target.write(lastCommitInfo.toString().getBytes(\"UTF-8\"));\n" +
+                                        "+                }\n" +
+                                        "+            } catch (Exception e) {\n" +
+                                        "+                throw new RuntimeException(\"Could not get commit information\", e);\n" +
+                                        "+            }\n" +
+                                        "             ObjectId previousHead = null;\n" +
+                                        "             try {\n" +
+                                        "                 previousHead = repository.resolve(\"HEAD~^{tree}\");\n" +
+                                        "@@ -104,11 +107,11 @@\n" +
+                                        "             } catch (Exception e) {\n" +
+                                        "                 throw new RuntimeException(\"Could not get repository changes.\", e);\n" +
+                                        "             }\n" +
+                                        "-        }finally {\n" +
+                                        "-            if(git != null){\n" +
+                                        "+        } finally {\n" +
+                                        "+            if (git != null) {\n" +
+                                        "                 git.close();\n" +
+                                        "             }\n" +
+                                        "-            if(repository != null){\n" +
+                                        "+            if (repository != null) {\n" +
+                                        "                 repository.close();\n" +
+                                        "             }\n" +
+                                        "         }\n" +
+                                        "diff --git a/src/main/java/com/github/jenkins/lastchanges/api/CommitInfo.java b/src/main/java/com/github/jenkins/lastchanges/api/CommitInfo.java\n" +
+                                        "new file mode 100644\n" +
+                                        "index 0000000..f516345\n" +
+                                        "--- /dev/null\n" +
+                                        "+++ b/src/main/java/com/github/jenkins/lastchanges/api/CommitInfo.java\n" +
+                                        "@@ -0,0 +1,99 @@\n" +
+                                        "+package com.github.jenkins.lastchanges.api;\n" +
+                                        "+\n" +
+                                        "+import org.eclipse.jgit.lib.Constants;\n" +
+                                        "+import org.eclipse.jgit.lib.ObjectId;\n" +
+                                        "+import org.eclipse.jgit.lib.PersonIdent;\n" +
+                                        "+import org.eclipse.jgit.lib.Repository;\n" +
+                                        "+import org.eclipse.jgit.revwalk.RevCommit;\n" +
+                                        "+import org.eclipse.jgit.revwalk.RevWalk;\n" +
+                                        "+\n" +
+                                        "+import java.text.DateFormat;\n" +
+                                        "+import java.util.Date;\n" +
+                                        "+import java.util.Locale;\n" +
+                                        "+import java.util.TimeZone;\n" +
+                                        "+\n" +
+                                        "+/**\n" +
+                                        "+ * Created by rmpestano on 6/26/16.\n" +
+                                        "+ */\n" +
+                                        "+public class CommitInfo {\n" +
+                                        "+\n" +
+                                        "+    private static final DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT);\n" +
+                                        "+    private static final String newLine = System.getProperty(\"line.separator\");\n" +
+                                        "+\n" +
+                                        "+    private String commitId;\n" +
+                                        "+    private String commitMessage;\n" +
+                                        "+    private String commiterName;\n" +
+                                        "+    private String commiterEmail;\n" +
+                                        "+    private String commitDate;\n" +
+                                        "+\n" +
+                                        "+    private CommitInfo() {\n" +
+                                        "+    }\n" +
+                                        "+\n" +
+                                        "+    public String getCommiterName() {\n" +
+                                        "+        return commiterName;\n" +
+                                        "+    }\n" +
+                                        "+\n" +
+                                        "+    public String getCommitDate() {\n" +
+                                        "+        return commitDate;\n" +
+                                        "+    }\n" +
+                                        "+\n" +
+                                        "+    public String getCommitId() {\n" +
+                                        "+        return commitId;\n" +
+                                        "+    }\n" +
+                                        "+\n" +
+                                        "+    public String getCommiterEmail() {\n" +
+                                        "+        return commiterEmail;\n" +
+                                        "+    }\n" +
+                                        "+\n" +
+                                        "+    public String getCommitMessage() {\n" +
+                                        "+        return commitMessage;\n" +
+                                        "+    }\n" +
+                                        "+\n" +
+                                        "+    @Override\n" +
+                                        "+    public String toString() {\n" +
+                                        "+        StringBuilder sb = new StringBuilder().\n" +
+                                        "+                append(\"Commit: \").append(commitId).append(newLine).\n" +
+                                        "+                append(\"Author: \"+commiterName).append(newLine).\n" +
+                                        "+                append(\"E-mail: \").append(commiterEmail).append(newLine).\n" +
+                                        "+                append(\"Date: \").append(commitDate).append(newLine).\n" +
+                                        "+                append(\"Message: \").append(commitMessage).append(newLine).append(newLine);\n" +
+                                        "+\n" +
+                                        "+        return sb.toString();\n" +
+                                        "+    }\n" +
+                                        "+\n" +
+                                        "+\n" +
+                                        "+    public static class Builder {\n" +
+                                        "+\n" +
+                                        "+        public static CommitInfo buildCommitInfo(Repository repository, ObjectId commitId) {\n" +
+                                        "+            RevWalk walk = new RevWalk(repository);\n" +
+                                        "+\n" +
+                                        "+            try {\n" +
+                                        "+                ObjectId lastCommitId = repository.resolve(Constants.HEAD);\n" +
+                                        "+                RevWalk revWalk = new RevWalk(repository);\n" +
+                                        "+                RevCommit commit = revWalk.parseCommit(lastCommitId);\n" +
+                                        "+                CommitInfo commitInfo = new CommitInfo();\n" +
+                                        "+                PersonIdent committerIdent = commit.getCommitterIdent();\n" +
+                                        "+                Date commitDate = committerIdent.getWhen();\n" +
+                                        "+                commitInfo.commitId = commitId.getName();\n" +
+                                        "+                commitInfo.commitMessage = commit.getFullMessage();\n" +
+                                        "+                commitInfo.commiterName = committerIdent.getName();\n" +
+                                        "+                commitInfo.commiterEmail = committerIdent.getEmailAddress();\n" +
+                                        "+                TimeZone tz = committerIdent.getTimeZone() != null ? committerIdent.getTimeZone() : TimeZone.getDefault();\n" +
+                                        "+                dateFormat.setTimeZone(tz);\n" +
+                                        "+                commitInfo.commitDate = dateFormat.format(commitDate) + \" \" + tz.getDisplayName();\n" +
+                                        "+                return commitInfo;\n" +
+                                        "+            } catch (Exception e) {\n" +
+                                        "+                throw new RuntimeException(\"Could not get commit info for commit id: \"+commitId,e);\n" +
+                                        "+\n" +
+                                        "+            }\n" +
+                                        "+            finally {\n" +
+                                        "+                if(walk != null){\n" +
+                                        "+                    walk.dispose();\n" +
+                                        "+                    walk.close();\n" +
+                                        "+                }\n" +
+                                        "+            }\n" +
+                                        "+\n" +
+                                        "+        }\n" +
+                                        "+    }\n" +
+                                        "+\n" +
+                                        "+}\n" +
+                                        "diff --git a/src/test/java/com/github/jenkins/lastchanges/LastChangesTest.java b/src/test/java/com/github/jenkins/lastchanges/LastChangesTest.java\n" +
+                                        "index fa100d8..e1e80a6 100644\n" +
+                                        "--- a/src/test/java/com/github/jenkins/lastchanges/LastChangesTest.java\n" +
+                                        "+++ b/src/test/java/com/github/jenkins/lastchanges/LastChangesTest.java\n" +
+                                        "@@ -13,6 +13,7 @@\n" +
+                                        " import static com.github.jenkins.lastchanges.LastChanges.lastChanges;\n" +
+                                        " import static com.github.jenkins.lastchanges.LastChanges.repository;\n" +
+                                        " import static org.assertj.core.api.Assertions.assertThat;\n" +
+                                        "+import static org.assertj.core.api.Assertions.contentOf;\n" +
+                                        " import static org.junit.Assert.assertEquals;\n" +
+                                        " import static org.junit.Assert.assertNotNull;\n" +
+                                        " \n" +
+                                        "@@ -22,6 +23,8 @@\n" +
+                                        " \n" +
+                                        " @RunWith(JUnit4.class)\n" +
+                                        " public class LastChangesTest {\n" +
+                                        "+    private static final String newLine = System.getProperty(\"line.separator\");\n" +
+                                        "+\n" +
+                                        "     File diffFile = new File(\"target/diff.txt\");\n" +
+                                        "     String gitRepoPath;\n" +
+                                        " \n" +
+                                        "@@ -62,7 +65,45 @@\n" +
+                                        "     @Test\n" +
+                                        "     public void shouldWriteLastChanges() throws FileNotFoundException {\n" +
+                                        "         lastChanges(repository(gitRepoPath), new FileOutputStream(diffFile));\n" +
+                                        "-        assertThat(diffFile).exists();\n" +
+                                        "+        assertThat(diffFile).exists().isFile();\n" +
+                                        "+        assertThat(contentOf(diffFile)).isEqualToIgnoringWhitespace(\"Commit: bb8a132b314888f2e8bee83bf534fa3e3f2815f9\"+newLine +\n" +
+                                        "+                \"Author: Martin Vysny\"+newLine +\n" +
+                                        "+                \"E-mail: mvy@whitestein.com\"+newLine +\n" +
+                                        "+                \"Date: May 30, 2016 10:49:58 AM GMT+02:00\"+newLine +\n" +
+                                        "+                \"Message: Added javadoc\"+newLine +\n" +
+                                        "+                \"\"+newLine +\n" +
+                                        "+                \"\"+newLine +\n" +
+                                        "+                \"diff --git a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt\"+newLine +\n" +
+                                        "+                \"index 6d28c9b..bcc2ac0 100644\"+newLine +\n" +
+                                        "+                \"--- a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt\"+newLine +\n" +
+                                        "+                \"+++ b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt\"+newLine +\n" +
+                                        "+                \"@@ -31,6 +31,12 @@\"+newLine +\n" +
+                                        "+                \" /**\"+newLine +\n" +
+                                        "+                \"  * Creates a container which lists all instances of given entity. To restrict the list to a particular entity only,\"+newLine +\n" +
+                                        "+                \"  * simply call [JPAContainer.addContainerFilter] on the container produced.\"+newLine +\n" +
+                                        "+                \"+ *\"+newLine +\n" +
+                                        "+                \"+ * Containers produced by this method have the following properties:\"+newLine +\n" +
+                                        "+                \"+ * * The container's [Item] IDs are not the entity instances themselves - instead, [Item] ID contains the value of the JPA entity ID. This is important when using the container\"+newLine +\n" +
+                                        "+                \"+ * together with [AbstractSelect] as the select's value is taken amongst the Item ID.\"+newLine +\n" +
+                                        "+                \"+ * * [Item]'s Property IDs are [String] values - the field names of given JPA bean.\"+newLine +\n" +
+                                        "+                \"+ *\"+newLine +\n" +
+                                        "+                \"  * @param entity the entity type\"+newLine +\n" +
+                                        "+                \"  * @return the new container which can be assigned to a [Grid]\"+newLine +\n" +
+                                        "+                \"  */\"+newLine +\n" +
+                                        "+                \"@@ -279,9 +285,12 @@\"+newLine +\n" +
+                                        "+                \"  * An utility method which adds an item and sets item's caption.\"+newLine +\n" +
+                                        "+                \"  * @param the Identification of the item to be created.\"+newLine +\n" +
+                                        "+                \"  * @param caption the new caption\"+newLine +\n" +
+                                        "+                \"+ * @return the newly created item ID.\"+newLine +\n" +
+                                        "+                \"  */\"+newLine +\n" +
+                                        "+                \" fun AbstractSelect.addItem(itemId: Any?, caption: String) = addItem(itemId).apply { setItemCaption(itemId, caption) }!!\"+newLine +\n" +
+                                        "+                \" \"+newLine +\n" +
+                                        "+                \"+\"+newLine +\n" +
+                                        "+                \"+\"+newLine +\n" +
+                                        "+                \" /**\"+newLine +\n" +
+                                        "+                \"  * Walks over this component and all descendants of this component, breadth-first.\"+newLine +\n" +
+                                        "+                \"  * @return iterable which iteratively walks over this component and all of its descendants.\");\n" +
+                                        "+\n" +
+                                        "     }\n" +
+                                        " \n" +
+                                        " }\n" +
+                                        "\\ No newline at end of file";
+
+                            $(document).ready(function() {
+                              var diff2htmlUi = new Diff2HtmlUI({diff: lineDiffExample});
+
+                              diff2htmlUi.draw('#line-by-line', {inputFormat: 'json', showFiles: true, matching: 'lines'});
+                              diff2htmlUi.fileListCloseable('#line-by-line', false);
+                              diff2htmlUi.highlightCode('#line-by-line');
+                            });
+                          </script>
+
+                        <div style="text-align: center; font-family: 'Source Sans Pro',sans-serif;">
+
+                        <div class="d2h-file-header">
+
+                          <b>Commit: </b>8726e4310d577e3c8bb4581b66f301acaa263dec<br/>
+                          <b>Author: </b>rmpestano<br/>
+                          <b>E-mail: </b>rmpestano@gmail.com<br/>
+                          <b>Date: </b>Jun 26, 2016 8:22:20 PM GMT-03:00<br/>
+                          <b>Message: </b>writtng author info to diff file<br/>
+                        </div>
+
+                        <div id="line-by-line" style="margin: 0 auto; max-width: 900px;">
+                        </div>
+
+                    </div>
+	  </l:main-panel>
+
+	</l:layout>
+
+</j:jelly>
+
+
+

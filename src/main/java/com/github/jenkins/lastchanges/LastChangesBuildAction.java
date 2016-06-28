@@ -14,7 +14,7 @@ public class LastChangesBuildAction extends LastChangesBaseAction {
 
     @Override
     protected String getTitle() {
-        return this.build.getDisplayName();
+        return "Last Changes of Build #"+this.build.getNumber();
     }
 
     @Override
