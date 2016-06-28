@@ -9,7 +9,6 @@ import org.eclipse.jgit.revwalk.RevWalk;
 
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.Locale;
 import java.util.TimeZone;
 
 /**
@@ -89,7 +88,6 @@ public class CommitInfo {
             finally {
                 if(walk != null){
                     walk.dispose();
-                    walk.close();
                 }
             }
 
