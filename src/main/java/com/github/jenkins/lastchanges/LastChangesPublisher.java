@@ -23,6 +23,7 @@
  */
 package com.github.jenkins.lastchanges;
 
+import com.github.jenkins.lastchanges.exception.LastChangesException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -32,12 +33,10 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import jenkins.tasks.SimpleBuildStep;
+import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.nio.file.Paths;
 
 import static com.github.jenkins.lastchanges.LastChanges.lastChanges;
@@ -68,31 +67,40 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     @Override
     public void perform(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener)
             throws IOException, InterruptedException {
-    	  
-    	 FilePath workspaceSourceDir  = workspace;//here we'll generate repository diff file (most of the time on slave)
-    	 FilePath workspaceTargetDir = getMasterWorkspaceDir(build);// here we're are going to generate pretty/rich diff html from diff file (always on master)
 
-      
+        FilePath workspaceTargetDir = getMasterWorkspaceDir(build);// here we're are going to generate pretty/rich diff html from diff file (always on master)
+
+        File gitRepoSourceDir = new File(workspace.getRemote() + "/.git");//sometimes on slave
+        File gitRepoTargetDir = new File(workspaceTargetDir.getRemote()+"/.git");//always on master
+
+        //workspace can be on slave so copy git resources to master
+        FileUtils.copyDirectoryToDirectory(gitRepoSourceDir,gitRepoTargetDir);
+        //workspace.copyRecursiveTo("**/*.git", workspaceTargetDir);//not helps because it can't copy .git dir
+
         logger = listener.getLogger();
-
-        String gitRepoPath = workspaceSourceDir.getRemote()+".git";
-        lastChanges(repository(gitRepoPath), new FileOutputStream(new File(workspaceSourceDir+"/diff.txt")));
-        workspaceSourceDir.copyRecursiveTo("**/*.diff.txt", workspaceTargetDir);
-        listener.hyperlink("../" + LastChangesBaseAction.BASE_URL, "Last changes generated successfully!");
-        logger.println("");
+        try {
+            OutputStream diffFileStream = new FileOutputStream(new File(workspaceTargetDir + "/diff.txt"));
+            lastChanges(repository(gitRepoTargetDir.getPath()), diffFileStream);
+            listener.hyperlink("../" + LastChangesBaseAction.BASE_URL, "Last changes generated successfully!");
+        } catch (LastChangesException e) {
+            listener.error(String.format("Last Changes NOT generated for build %s due to following error", "#" + build.getNumber()), e);
+        }
+        //always success (only warn when no diff was generated)
         build.setResult(Result.SUCCESS);
+
     }
 
     /**
      * mainly for findbugs be happy
+     *
      * @param build
      * @return
      */
     private FilePath getMasterWorkspaceDir(Run<?, ?> build) {
-        if(build != null &&  build.getRootDir() != null){
+        if (build != null && build.getRootDir() != null) {
             return new FilePath(build.getRootDir());
-        } else{
-        	return new FilePath(Paths.get("").toFile());
+        } else {
+            return new FilePath(Paths.get("").toFile());
         }
     }
 
@@ -121,9 +129,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         }
 
     }
-
-
-
 
 
 }

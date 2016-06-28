@@ -27,23 +27,23 @@ public class LastChanges {
      */
     public static Repository repository(String path) {
         if (path == null || path.isEmpty()) {
-            throw new RuntimeException("Path cannot be empty.");
+            throw new RepositoryNotFoundException("Git repository path cannot be empty.");
         }
 
         File repositoryPath = new File(path);
 
         if (!repositoryPath.exists()) {
-            throw new RuntimeException(String.format("Repo path not found at location %s.", repositoryPath));
+            throw new RepositoryNotFoundException(String.format("Git repository path not found at location %s.", repositoryPath));
         }
 
         Repository repository = null;
         try {
             repository = new FileRepository(path);
         } catch (IOException e) {
-            throw new RuntimeException("Could not find git repository at " + path);
+            throw new RepositoryNotFoundException("Could not find git repository at " + path);
         }
         if (repository.isBare()) {
-            throw new RuntimeException(String.format("No git repository found at %s.", path));
+            throw new RepositoryNotFoundException(String.format("No git repository found at %s.", path));
         }
 
         return repository;

@@ -3,7 +3,7 @@ package com.github.jenkins.lastchanges.exception;
 /**
  * Created by rafael-pestano on 27/06/2016.
  */
-public class GitTreeParseException extends RuntimeException {
+public class GitTreeParseException extends LastChangesException {
 
 
     public GitTreeParseException() {
