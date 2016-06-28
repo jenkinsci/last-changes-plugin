@@ -6,6 +6,6 @@ cache:
   - "$HOME/.m2/repository"
 
 
-script: mvn clean install
+script: mvn clean install --settings settings.xml
 
 

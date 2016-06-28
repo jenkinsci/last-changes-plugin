@@ -48,6 +48,7 @@ import static com.github.jenkins.lastchanges.LastChanges.repository;
 public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     private LastChangesProjectAction lastChangesProjectAction;
+    private static final String GIT_DIR = "/.git";
 
     private PrintStream logger;
 
@@ -70,17 +71,17 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
         FilePath workspaceTargetDir = getMasterWorkspaceDir(build);// here we're are going to generate pretty/rich diff html from diff file (always on master)
 
-        File gitRepoSourceDir = new File(workspace.getRemote() + "/.git");//sometimes on slave
-        File gitRepoTargetDir = new File(workspaceTargetDir.getRemote()+"/.git");//always on master
+        File gitRepoSourceDir = new File(workspace.getRemote() + GIT_DIR);//sometimes on slave
+        File gitRepoTargetDir = new File(workspaceTargetDir.getRemote());//always on master
 
         //workspace can be on slave so copy git resources to master
-        FileUtils.copyDirectoryToDirectory(gitRepoSourceDir,gitRepoTargetDir);
+        FileUtils.copyDirectoryToDirectory(gitRepoSourceDir, gitRepoTargetDir);
         //workspace.copyRecursiveTo("**/*.git", workspaceTargetDir);//not helps because it can't copy .git dir
 
         logger = listener.getLogger();
         try {
             OutputStream diffFileStream = new FileOutputStream(new File(workspaceTargetDir + "/diff.txt"));
-            lastChanges(repository(gitRepoTargetDir.getPath()), diffFileStream);
+            lastChanges(repository(gitRepoTargetDir.getPath() + GIT_DIR), diffFileStream);
             listener.hyperlink("../" + LastChangesBaseAction.BASE_URL, "Last changes generated successfully!");
         } catch (LastChangesException e) {
             listener.error(String.format("Last Changes NOT generated for build %s due to following error", "#" + build.getNumber()), e);

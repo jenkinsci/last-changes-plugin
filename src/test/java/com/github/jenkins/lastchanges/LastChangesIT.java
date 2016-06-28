@@ -29,7 +29,7 @@ public class LastChangesIT {
     public void init(){
         if(workspaceFiles == null){
             String repoPath = LastChangesTest.class.getResource("/git-sample-repo").getFile();
-            Collection<File> files = FileUtils.listFilesAndDirs(new File(repoPath), new RegexFileFilter("^(.*?)"),
+            workspaceFiles = FileUtils.listFilesAndDirs(new File(repoPath), new RegexFileFilter("^(.*?)"),
                     DirectoryFileFilter.DIRECTORY);
         }
     }
