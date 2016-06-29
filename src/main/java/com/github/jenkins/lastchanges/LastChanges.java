@@ -58,6 +58,7 @@ public class LastChanges {
      * @param target     output stream to write changes
      */
     public static void lastChanges(Repository repository, OutputStream target) {
+        String repositoryLocation = repository.getDirectory().getAbsolutePath();
         Git git = new Git(repository);
         try {
             DiffFormatter formatter = new DiffFormatter(target);
@@ -66,7 +67,7 @@ public class LastChanges {
             try {
                 head = repository.resolve("HEAD^{tree}");
             } catch (IOException e) {
-                throw new GitTreeNotFoundException("Could not resolve repository head.", e);
+                throw new GitTreeNotFoundException("Could not resolve head of repository located at "+repositoryLocation, e);
             }
             try {
                 CommitInfo lastCommitInfo = CommitInfo.Builder.buildCommitInfo(repository, head);
@@ -74,16 +75,16 @@ public class LastChanges {
                     target.write(lastCommitInfo.toString().getBytes("UTF-8"));
                 }
             } catch (Exception e) {
-                throw new CommitInfoException("Could not get commit information", e);
+                throw new CommitInfoException("Could not get last commit information", e);
             }
             ObjectId previousHead = null;
             try {
                 previousHead = repository.resolve("HEAD~^{tree}");
                 if (previousHead == null) {
-                    throw new GitTreeNotFoundException("Could not find previous repository head. Its your first commit?");
+                    throw new GitTreeNotFoundException(String.format("Could not find previous head of repository located at %s. Its your first commit?",repositoryLocation));
                 }
             } catch (IOException e) {
-                throw new GitTreeNotFoundException("Could not resolve previous repository head.", e);
+                throw new GitTreeNotFoundException("Could not resolve previous head of repository located at "+repositoryLocation, e);
             }
             ObjectReader reader = repository.newObjectReader();
             // Create the tree iterator for each commit
@@ -104,7 +105,7 @@ public class LastChanges {
                     formatter.format(change);
                 }
             } catch (Exception e) {
-                throw new GitDiffException("Could not get repository changes.", e);
+                throw new GitDiffException("Could not get last changes of repository located at "+repositoryLocation, e);
             }
         } finally {
             if (git != null) {

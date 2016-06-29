@@ -72,8 +72,8 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         File gitRepoTargetDir = new File(workspaceTargetDir.getRemote());//always on master
 
         //workspace can be on slave so copy git resources to master
-        FileUtils.copyDirectoryToDirectory(gitRepoSourceDir, gitRepoTargetDir);
-        //workspace.copyRecursiveTo("**/*.git", workspaceTargetDir);//not helps because it can't copy .git dir
+         FileUtils.copyDirectoryToDirectory(gitRepoSourceDir, gitRepoTargetDir);
+        //workspace.copyRecursiveTo("**/*", workspaceTargetDir);//not helps because it can't copy .git dir
 
         try {
             OutputStream diffFileStream = new FileOutputStream(new File(workspaceTargetDir + "/diff.txt"));
@@ -81,7 +81,8 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             listener.hyperlink("../" + LastChangesBaseAction.BASE_URL, "Last changes generated successfully!");
             listener.getLogger().println("");
         } catch (LastChangesException e) {
-            listener.error(String.format("Last Changes NOT generated for build %s due to following error", "#" + build.getNumber()), e);
+            e.printStackTrace();
+            listener.error(String.format("Last Changes NOT generated for build #%s due to following error: "+e.getMessage(), build.getNumber()));
         }
         //always success (only warn when no diff was generated)
         build.addAction(new LastChangesBuildAction(build));

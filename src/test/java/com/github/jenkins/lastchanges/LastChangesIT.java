@@ -24,23 +24,15 @@ public class LastChangesIT {
     @Rule
     public JenkinsRule jenkins = new JenkinsRule();
 
-    private Collection<File> workspaceFiles;
+    private File sampleRepoDir = new File(LastChangesTest.class.getResource("/git-sample-repo").getFile());
 
-    @Before
-    public void init(){
-        if(workspaceFiles == null){
-            String repoPath = LastChangesTest.class.getResource("/git-sample-repo").getFile();
-            workspaceFiles = FileUtils.listFilesAndDirs(new File(repoPath), new RegexFileFilter("^(.*?)"),
-                    DirectoryFileFilter.DIRECTORY);
-        }
-    }
 
 
     @Test
     public void shouldGenerateDiffFile() throws Exception {
 
         // given
-        MultipleFileSCM scm = new MultipleFileSCM("/.git",workspaceFiles);
+        DirectorySCM scm = new DirectorySCM(".git",sampleRepoDir);
         FreeStyleProject project = jenkins.createFreeStyleProject("test");
         project.setScm(scm);
         LastChangesPublisher publisher = new LastChangesPublisher();
@@ -61,7 +53,7 @@ public class LastChangesIT {
     public void shouldGenerateDiffFileOnSlaveNode() throws Exception {
 
         // given
-        MultipleFileSCM scm = new MultipleFileSCM("/.git",workspaceFiles);
+        DirectorySCM scm = new DirectorySCM(".git",sampleRepoDir);
         DumbSlave slave = jenkins.createOnlineSlave();
         FreeStyleProject project = jenkins.createFreeStyleProject("test-slave");
         project.setAssignedNode(slave);
