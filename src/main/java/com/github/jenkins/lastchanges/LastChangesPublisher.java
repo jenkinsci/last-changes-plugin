@@ -24,6 +24,7 @@
 package com.github.jenkins.lastchanges;
 
 import com.github.jenkins.lastchanges.exception.LastChangesException;
+import com.github.jenkins.lastchanges.model.LastChanges;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -39,8 +40,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import java.io.*;
 import java.nio.file.Paths;
 
-import static com.github.jenkins.lastchanges.LastChanges.lastChanges;
-import static com.github.jenkins.lastchanges.LastChanges.repository;
+import static com.github.jenkins.lastchanges.LastChangesBuilder.lastChanges;
+import static com.github.jenkins.lastchanges.LastChangesBuilder.repository;
 
 /**
  * @author rmpestano
@@ -76,16 +77,16 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         //workspace.copyRecursiveTo("**/*", workspaceTargetDir);//not helps because it can't copy .git dir
 
         try {
-            OutputStream diffFileStream = new FileOutputStream(new File(workspaceTargetDir + "/diff.txt"));
-            lastChanges(repository(gitRepoTargetDir.getPath() + GIT_DIR), diffFileStream);
+            LastChanges lastChanges = lastChanges(repository(gitRepoTargetDir.getPath() + GIT_DIR));
             listener.hyperlink("../" + LastChangesBaseAction.BASE_URL, "Last changes generated successfully!");
             listener.getLogger().println("");
+            build.addAction(new LastChangesBuildAction(build,lastChanges));
         } catch (LastChangesException e) {
             e.printStackTrace();
             listener.error(String.format("Last Changes NOT generated for build #%s due to following error: "+e.getMessage(), build.getNumber()));
         }
         //always success (only warn when no diff was generated)
-        build.addAction(new LastChangesBuildAction(build));
+
         build.setResult(Result.SUCCESS);
 
     }

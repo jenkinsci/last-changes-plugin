@@ -1,10 +1,15 @@
 package com.github.jenkins.lastchanges;
 
 import hudson.model.AbstractProject;
+import hudson.model.Job;
 import hudson.model.ProminentProjectAction;
 import hudson.model.Run;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class LastChangesProjectAction extends LastChangesBaseAction implements ProminentProjectAction {
 
@@ -24,6 +29,9 @@ public class LastChangesProjectAction extends LastChangesBaseAction implements P
         return jobName;
     }
 
+    public Job<?, ?> getProject() {
+        return project;
+    }
 
     @Override
     protected File dir() {
@@ -52,4 +60,22 @@ public class LastChangesProjectAction extends LastChangesBaseAction implements P
     protected String getTitle() {
         return this.project.getDisplayName();
     }
+
+    public Map<Run<?, ?>, List<String>> getLastChanges() {
+        Map<Run<?, ?>, List<String>> changes = new LinkedHashMap<Run<?, ?>, List<String>>();
+
+     /*   for (Run<?, ?> build : project.getBuilds()) {
+            LastChangesBuildAction action = build.getAction(LastChangesBuildAction.class);
+            if (action != null) {
+                List<String> simNames = new ArrayList<String>();
+                for (BuildSimulation sim : action.getChanges()) {
+                    simNames.add(sim.getSimulationName());
+                }
+                reports.put(build, simNames);
+            }
+        }*/
+
+        return changes;
+    }
+
 }

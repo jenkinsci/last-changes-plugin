@@ -4,6 +4,8 @@
 package com.github.jenkins.lastchanges;
 
 import com.github.jenkins.lastchanges.api.CommitInfo;
+import com.github.jenkins.lastchanges.exception.*;
+import com.github.jenkins.lastchanges.model.LastChanges;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
@@ -12,14 +14,12 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
-import com.github.jenkins.lastchanges.exception.*;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
+import java.nio.charset.Charset;
 
 
-public class LastChanges {
+public class LastChangesBuilder {
 
     /**
      * @param path local git repository path
@@ -108,6 +108,73 @@ public class LastChanges {
             } catch (Exception e) {
                 throw new GitDiffException("Could not get last changes of repository located at "+repositoryLocation, e);
             }
+        } finally {
+            if (git != null) {
+                git.close();
+            }
+            if (repository != null) {
+                repository.close();
+            }
+        }
+
+    }
+
+    /**
+     * Creates an object containing commit info and git diff from last two commits on repository
+     * @param repository git repository to get last changes
+     * @return  LastChangesInfo
+     */
+    public static LastChanges lastChanges(Repository repository) {
+        Git git = new Git(repository);
+        try {
+            ByteArrayOutputStream diffStream = new ByteArrayOutputStream();
+            CommitInfo lastCommitInfo;
+            String repositoryLocation = repository.getDirectory().getAbsolutePath();
+            DiffFormatter formatter = new DiffFormatter(diffStream);
+            formatter.setRepository(repository);
+            ObjectId head = null;
+            try {
+                head = repository.resolve("HEAD^{tree}");
+            } catch (IOException e) {
+                throw new GitTreeNotFoundException("Could not resolve head of repository located at "+repositoryLocation, e);
+            }
+            try {
+                lastCommitInfo = CommitInfo.Builder.buildCommitInfo(repository, head);
+            } catch (Exception e) {
+                throw new CommitInfoException("Could not get last commit information", e);
+            }
+            ObjectId previousHead = null;
+            try {
+                previousHead = repository.resolve("HEAD~^{tree}");
+                if (previousHead == null) {
+                    throw new GitTreeNotFoundException(String.format("Could not find previous head of repository located at %s. Its your first commit?",repositoryLocation));
+                }
+            } catch (IOException e) {
+                throw new GitTreeNotFoundException("Could not resolve previous head of repository located at "+repositoryLocation, e);
+            }
+            ObjectReader reader = repository.newObjectReader();
+            // Create the tree iterator for each commit
+            CanonicalTreeParser oldTreeIter = new CanonicalTreeParser();
+            try {
+                oldTreeIter.reset(reader, previousHead);
+            } catch (Exception e) {
+                throw new GitTreeParseException("Could not parse previous commit tree.", e);
+            }
+            CanonicalTreeParser newTreeIter = new CanonicalTreeParser();
+            try {
+                newTreeIter.reset(reader, head);
+            } catch (IOException e) {
+                throw new GitTreeParseException("Could not parse current commit tree.", e);
+            }
+            try {
+                for (DiffEntry change : git.diff().setOldTree(oldTreeIter).setNewTree(newTreeIter).call()) {
+                    formatter.format(change);
+                }
+            } catch (Exception e) {
+                throw new GitDiffException("Could not get last changes of repository located at "+repositoryLocation, e);
+            }
+
+            return new LastChanges(lastCommitInfo,new String(diffStream.toByteArray(), Charset.forName("UTF-8")));
         } finally {
             if (git != null) {
                 git.close();
