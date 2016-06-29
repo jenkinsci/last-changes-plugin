@@ -58,9 +58,10 @@ public class LastChanges {
      * @param target     output stream to write changes
      */
     public static void lastChanges(Repository repository, OutputStream target) {
-        String repositoryLocation = repository.getDirectory().getAbsolutePath();
+
         Git git = new Git(repository);
         try {
+            String repositoryLocation = repository.getDirectory().getAbsolutePath();
             DiffFormatter formatter = new DiffFormatter(target);
             formatter.setRepository(repository);
             ObjectId head = null;
