@@ -1,0 +1,69 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+xmlns:c="/com/github/jenkins/lastchanges/tags" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<l:layout>
+
+	<l:header>
+         <c:import/>
+     </l:header>
+
+			<l:main-panel>
+
+			<script type="text/javascript">
+            var lineDiffExample = "diff --git a/src/main/docs/dbunit-rules.adoc b/src/main/docs/dbunit-rules.adoc \
+            index d9010bf..b29f553 100644 \
+            --- a/src/main/docs/dbunit-rules.adoc \
+            +++ b/src/main/docs/dbunit-rules.adoc \
+            @@ -68,7 +68,7 @@ \
+             		&lt;property name=\"javax.persistence.jdbc.url\" value=\"jdbc:hsqldb:mem:test;DB_CLOSE_DELAY=-1\" /&gt; \
+             		&lt;property name=\"javax.persistence.jdbc.user\" value=\"sa\" /&gt; \
+             		&lt;property name=\"javax.persistence.jdbc.password\" value=\"\" /&gt; \
+            -		&lt;property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\" /&gt; \
+            +		&lt;property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\" /&gt; &lt;!--1--&gt; \
+             		&lt;property name=\"hibernate.show_sql\" value=\"true\" /&gt; \
+             	    &lt;/properties&gt; \
+              \
+            @@ -76,6 +76,7 @@ \
+              \
+             &lt;/persistence&gt; \
+             ---- \
+            +&lt;1&gt; We're creating the database from our JPA entities.   \
+              \
+             and finally the JPA entity which our tests will work on: \ ";
+
+                                        jQuery(document).ready(function() {
+                                          var diff2htmlUi = new Diff2HtmlUI({diff: lineDiffExample});
+
+                                          diff2htmlUi.draw('#line-by-line', {inputFormat: 'json', showFiles: true, matching: 'lines'});
+                                          diff2htmlUi.fileListCloseable('#line-by-line', false);
+                                          diff2htmlUi.highlightCode('#line-by-line');
+                                            });
+		    </script>
+
+			<h2>View Last Changes of build #${it.build.number}</h2>
+
+
+            <div style="text-align: center; font-family: 'Source Sans Pro',sans-serif;">
+
+            <div class="d2h-file-header">
+
+              <b>Commit: </b>${it.buildChanges.commitInfo.commitId}<br/>
+              <b>Author: </b>${it.buildChanges.commitInfo.commiterName}<br/>
+              <b>E-mail: </b>${it.buildChanges.commitInfo.commiterEmail}<br/>
+              <b>Date: </b>${it.buildChanges.commitInfo.commitDate}<br/>
+              <b>Message: </b>${it.buildChanges.commitInfo.commitMessage}<br/>
+            </div>
+
+            <div id="line-by-line" style="margin: 0 auto; max-width: 900px;">
+            </div>
+
+
+        </div>
+	  </l:main-panel>
+
+	</l:layout>
+
+</j:jelly>
+
+
+

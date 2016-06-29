@@ -12,8 +12,6 @@ import java.io.IOException;
 
 public abstract class LastChangesBaseAction implements Action {
 
-    protected String lastChangesPage = "last-changes.html";
-
     protected static final String BASE_URL = "last-changes";
 
     public String getUrlName() {
@@ -29,11 +27,10 @@ public abstract class LastChangesBaseAction implements Action {
     }
 
     public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        System.setProperty("hudson.model.DirectoryBrowserSupport.CSP", "sandbox allow-same-origin allow-scripts; script-src 'self' 'unsafe-inline'; default-src 'self'; img-src 'self'; style-src 'self';");
+        //System.setProperty("hudson.model.DirectoryBrowserSupport.CSP", "sandbox allow-same-origin allow-scripts; script-src 'self' 'unsafe-inline'; default-src 'self'; img-src 'self'; style-src 'self';");
         DirectoryBrowserSupport dbs = new DirectoryBrowserSupport(this, new FilePath(dir()), getTitle(), getUrlName(),
                 false);
 
-        dbs.setIndexFileName(lastChangesPage);
         dbs.generateResponse(req, rsp, this);
     }
 
@@ -41,7 +38,4 @@ public abstract class LastChangesBaseAction implements Action {
 
     protected abstract File dir();
 
-    public void setLastChangesPage(String lastChangesPage) {
-        this.lastChangesPage = lastChangesPage;
-    }
 }

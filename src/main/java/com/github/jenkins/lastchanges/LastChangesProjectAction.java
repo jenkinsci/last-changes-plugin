@@ -68,7 +68,7 @@ public class LastChangesProjectAction extends LastChangesBaseAction implements P
             LastChangesBuildAction action = build.getAction(LastChangesBuildAction.class);
             if (action != null) {
                 List<String> simNames = new ArrayList<String>();
-                for (BuildSimulation sim : action.getChanges()) {
+                for (BuildSimulation sim : action.getDiff()) {
                     simNames.add(sim.getSimulationName());
                 }
                 reports.put(build, simNames);

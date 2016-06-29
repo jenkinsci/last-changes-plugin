@@ -53,7 +53,7 @@ public class LastChangesIT {
         assertThat(lastChanges.getCommitInfo()).isNotNull();
         assertThat(lastChanges.getCommitInfo().getCommitMessage()).isEqualTo("Added javadoc\n");
         assertThat(lastChanges.getCommitInfo().getCommitId()).isEqualTo("bb8a132b314888f2e8bee83bf534fa3e3f2815f9");
-        Assertions.assertThat(lastChanges.getChanges()).isEqualToIgnoringWhitespace(("diff --git a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + LastChangesTest.newLine +
+        Assertions.assertThat(lastChanges.getDiff()).isEqualToIgnoringWhitespace(("diff --git a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + LastChangesTest.newLine +
                 "index 6d28c9b..bcc2ac0 100644" + LastChangesTest.newLine +
                 "--- a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + LastChangesTest.newLine +
                 "+++ b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + LastChangesTest.newLine +
@@ -114,7 +114,7 @@ public class LastChangesIT {
         assertThat(lastChanges.getCommitInfo()).isNotNull();
         assertThat(lastChanges.getCommitInfo().getCommitMessage()).isEqualTo("Added javadoc\n");
         assertThat(lastChanges.getCommitInfo().getCommitId()).isEqualTo("bb8a132b314888f2e8bee83bf534fa3e3f2815f9");
-        Assertions.assertThat(lastChanges.getChanges()).isEqualToIgnoringWhitespace(("diff --git a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + LastChangesTest.newLine +
+        Assertions.assertThat(lastChanges.getDiff()).isEqualToIgnoringWhitespace(("diff --git a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + LastChangesTest.newLine +
                 "index 6d28c9b..bcc2ac0 100644" + LastChangesTest.newLine +
                 "--- a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + LastChangesTest.newLine +
                 "+++ b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + LastChangesTest.newLine +
