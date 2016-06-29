@@ -1,6 +1,7 @@
 package com.github.jenkins.lastchanges.model;
 
 import com.github.jenkins.lastchanges.api.CommitInfo;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 /**
  * Created by rafael-pestano on 29/06/2016.
@@ -29,10 +30,9 @@ public class LastChanges {
      *
      * @return
      */
-    public String getLineByLineDiff(){
+    public String getEscapedDiff(){
         if(diff != null){
-            return  diff.replaceAll("\"", "\\\\\""). //every " becomes \"
-                    replaceAll("\n", "\\\\n\" +\n\""); // every \n becomes \n" NEW_LINE +"
+            return StringEscapeUtils.escapeEcmaScript(diff);
         } else{
             return "";
         }

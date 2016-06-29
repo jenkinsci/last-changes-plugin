@@ -1,0 +1,59 @@
+<?jelly escape-by-default='false'?>
+<j:jelly trim="false" xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <l:layout>
+        <l:main-panel>
+            <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/github.min.css"/>
+            <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/diff2html.min.css"/>
+            <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/jquery.min.js"/>
+            <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/highlight.min.js"/>
+            <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-2.0.0-rc.8.min.js"/>
+            <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-ui.min.js"/>
+            <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/scala.min.js"/>
+
+            <h2>View Last Changes of build #${it.build.number}</h2>
+
+            <script>
+
+                jQuery(document).ready(function() {
+                var diff2htmlUi = new Diff2HtmlUI({diff: buildChanges});
+
+                diff2htmlUi.draw('#line-by-line', {inputFormat: 'json', showFiles: true, matching: 'lines'});
+                diff2htmlUi.fileListCloseable('#line-by-line', false);
+                diff2htmlUi.highlightCode('#line-by-line');
+                });
+
+
+                var buildChanges = "${it.buildChanges.escapedDiff}";
+
+
+            </script>
+
+            <div style="float:left; width:80%; font-family: 'Source Sans Pro',sans-serif;">
+
+                <div class="d2h-file-header" style="text-align:center;margin: 0 auto;">
+
+                    <b>Commit:</b> ${it.buildChanges.commitInfo.commitId}
+                    <br/>
+                    <b>Author:</b> ${it.buildChanges.commitInfo.commiterName}
+                    <br/>
+                    <b>E-mail:</b> ${it.buildChanges.commitInfo.commiterEmail}
+                    <br/>
+                    <b>Date:</b> ${it.buildChanges.commitInfo.commitDate}
+                    <br/>
+                    <b>Message:</b> ${it.buildChanges.commitInfo.commitMessage}
+                    <br/>
+                </div>
+                <br/>
+                <div id="line-by-line" style="margin: 0 auto;">
+                </div>
+
+            </div>
+        </l:main-panel>
+
+    </l:layout>
+
+</j:jelly>
+
+
+
