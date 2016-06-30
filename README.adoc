@@ -10,23 +10,36 @@ Last Changes is a *Jenkin plugin* that shows `rich` *Git* diffs between builds.
 
 == Introduction
 
-The main idea behind the plugin is to easily find the `root cause` of a *failling build*.
+The plugin uses https://diff2html.rtfpessoa.xyz/[diff2html^] to show last changes of a given build, example:
+
+image::last-changes03.png[]
+
+NOTE: Last changes means `compare current revision with previous one`.
+
+One of the objectives of this plugin is to easily find the `root cause` of a *failling build*.
+
+Also another area that the plugin can help is in https://en.wikipedia.org/wiki/Continuous_delivery[*Continuous Delivery*^] where each _commit_ generates a release candidate. In this case the plugin will show what has changed on a possible release.
 
 
 == How it works?
 
 . The plugin expects that your builds are triggered by a SCM change (git push);
 . After the change your job will be run;
-. The diff between `actual` and `previous` change will be stored on your job;
-. The *git diff* for each build can be viewed later, here is a sample:   
+. The diff between `actual` and `previous` change will be stored on your build;
+. The *git diff* for each build can be viewed later
 
-NOTE: The diff history is stored for _N_ build where _N_ is setup on the job.
 
 == Usage
 
-After instalation just activate the post build action named *Publish Last Changes*. 
+After installation just activate the post build action named *Publish Last Changes*. No configuration is needed.
 
-== Configuration
-
-For now the only configuration is the number of diffs to store.
+. Activate build action
++
+image::last-changes-config.png[]
+. Last changes menu should be available
++
+image::last-changes01.png[]
+. Build changes history
++
+image::last-changes02.png[]
   

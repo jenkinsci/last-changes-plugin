@@ -27,7 +27,7 @@
     </properties>
 
     <name>Last Changes Plugin</name>
-    <description>Shows job last changes via Git Diff between lastest revisions. The main objective is to find the cause of a failing build.</description>
+    <description>Shows build last changes via Git Diff between latest revisions. The main objective is to find the cause of a failing build.</description>
     <url>https://wiki.jenkins-ci.org/display/JENKINS/Last+Changes+Plugin</url>
 
     <!-- The default licence for Jenkins OSS Plugins is MIT. Substitute for the applicable one if needed. -->

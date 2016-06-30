@@ -13,6 +13,11 @@
 
             <h2>View Last Changes of build #${it.build.number}</h2>
 
+            <style>
+                .row{
+                    text-align:center!important;
+                }
+            </style>
             <script>
                 jQuery(document).ready(function() {
                   var sidePanelTD=document.getElementById('side-panel');
