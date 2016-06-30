@@ -13,7 +13,6 @@ import java.util.Map;
 
 public class LastChangesProjectAction extends LastChangesBaseAction implements ProminentProjectAction {
 
-    private static final String LAST_CHANGES_PAGE = "sample.html";
     private final AbstractProject<?, ?> project;
 
     private String jobName;
@@ -61,21 +60,17 @@ public class LastChangesProjectAction extends LastChangesBaseAction implements P
         return this.project.getDisplayName();
     }
 
-    public Map<Run<?, ?>, List<String>> getLastChanges() {
-        Map<Run<?, ?>, List<String>> changes = new LinkedHashMap<Run<?, ?>, List<String>>();
+    public List<Run<?, ?>> getLastChangesBuilds() {
+        List<Run<?, ?>> builds = new ArrayList<>();
 
-     /*   for (Run<?, ?> build : project.getBuilds()) {
+      for (Run<?, ?> build : project.getBuilds()) {
             LastChangesBuildAction action = build.getAction(LastChangesBuildAction.class);
             if (action != null) {
-                List<String> simNames = new ArrayList<String>();
-                for (BuildSimulation sim : action.getDiff()) {
-                    simNames.add(sim.getSimulationName());
-                }
-                reports.put(build, simNames);
+                builds.add(build);
             }
-        }*/
+        }
 
-        return changes;
+        return builds;
     }
 
 }

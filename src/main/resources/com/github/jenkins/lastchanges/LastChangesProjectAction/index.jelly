@@ -7,12 +7,10 @@
               <h2>View last changes of available builds</h2>
 
               <ul>
-                  <j:forEach items="${it.changes.entrySet()}" var="build">
-                        <j:forEach items="${build.value}" var="change">
-                               <li>
-                                    Build # ${build.key.number} (<fmt:formatDate value="${build.key.time}" type="both"/>) : <a href="../${it.getReportURL(build.key.number, simname)}" target="_blank">${simname}</a>
-                                </li>
-                         </j:forEach>
+                  <j:forEach items="${it.lastChangesBuilds}" var="build">
+                        <li>
+                               <a href="../${build.number}/last-changes" target="_blank">Build # ${build.number} (<fmt:formatDate value="${build.time}" type="both"/>)</a>
+                         </li>
               	  </j:forEach>
              </ul>
 

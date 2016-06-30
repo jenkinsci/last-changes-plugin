@@ -5,7 +5,7 @@ package com.github.jenkins.lastchanges;
 
 import com.github.jenkins.lastchanges.api.CommitInfo;
 import com.github.jenkins.lastchanges.exception.*;
-import com.github.jenkins.lastchanges.model.LastChanges;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
@@ -15,11 +15,43 @@ import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
 
 
-public class LastChangesBuilder {
+public class LastChanges {
+
+    private CommitInfo commitInfo; //information aboud head commit
+    private String diff; //diff between head and ´head -1'
+
+    public LastChanges(CommitInfo commitInfo, String changes) {
+        this.commitInfo = commitInfo;
+        this.diff = changes;
+    }
+
+    public CommitInfo getCommitInfo() {
+        return commitInfo;
+    }
+
+    public String getDiff() {
+        return diff;
+    }
+
+    /**
+     * separates the diff string into multiple lines
+     * required by diff2html tool
+     *
+     * @return
+     */
+    public String getEscapedDiff(){
+        if(diff != null){
+            return StringEscapeUtils.escapeEcmaScript(diff);
+        } else{
+            return "";
+        }
+    }
 
     /**
      * @param path local git repository path
@@ -51,80 +83,13 @@ public class LastChangesBuilder {
     }
 
 
-    /**
-     * Writes git diff from latest changes (last two commits) to out
-     *
-     * @param repository git repository to get last changes
-     * @param target     output stream to write changes
-     */
-    public static void lastChanges(Repository repository, OutputStream target) {
-
-        Git git = new Git(repository);
-        try {
-            String repositoryLocation = repository.getDirectory().getAbsolutePath();
-            DiffFormatter formatter = new DiffFormatter(target);
-            formatter.setRepository(repository);
-            ObjectId head = null;
-            try {
-                head = repository.resolve("HEAD^{tree}");
-            } catch (IOException e) {
-                throw new GitTreeNotFoundException("Could not resolve head of repository located at "+repositoryLocation, e);
-            }
-            try {
-                CommitInfo lastCommitInfo = CommitInfo.Builder.buildCommitInfo(repository, head);
-                if (lastCommitInfo != null) {
-                    target.write(lastCommitInfo.toString().getBytes("UTF-8"));
-                }
-            } catch (Exception e) {
-                throw new CommitInfoException("Could not get last commit information", e);
-            }
-            ObjectId previousHead = null;
-            try {
-                previousHead = repository.resolve("HEAD~^{tree}");
-                if (previousHead == null) {
-                    throw new GitTreeNotFoundException(String.format("Could not find previous head of repository located at %s. Its your first commit?",repositoryLocation));
-                }
-            } catch (IOException e) {
-                throw new GitTreeNotFoundException("Could not resolve previous head of repository located at "+repositoryLocation, e);
-            }
-            ObjectReader reader = repository.newObjectReader();
-            // Create the tree iterator for each commit
-            CanonicalTreeParser oldTreeIter = new CanonicalTreeParser();
-            try {
-                oldTreeIter.reset(reader, previousHead);
-            } catch (Exception e) {
-                throw new GitTreeParseException("Could not parse previous commit tree.", e);
-            }
-            CanonicalTreeParser newTreeIter = new CanonicalTreeParser();
-            try {
-                newTreeIter.reset(reader, head);
-            } catch (IOException e) {
-                throw new GitTreeParseException("Could not parse current commit tree.", e);
-            }
-            try {
-                for (DiffEntry change : git.diff().setOldTree(oldTreeIter).setNewTree(newTreeIter).call()) {
-                    formatter.format(change);
-                }
-            } catch (Exception e) {
-                throw new GitDiffException("Could not get last changes of repository located at "+repositoryLocation, e);
-            }
-        } finally {
-            if (git != null) {
-                git.close();
-            }
-            if (repository != null) {
-                repository.close();
-            }
-        }
-
-    }
 
     /**
      * Creates an object containing commit info and git diff from last two commits on repository
      * @param repository git repository to get last changes
      * @return  LastChangesInfo
      */
-    public static LastChanges lastChanges(Repository repository) {
+    public static LastChanges of(Repository repository) {
         Git git = new Git(repository);
         try {
             ByteArrayOutputStream diffStream = new ByteArrayOutputStream();

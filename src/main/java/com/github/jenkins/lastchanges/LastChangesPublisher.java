@@ -24,7 +24,6 @@
 package com.github.jenkins.lastchanges;
 
 import com.github.jenkins.lastchanges.exception.LastChangesException;
-import com.github.jenkins.lastchanges.model.LastChanges;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -40,8 +39,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import java.io.*;
 import java.nio.file.Paths;
 
-import static com.github.jenkins.lastchanges.LastChangesBuilder.lastChanges;
-import static com.github.jenkins.lastchanges.LastChangesBuilder.repository;
+import static com.github.jenkins.lastchanges.LastChanges.repository;
 
 /**
  * @author rmpestano
@@ -77,8 +75,8 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         //workspace.copyRecursiveTo("**/*", workspaceTargetDir);//not helps because it can't copy .git dir
 
         try {
-            LastChanges lastChanges = lastChanges(repository(gitRepoTargetDir.getPath() + GIT_DIR));
-            listener.hyperlink("../" + LastChangesBaseAction.BASE_URL, "Last changes generated successfully!");
+            LastChanges lastChanges = LastChanges.of(repository(gitRepoTargetDir.getPath() + GIT_DIR));
+            listener.hyperlink("../"+build.getNumber() +"/"+ LastChangesBaseAction.BASE_URL, "Last changes generated successfully!");
             listener.getLogger().println("");
             build.addAction(new LastChangesBuildAction(build,lastChanges));
         } catch (LastChangesException e) {

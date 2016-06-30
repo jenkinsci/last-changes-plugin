@@ -1,6 +1,5 @@
 package com.github.jenkins.lastchanges;
 
-import com.github.jenkins.lastchanges.model.LastChanges;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.slaves.DumbSlave;
@@ -31,7 +30,7 @@ public class LastChangesIT {
 
 
     @Test
-    public void shouldGenerateDiffFile() throws Exception {
+    public void shouldGenerateBuildDiff() throws Exception {
 
         // given
         DirectorySCM scm = new DirectorySCM(".git",sampleRepoDir);
@@ -90,7 +89,7 @@ public class LastChangesIT {
     }
 
     @Test
-    public void shouldGenerateDiffFileOnSlaveNode() throws Exception {
+    public void shouldGenerateBuildDiffOnSlaveNode() throws Exception {
 
         // given
         DirectorySCM scm = new DirectorySCM(".git",sampleRepoDir);

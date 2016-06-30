@@ -14,11 +14,18 @@
             <h2>View Last Changes of build #${it.build.number}</h2>
 
             <script>
-
                 jQuery(document).ready(function() {
+                  var sidePanelTD=document.getElementById('side-panel');
+                               if(sidePanelTD) {
+                                 sidePanelTD.parentNode.removeChild(sidePanelTD);
+                               }
                 var diff2htmlUi = new Diff2HtmlUI({diff: buildChanges});
 
-                diff2htmlUi.draw('#line-by-line', {inputFormat: 'json', showFiles: true, matching: 'lines'});
+                diff2htmlUi.draw('#line-by-line', {
+                     inputFormat: 'json',
+                     showFiles: true
+                     }
+                    );
                 diff2htmlUi.fileListCloseable('#line-by-line', false);
                 diff2htmlUi.highlightCode('#line-by-line');
                 });
@@ -29,7 +36,7 @@
 
             </script>
 
-            <div style="float:left; width:80%; font-family: 'Source Sans Pro',sans-serif;">
+            <div style="float:left; width:100%; font-family: 'Source Sans Pro',sans-serif;">
 
                 <div class="d2h-file-header" style="text-align:center;margin: 0 auto;">
 

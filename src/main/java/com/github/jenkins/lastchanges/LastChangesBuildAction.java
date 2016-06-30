@@ -1,6 +1,5 @@
 package com.github.jenkins.lastchanges;
 
-import com.github.jenkins.lastchanges.model.LastChanges;
 import hudson.model.Run;
 
 import java.io.File;
