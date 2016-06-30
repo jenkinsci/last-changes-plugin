@@ -6,7 +6,7 @@
 
 image:https://jenkins.ci.cloudbees.com/buildStatus/icon?job=plugins/last-changes-plugin[Build Status (Travis CI), link=https://jenkins.ci.cloudbees.com/job/plugins/job/last-changes-plugin/]
 
-Last Changes is a *Jenkin plugin* that shows `rich` *Git* diffs between builds.
+Last Changes is a *Jenkin plugin* that shows `rich` *it* diffs between builds.
 
 == Introduction
 
@@ -42,4 +42,7 @@ image::last-changes01.png[]
 . Build changes history
 +
 image::last-changes02.png[]
-  
+. Last changes menu is available for builds that published changes
++
+image::last-changes04.png[]
+
