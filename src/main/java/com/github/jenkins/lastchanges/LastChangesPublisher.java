@@ -31,13 +31,11 @@ import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
 
 import com.github.jenkins.lastchanges.model.FormatType;
 import com.github.jenkins.lastchanges.model.LastChangesConfig;
 import com.github.jenkins.lastchanges.model.MatchingType;
 
-import hudson.CopyOnWrite;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -52,28 +50,41 @@ import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.ListBoxModel;
 import jenkins.tasks.SimpleBuildStep;
-import net.sf.json.JSONObject;
 
 /**
  * @author rmpestano
  */
 public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
+	private FormatType format;
+	
+	private MatchingType matching;
+	
+	private Boolean showFiles;
+	
+	private Boolean synchronisedScroll;
+	
+	private String matchWordsThreshold;
+	
+	private String matchingMaxComparisons;
+	
+
+	
 	private LastChangesProjectAction   lastChangesProjectAction;
 
 	private static final String		   GIT_DIR	  = "/.git";
 
-	@Extension
-	public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
 	@DataBoundConstructor
-	public LastChangesPublisher() {
+	public LastChangesPublisher(FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold, String matchingMaxComparisons) {
+		this.format = format;
+		this.matching = matching;
+		this.showFiles = showFiles;
+		this.synchronisedScroll = synchronisedScroll;
+		this.matchWordsThreshold = matchWordsThreshold;
+		this.matchingMaxComparisons = matchingMaxComparisons;
 	}
 
-	@Override
-	public BuildStepDescriptor<hudson.tasks.Publisher> getDescriptor() {
-		return DESCRIPTOR;
-	}
 
 	@Override
 	public Action getProjectAction(AbstractProject<?, ?> project) {
@@ -100,7 +111,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 			LastChanges lastChanges = LastChanges.of(repository(gitRepoTargetDir.getPath() + GIT_DIR));
 			listener.hyperlink("../" + build.getNumber() + "/" + LastChangesBaseAction.BASE_URL, "Last changes generated successfully!");
 			listener.getLogger().println("");
-			build.addAction(new LastChangesBuildAction(build, lastChanges, DESCRIPTOR.buildConfig()));
+			build.addAction(new LastChangesBuildAction(build, lastChanges, new LastChangesConfig(format, matching, showFiles, synchronisedScroll, matchWordsThreshold, matchingMaxComparisons)));
 		} catch (Exception e) {
 			listener.error("Last Changes NOT published due to the following error: " + e.getMessage());
 		}
@@ -129,23 +140,10 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 		return BuildStepMonitor.NONE;
 	}
 
-	public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+    @Extension
+	public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 		
-		@CopyOnWrite
-		private volatile FormatType	format;
 		
-		@CopyOnWrite
-		private volatile MatchingType	matching;
-
-		public DescriptorImpl(Class<? extends Publisher> clazz) {
-			super(clazz);
-			load();
-		}
-
-		public DescriptorImpl() {
-			this(LastChangesPublisher.class);
-		}
-
 		public boolean isApplicable(Class<? extends AbstractProject> aClass) {
 			// Indicates that this builder can be used with all kinds of project types
 			return true;
@@ -161,11 +159,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 		public ListBoxModel doFillFormatItems() {
 			ListBoxModel items = new ListBoxModel();
 			for (FormatType formatType : FormatType.values()) {
-				if(formatType.equals(format)){
-					items.add(new ListBoxModel.Option(formatType.getFormat(), formatType.name(), true));
-				} else{
-					items.add(formatType.getFormat(), formatType.name());
-				}
+				 items.add(formatType.getFormat(), formatType.name());
 			}
 			return items;
 		}
@@ -173,39 +167,44 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 		public ListBoxModel doFillMatchingItems() {
 			ListBoxModel items = new ListBoxModel();
 			for (MatchingType matchingType : MatchingType.values()) {
-				if(matchingType.equals(matching)){
-					items.add(new ListBoxModel.Option(matchingType.getMatching(), matchingType.name(), true));
-				} else{
-					items.add(matchingType.getMatching(), matchingType.name());
-				}
+				 items.add(matchingType.getMatching(), matchingType.name());
 			}
 			return items;
 		}
-
-
-		 @Override
-		public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-			JSONObject lastChangesConfig = json.getJSONObject("last-changes");
-			if(lastChangesConfig != null){
-				String formatConfig = lastChangesConfig.getString("format");
-				if(formatConfig != null){
-					this.format = FormatType.valueOf(formatConfig);
-				}
-				
-				String matchingConfig = lastChangesConfig.getString("matching");
-				if(matchingConfig != null){
-					this.matching = MatchingType.valueOf(matchingConfig);
-				}
-			}
-		    save();
-		    return true;
-		} 
 		 
-		 public LastChangesConfig buildConfig() {
-			 return new LastChangesConfig(format, matching);
-			
-		}
 
 	}
+
+	public FormatType getFormat() {
+		return format;
+	}
+
+
+	public MatchingType getMatching() {
+		return matching;
+	}
+
+
+	public String getMatchWordsThreshold() {
+		return matchWordsThreshold;
+	}
+
+
+	public String getMatchingMaxComparisons() {
+		return matchingMaxComparisons;
+	}
+
+
+	public Boolean getShowFiles() {
+		return showFiles;
+	}
+
+
+	public Boolean getSynchronisedScroll() {
+		return synchronisedScroll;
+	}
+	
+	
+    
 
 }

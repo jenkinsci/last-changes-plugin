@@ -54,7 +54,7 @@ image::last-changes04.png[]
 
 == Configuration
 
-This plugin uses `global configuration` to setup https://github.com/rtfpessoa/diff2html#configuration[diff2html options^]:
+This plugin configuration basically reflects https://github.com/rtfpessoa/diff2html#configuration[diff2html options^]:
 
 image::last-config.png[]
  

@@ -1,12 +1,10 @@
 package com.github.jenkins.lastchanges;
 
-import com.github.jenkins.lastchanges.model.FormatType;
+import java.io.File;
+
 import com.github.jenkins.lastchanges.model.LastChangesConfig;
-import com.github.jenkins.lastchanges.model.MatchingType;
 
 import hudson.model.Run;
-
-import java.io.File;
 
 public class LastChangesBuildAction extends LastChangesBaseAction {
 
@@ -18,7 +16,7 @@ public class LastChangesBuildAction extends LastChangesBaseAction {
         this.build = build;
         buildChanges = lastChanges;
         if(config == null){
-        	config = new LastChangesConfig(FormatType.LINE, MatchingType.NONE);
+        	config = new LastChangesConfig();
         }
         this.config = config;
     }

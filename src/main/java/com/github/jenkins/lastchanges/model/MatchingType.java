@@ -5,7 +5,7 @@ package com.github.jenkins.lastchanges.model;
  */
 public enum MatchingType {
 
-    NONE("none"), LINE("line"),WORD("words");
+    NONE("none"), LINE("lines"),WORD("words");
 
     public final String matching;
 

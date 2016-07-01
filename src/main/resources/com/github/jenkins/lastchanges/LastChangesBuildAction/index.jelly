@@ -28,8 +28,11 @@
 
                     diff2htmlUi.draw('#${it.config.format().getFormat()}', {
                          inputFormat: 'json',
-                         showFiles: true,
                          outputFormat: '${it.config.format().getFormat()}',
+                         showFiles: ${it.config.showFiles()},
+                         synchronisedScroll: ${it.config.synchronisedScroll()},
+                         matchWordsThreshold: '${it.config.matchWordsThreshold()}',
+                         matchingMaxComparisons: '${it.config.matchingMaxComparisons()}',
                          matching: '${it.config.matching().getMatching()}'
                          }
                         );

@@ -2,7 +2,31 @@
 <j:jelly xmlns:j="jelly:core"
          xmlns:f="/lib/form">
 
-
+  <f:section title="Last Changes Configuration" >
+      <f:entry title="Format " field="format" description="Diff format: libe-by-line (default) or side-by-side.">
+            <f:select value="${instance.format}" field="format" />
+       </f:entry>
+       <f:entry title="Matching" field="matching" description="Matching level: 'lines' for matching lines, 'words' for matching lines and words or 'none', default is none.">
+            <f:select value="${instance.matching}"  field="matching" />
+       </f:entry>
+       
+       <f:entry  title="Show files" description="Show a file list before the diff.">
+           <f:checkbox value="${instance.showFiles}" field="showFiles" default="true"/>
+       </f:entry>
+       
+       <f:entry  title="Synchronised scroll" description="Scroll both panes in side-by-side mode.">
+           <f:checkbox value="${instance.synchronisedScroll}"  field="synchronisedScroll" default="false"/>
+       </f:entry>
+       
+       <f:entry title="Match words threshold" description="Similarity threshold for word matching." >
+           <f:textbox value="${instance.matchWordsThreshold}" field="matchWordsThreshold" default="0.25" />
+        </f:entry>
+        
+        <f:entry title="Matching max comparisons" description="Perform at most this much comparisons for line matching a block of changes." >
+           <f:textbox value="${instance.matchingMaxComparisons}" field="matchingMaxComparisons" default="1000" />
+        </f:entry>
+        
+  </f:section>
 </j:jelly>
 
 

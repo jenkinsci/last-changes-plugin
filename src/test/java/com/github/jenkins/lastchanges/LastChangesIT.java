@@ -13,6 +13,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.jvnet.hudson.test.JenkinsRule;
 
+import com.github.jenkins.lastchanges.model.FormatType;
+import com.github.jenkins.lastchanges.model.MatchingType;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -36,7 +39,7 @@ public class LastChangesIT {
         DirectorySCM scm = new DirectorySCM(".git",sampleRepoDir);
         FreeStyleProject project = jenkins.createFreeStyleProject("test");
         project.setScm(scm);
-        LastChangesPublisher publisher = new LastChangesPublisher();
+        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500");
         project.getPublishersList().add(publisher);
         project.save();
 
@@ -97,7 +100,7 @@ public class LastChangesIT {
         FreeStyleProject project = jenkins.createFreeStyleProject("test-slave");
         project.setAssignedNode(slave);
         project.setScm(scm);
-        LastChangesPublisher publisher = new LastChangesPublisher();
+        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.SIDE,MatchingType.WORD, true, false, null,null);
         project.getPublishersList().add(publisher);
         project.save();
 
@@ -144,24 +147,6 @@ public class LastChangesIT {
                 "  * Walks over this component and all descendants of this component, breadth-first." + LastChangesTest.newLine +
                 "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", ""));
 
-    }
-
-    private void copyGitSampleRepoInto(FreeStyleBuild lastBuild) throws IOException {
-        String repoPath = LastChangesTest.class.getResource("/git-sample-repo").getFile();
-        Collection<File> files = FileUtils.listFilesAndDirs(new File(repoPath), new RegexFileFilter("^(.*?)"),
-                DirectoryFileFilter.DIRECTORY);
-        File buildDir = lastBuild.getRootDir();
-        File gitDir = new File(buildDir.getAbsolutePath() + "/.git");
-        gitDir.setExecutable(true);
-        gitDir.setReadable(true);
-        gitDir.mkdirs();
-        for (File file : files) {
-            if (file.isDirectory()) {
-                FileUtils.copyDirectory(file, gitDir);
-            } else {
-                FileUtils.copyFileToDirectory(file, gitDir);
-            }
-        }
     }
 
 }
