@@ -112,11 +112,12 @@ public class LastChangesTest {
     @Test
     public void shouldGetLastChangesFromInitialCommitRepo() throws FileNotFoundException {
         String repositoryLocation = LastChangesTest.class.getResource("/git-initial-commit-repo").getFile();
+        File file = new File(repositoryLocation);
         try {
             LastChanges.of(repository(repositoryLocation));
             fail("Should not get here");
         }catch (GitTreeNotFoundException e){
-            assertThat(e.getMessage()).isEqualTo(String.format("Could not find previous head of repository located at %s. Its your first commit?",repositoryLocation));
+            assertThat(e.getMessage()).isEqualTo(String.format("Could not find previous head of repository located at %s. Its your first commit?",file.getAbsolutePath()));
         }
     }
 
