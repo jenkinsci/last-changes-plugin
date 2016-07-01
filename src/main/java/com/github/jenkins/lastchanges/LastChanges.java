@@ -3,8 +3,9 @@
  */
 package com.github.jenkins.lastchanges;
 
-import com.github.jenkins.lastchanges.api.CommitInfo;
 import com.github.jenkins.lastchanges.exception.*;
+import com.github.jenkins.lastchanges.model.CommitInfo;
+
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.diff.DiffEntry;

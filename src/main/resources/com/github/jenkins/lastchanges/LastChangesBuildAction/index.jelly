@@ -26,29 +26,17 @@
                                }
                 var diff2htmlUi = new Diff2HtmlUI({diff: buildChanges});
 
-                <j:if test="${it.isFormatByLine()}">
-                    diff2htmlUi.draw('#line-by-line', {
+                    diff2htmlUi.draw('#${it.config.format().getFormat()}', {
                          inputFormat: 'json',
-                         showFiles: true
+                         showFiles: true,
+                         outputFormat: '${it.config.format().getFormat()}',
+                         matching: '${it.config.matching().getMatching()}'
                          }
                         );
-                    diff2htmlUi.fileListCloseable('#line-by-line', false);
-                    diff2htmlUi.highlightCode('#line-by-line');
-                    });
+                    diff2htmlUi.fileListCloseable('#${it.config.format().getFormat()}', false);
+                    diff2htmlUi.highlightCode('#${it.config.format().getFormat()}');
 
-                </j:if>
-
-                <j:if test="${!it.isFormatByLine()}">
-                     diff2htmlUi.draw('#side-by-side', {
-                            inputFormat: 'json',
-                            showFiles: true,
-                            matching: 'lines',
-                            outputFormat: 'side-by-side',
-                            synchronisedScroll: true
-                          });
-                          diff2htmlUi.fileListCloseable('#side-by-side', false);
-                          diff2htmlUi.highlightCode('#side-by-side');
-                </j:if>
+                }); //end documentReady
 
                 var buildChanges = "${it.buildChanges.escapedDiff}";
 
@@ -56,7 +44,7 @@
             </script>
 
             <div style="width:100%; font-family: 'Source Sans Pro',sans-serif;">
-                    epa
+                    
                 <div class="d2h-file-header" style="text-align:center;margin: 0 auto;">
 
                     <b>Commit:</b> ${it.buildChanges.commitInfo.commitId}
@@ -75,7 +63,6 @@
                 </div>
 
                 <div id="side-by-side" style="margin: 0 auto;">
-
                 </div>
 
             </div>

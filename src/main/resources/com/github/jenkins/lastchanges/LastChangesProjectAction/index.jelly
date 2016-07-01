@@ -24,6 +24,10 @@
                         </tbody>
                     </table>
                 </div>
+                
+                 <j:if test="${empty it.lastChangesBuilds}">
+                 	 <span style="font-size:1.1em">No changes published yet.</span>
+                 </j:if>
             </div>
 
 

@@ -1,4 +1,4 @@
-package com.github.jenkins.lastchanges.api;
+package com.github.jenkins.lastchanges.model;
 
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
