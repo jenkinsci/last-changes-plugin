@@ -40,7 +40,7 @@ After installation just activate the post build action named *Publish Last Chang
 
 . Activate build action
 +
-image::last-changes-config.png[]
+image::last-changes-activation.png[]
 . Last changes menu should be available
 +
 image::last-changes01.png[]
@@ -56,5 +56,5 @@ image::last-changes04.png[]
 
 This plugin configuration basically reflects https://github.com/rtfpessoa/diff2html#configuration[diff2html options^]:
 
-image::last-config.png[]
+image::last-changes-config.png[]
  
