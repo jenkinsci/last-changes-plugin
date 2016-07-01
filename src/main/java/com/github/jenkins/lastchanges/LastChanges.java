@@ -39,12 +39,6 @@ public class LastChanges {
         return diff;
     }
 
-    /**
-     * separates the diff string into multiple lines
-     * required by diff2html tool
-     *
-     * @return
-     */
     public String getEscapedDiff(){
         if(diff != null){
             return StringEscapeUtils.escapeEcmaScript(diff);

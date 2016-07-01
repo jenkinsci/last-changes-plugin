@@ -2,7 +2,7 @@
 <j:jelly trim="false" xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <l:layout>
-        <l:main-panel>
+        <l:main-panel style="container-fluid;width:100%">
             <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/github.min.css"/>
             <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/diff2html.min.css"/>
             <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/jquery.min.js"/>
@@ -26,23 +26,37 @@
                                }
                 var diff2htmlUi = new Diff2HtmlUI({diff: buildChanges});
 
-                diff2htmlUi.draw('#line-by-line', {
-                     inputFormat: 'json',
-                     showFiles: true
-                     }
-                    );
-                diff2htmlUi.fileListCloseable('#line-by-line', false);
-                diff2htmlUi.highlightCode('#line-by-line');
-                });
+                <j:if test="${it.isFormatByLine()}">
+                    diff2htmlUi.draw('#line-by-line', {
+                         inputFormat: 'json',
+                         showFiles: true
+                         }
+                        );
+                    diff2htmlUi.fileListCloseable('#line-by-line', false);
+                    diff2htmlUi.highlightCode('#line-by-line');
+                    });
 
+                </j:if>
+
+                <j:if test="${!it.isFormatByLine()}">
+                     diff2htmlUi.draw('#side-by-side', {
+                            inputFormat: 'json',
+                            showFiles: true,
+                            matching: 'lines',
+                            outputFormat: 'side-by-side',
+                            synchronisedScroll: true
+                          });
+                          diff2htmlUi.fileListCloseable('#side-by-side', false);
+                          diff2htmlUi.highlightCode('#side-by-side');
+                </j:if>
 
                 var buildChanges = "${it.buildChanges.escapedDiff}";
 
 
             </script>
 
-            <div style="float:left; width:100%; font-family: 'Source Sans Pro',sans-serif;">
-
+            <div style="width:100%; font-family: 'Source Sans Pro',sans-serif;">
+                    epa
                 <div class="d2h-file-header" style="text-align:center;margin: 0 auto;">
 
                     <b>Commit:</b> ${it.buildChanges.commitInfo.commitId}
@@ -58,6 +72,10 @@
                 </div>
                 <br/>
                 <div id="line-by-line" style="margin: 0 auto;">
+                </div>
+
+                <div id="side-by-side" style="margin: 0 auto;">
+
                 </div>
 
             </div>

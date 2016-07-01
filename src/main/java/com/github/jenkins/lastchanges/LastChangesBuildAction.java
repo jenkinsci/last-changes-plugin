@@ -1,5 +1,6 @@
 package com.github.jenkins.lastchanges;
 
+import com.github.jenkins.lastchanges.model.FormatType;
 import hudson.model.Run;
 
 import java.io.File;
@@ -8,10 +9,12 @@ public class LastChangesBuildAction extends LastChangesBaseAction {
 
     private final Run<?, ?> build;
     private LastChanges buildChanges;
+    private FormatType format;
 
-    public LastChangesBuildAction(Run<?, ?> build, LastChanges lastChanges) {
+    public LastChangesBuildAction(Run<?, ?> build, LastChanges lastChanges, FormatType formatType) {
         this.build = build;
         buildChanges = lastChanges;
+        this.format = formatType;
     }
 
     @Override
@@ -30,5 +33,13 @@ public class LastChangesBuildAction extends LastChangesBaseAction {
 
     public Run<?, ?> getBuild() {
         return build;
+    }
+
+    public FormatType getFormat() {
+        return format;
+    }
+
+    public boolean isFormatByLine(){
+        return format == null || FormatType.LINE.equals(format);
     }
 }

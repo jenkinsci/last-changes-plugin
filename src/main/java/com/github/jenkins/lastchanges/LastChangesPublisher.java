@@ -24,6 +24,7 @@
 package com.github.jenkins.lastchanges;
 
 import com.github.jenkins.lastchanges.exception.LastChangesException;
+import com.github.jenkins.lastchanges.model.FormatType;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -32,9 +33,12 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
+import hudson.util.ListBoxModel;
 import jenkins.tasks.SimpleBuildStep;
+import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.*;
 import java.nio.file.Paths;
@@ -49,8 +53,11 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     private LastChangesProjectAction lastChangesProjectAction;
     private static final String GIT_DIR = "/.git";
 
+    private FormatType format;
+
     @DataBoundConstructor
-    public LastChangesPublisher() {
+    public LastChangesPublisher(FormatType format) {
+        this.format = format;
     }
 
     @Override
@@ -68,20 +75,24 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         FilePath workspaceTargetDir = getMasterWorkspaceDir(build);// here we're are going to generate pretty/rich diff html from diff file (always on master)
 
         File gitRepoSourceDir = new File(workspace.getRemote() + GIT_DIR);//sometimes on slave
+
         File gitRepoTargetDir = new File(workspaceTargetDir.getRemote());//always on master
 
-        //workspace can be on slave so copy git resources to master
-         FileUtils.copyDirectoryToDirectory(gitRepoSourceDir, gitRepoTargetDir);
-        //workspace.copyRecursiveTo("**/*", workspaceTargetDir);//not helps because it can't copy .git dir
 
         try {
+            //workspace can be on slave so copy git resources to master
+            FileUtils.copyDirectoryToDirectory(gitRepoSourceDir, gitRepoTargetDir);
+            //workspace.copyRecursiveTo("**/*", workspaceTargetDir);//not helps because it can't copy .git dir
+
             LastChanges lastChanges = LastChanges.of(repository(gitRepoTargetDir.getPath() + GIT_DIR));
             listener.hyperlink("../"+build.getNumber() +"/"+ LastChangesBaseAction.BASE_URL, "Last changes generated successfully!");
             listener.getLogger().println("");
-            build.addAction(new LastChangesBuildAction(build,lastChanges));
-        } catch (LastChangesException e) {
-            e.printStackTrace();
-            listener.error(String.format("Last Changes NOT generated for build #%s due to following error: "+e.getMessage(), build.getNumber()));
+            if(format == null){
+                format = FormatType.LINE;
+            }
+            build.addAction(new LastChangesBuildAction(build, lastChanges, format));
+        } catch (Exception e) {
+            listener.error("Last Changes NOT generated due to the following error: " + e.getMessage());
         }
         //always success (only warn when no diff was generated)
 
@@ -103,6 +114,10 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         }
     }
 
+    @Override
+    public DescriptorImpl getDescriptor() {
+        return (DescriptorImpl) super.getDescriptor();
+    }
 
     @Override
     public BuildStepMonitor getRequiredMonitorService() {
@@ -112,6 +127,8 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+
+        private FormatType format;
 
 
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
@@ -127,7 +144,27 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             return "Publish Last Changes";
         }
 
+        public ListBoxModel doFillFormatItems() {
+            ListBoxModel items = new ListBoxModel();
+            for (FormatType formatType : FormatType.values()) {
+                items.add(formatType.getFormat(), formatType.name());
+            }
+            return items;
+        }
+
+         @Override
+        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+            req.bindJSON(this, json.getJSONObject("last-changes"));
+            save();
+            return true;
+        }
+
+
+
     }
+
+
+
 
 
 }
