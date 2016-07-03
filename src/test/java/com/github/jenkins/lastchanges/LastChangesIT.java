@@ -1,11 +1,9 @@
 package com.github.jenkins.lastchanges;
 
+import com.github.jenkins.lastchanges.model.LastChanges;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.slaves.DumbSlave;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.DirectoryFileFilter;
-import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.assertj.core.api.Assertions;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,8 +15,6 @@ import com.github.jenkins.lastchanges.model.FormatType;
 import com.github.jenkins.lastchanges.model.MatchingType;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
@@ -28,7 +24,7 @@ public class LastChangesIT {
     @Rule
     public JenkinsRule jenkins = new JenkinsRule();
 
-    private File sampleRepoDir = new File(LastChangesTest.class.getResource("/git-sample-repo").getFile());
+    private File sampleRepoDir = new File(GitLastChangesTest.class.getResource("/git-sample-repo").getFile());
 
 
 
@@ -55,35 +51,35 @@ public class LastChangesIT {
         assertThat(lastChanges.getCommitInfo()).isNotNull();
         assertThat(lastChanges.getCommitInfo().getCommitMessage()).isEqualTo("Added javadoc\n");
         assertThat(lastChanges.getCommitInfo().getCommitId()).isEqualTo("27ad83a8fbee4b551670a03fc035bf87f7a3bcfb");
-        Assertions.assertThat(lastChanges.getDiff()).isEqualToIgnoringWhitespace(("diff --git a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + LastChangesTest.newLine +
-                "index 6d28c9b..bcc2ac0 100644" + LastChangesTest.newLine +
-                "--- a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + LastChangesTest.newLine +
-                "+++ b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + LastChangesTest.newLine +
-                "@@ -31,6 +31,12 @@" + LastChangesTest.newLine +
-                " /**" + LastChangesTest.newLine +
-                "  * Creates a container which lists all instances of given entity. To restrict the list to a particular entity only," + LastChangesTest.newLine +
-                "  * simply call [JPAContainer.addContainerFilter] on the container produced." + LastChangesTest.newLine +
-                "+ *" + LastChangesTest.newLine +
-                "+ * Containers produced by this method have the following properties:" + LastChangesTest.newLine +
-                "+ * * The container's [Item] IDs are not the entity instances themselves - instead, [Item] ID contains the value of the JPA entity ID. This is important when using the container" + LastChangesTest.newLine +
-                "+ * together with [AbstractSelect] as the select's value is taken amongst the Item ID." + LastChangesTest.newLine +
-                "+ * * [Item]'s Property IDs are [String] values - the field names of given JPA bean." + LastChangesTest.newLine +
-                "+ *" + LastChangesTest.newLine +
-                "  * @param entity the entity type" + LastChangesTest.newLine +
-                "  * @return the new container which can be assigned to a [Grid]" + LastChangesTest.newLine +
-                "  */" + LastChangesTest.newLine +
-                "@@ -279,9 +285,12 @@" + LastChangesTest.newLine +
-                "  * An utility method which adds an item and sets item's caption." + LastChangesTest.newLine +
-                "  * @param the Identification of the item to be created." + LastChangesTest.newLine +
-                "  * @param caption the new caption" + LastChangesTest.newLine +
-                "+ * @return the newly created item ID." + LastChangesTest.newLine +
-                "  */" + LastChangesTest.newLine +
-                " fun AbstractSelect.addItem(itemId: Any?, caption: String) = addItem(itemId).apply { setItemCaption(itemId, caption) }!!" + LastChangesTest.newLine +
-                " " + LastChangesTest.newLine +
-                "+" + LastChangesTest.newLine +
-                "+" + LastChangesTest.newLine +
-                " /**" + LastChangesTest.newLine +
-                "  * Walks over this component and all descendants of this component, breadth-first." + LastChangesTest.newLine +
+        Assertions.assertThat(lastChanges.getDiff()).isEqualToIgnoringWhitespace(("diff --git a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + GitLastChangesTest.newLine +
+                "index 6d28c9b..bcc2ac0 100644" + GitLastChangesTest.newLine +
+                "--- a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + GitLastChangesTest.newLine +
+                "+++ b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + GitLastChangesTest.newLine +
+                "@@ -31,6 +31,12 @@" + GitLastChangesTest.newLine +
+                " /**" + GitLastChangesTest.newLine +
+                "  * Creates a container which lists all instances of given entity. To restrict the list to a particular entity only," + GitLastChangesTest.newLine +
+                "  * simply call [JPAContainer.addContainerFilter] on the container produced." + GitLastChangesTest.newLine +
+                "+ *" + GitLastChangesTest.newLine +
+                "+ * Containers produced by this method have the following properties:" + GitLastChangesTest.newLine +
+                "+ * * The container's [Item] IDs are not the entity instances themselves - instead, [Item] ID contains the value of the JPA entity ID. This is important when using the container" + GitLastChangesTest.newLine +
+                "+ * together with [AbstractSelect] as the select's value is taken amongst the Item ID." + GitLastChangesTest.newLine +
+                "+ * * [Item]'s Property IDs are [String] values - the field names of given JPA bean." + GitLastChangesTest.newLine +
+                "+ *" + GitLastChangesTest.newLine +
+                "  * @param entity the entity type" + GitLastChangesTest.newLine +
+                "  * @return the new container which can be assigned to a [Grid]" + GitLastChangesTest.newLine +
+                "  */" + GitLastChangesTest.newLine +
+                "@@ -279,9 +285,12 @@" + GitLastChangesTest.newLine +
+                "  * An utility method which adds an item and sets item's caption." + GitLastChangesTest.newLine +
+                "  * @param the Identification of the item to be created." + GitLastChangesTest.newLine +
+                "  * @param caption the new caption" + GitLastChangesTest.newLine +
+                "+ * @return the newly created item ID." + GitLastChangesTest.newLine +
+                "  */" + GitLastChangesTest.newLine +
+                " fun AbstractSelect.addItem(itemId: Any?, caption: String) = addItem(itemId).apply { setItemCaption(itemId, caption) }!!" + GitLastChangesTest.newLine +
+                " " + GitLastChangesTest.newLine +
+                "+" + GitLastChangesTest.newLine +
+                "+" + GitLastChangesTest.newLine +
+                " /**" + GitLastChangesTest.newLine +
+                "  * Walks over this component and all descendants of this component, breadth-first." + GitLastChangesTest.newLine +
                 "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", ""));
         
 
@@ -116,35 +112,35 @@ public class LastChangesIT {
         assertThat(lastChanges.getCommitInfo()).isNotNull();
         assertThat(lastChanges.getCommitInfo().getCommitMessage()).isEqualTo("Added javadoc\n");
         assertThat(lastChanges.getCommitInfo().getCommitId()).isEqualTo("27ad83a8fbee4b551670a03fc035bf87f7a3bcfb");
-        Assertions.assertThat(lastChanges.getDiff()).isEqualToIgnoringWhitespace(("diff --git a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + LastChangesTest.newLine +
-                "index 6d28c9b..bcc2ac0 100644" + LastChangesTest.newLine +
-                "--- a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + LastChangesTest.newLine +
-                "+++ b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + LastChangesTest.newLine +
-                "@@ -31,6 +31,12 @@" + LastChangesTest.newLine +
-                " /**" + LastChangesTest.newLine +
-                "  * Creates a container which lists all instances of given entity. To restrict the list to a particular entity only," + LastChangesTest.newLine +
-                "  * simply call [JPAContainer.addContainerFilter] on the container produced." + LastChangesTest.newLine +
-                "+ *" + LastChangesTest.newLine +
-                "+ * Containers produced by this method have the following properties:" + LastChangesTest.newLine +
-                "+ * * The container's [Item] IDs are not the entity instances themselves - instead, [Item] ID contains the value of the JPA entity ID. This is important when using the container" + LastChangesTest.newLine +
-                "+ * together with [AbstractSelect] as the select's value is taken amongst the Item ID." + LastChangesTest.newLine +
-                "+ * * [Item]'s Property IDs are [String] values - the field names of given JPA bean." + LastChangesTest.newLine +
-                "+ *" + LastChangesTest.newLine +
-                "  * @param entity the entity type" + LastChangesTest.newLine +
-                "  * @return the new container which can be assigned to a [Grid]" + LastChangesTest.newLine +
-                "  */" + LastChangesTest.newLine +
-                "@@ -279,9 +285,12 @@" + LastChangesTest.newLine +
-                "  * An utility method which adds an item and sets item's caption." + LastChangesTest.newLine +
-                "  * @param the Identification of the item to be created." + LastChangesTest.newLine +
-                "  * @param caption the new caption" + LastChangesTest.newLine +
-                "+ * @return the newly created item ID." + LastChangesTest.newLine +
-                "  */" + LastChangesTest.newLine +
-                " fun AbstractSelect.addItem(itemId: Any?, caption: String) = addItem(itemId).apply { setItemCaption(itemId, caption) }!!" + LastChangesTest.newLine +
-                " " + LastChangesTest.newLine +
-                "+" + LastChangesTest.newLine +
-                "+" + LastChangesTest.newLine +
-                " /**" + LastChangesTest.newLine +
-                "  * Walks over this component and all descendants of this component, breadth-first." + LastChangesTest.newLine +
+        Assertions.assertThat(lastChanges.getDiff()).isEqualToIgnoringWhitespace(("diff --git a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + GitLastChangesTest.newLine +
+                "index 6d28c9b..bcc2ac0 100644" + GitLastChangesTest.newLine +
+                "--- a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + GitLastChangesTest.newLine +
+                "+++ b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + GitLastChangesTest.newLine +
+                "@@ -31,6 +31,12 @@" + GitLastChangesTest.newLine +
+                " /**" + GitLastChangesTest.newLine +
+                "  * Creates a container which lists all instances of given entity. To restrict the list to a particular entity only," + GitLastChangesTest.newLine +
+                "  * simply call [JPAContainer.addContainerFilter] on the container produced." + GitLastChangesTest.newLine +
+                "+ *" + GitLastChangesTest.newLine +
+                "+ * Containers produced by this method have the following properties:" + GitLastChangesTest.newLine +
+                "+ * * The container's [Item] IDs are not the entity instances themselves - instead, [Item] ID contains the value of the JPA entity ID. This is important when using the container" + GitLastChangesTest.newLine +
+                "+ * together with [AbstractSelect] as the select's value is taken amongst the Item ID." + GitLastChangesTest.newLine +
+                "+ * * [Item]'s Property IDs are [String] values - the field names of given JPA bean." + GitLastChangesTest.newLine +
+                "+ *" + GitLastChangesTest.newLine +
+                "  * @param entity the entity type" + GitLastChangesTest.newLine +
+                "  * @return the new container which can be assigned to a [Grid]" + GitLastChangesTest.newLine +
+                "  */" + GitLastChangesTest.newLine +
+                "@@ -279,9 +285,12 @@" + GitLastChangesTest.newLine +
+                "  * An utility method which adds an item and sets item's caption." + GitLastChangesTest.newLine +
+                "  * @param the Identification of the item to be created." + GitLastChangesTest.newLine +
+                "  * @param caption the new caption" + GitLastChangesTest.newLine +
+                "+ * @return the newly created item ID." + GitLastChangesTest.newLine +
+                "  */" + GitLastChangesTest.newLine +
+                " fun AbstractSelect.addItem(itemId: Any?, caption: String) = addItem(itemId).apply { setItemCaption(itemId, caption) }!!" + GitLastChangesTest.newLine +
+                " " + GitLastChangesTest.newLine +
+                "+" + GitLastChangesTest.newLine +
+                "+" + GitLastChangesTest.newLine +
+                " /**" + GitLastChangesTest.newLine +
+                "  * Walks over this component and all descendants of this component, breadth-first." + GitLastChangesTest.newLine +
                 "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", ""));
 
     }

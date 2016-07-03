@@ -23,12 +23,15 @@
  */
 package com.github.jenkins.lastchanges;
 
-import static com.github.jenkins.lastchanges.LastChanges.repository;
+import static com.github.jenkins.lastchanges.impl.GitLastChanges.repository;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 
+import com.github.jenkins.lastchanges.impl.GitLastChanges;
+import com.github.jenkins.lastchanges.impl.SvnLastChanges;
+import com.github.jenkins.lastchanges.model.LastChanges;
 import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -56,155 +59,166 @@ import jenkins.tasks.SimpleBuildStep;
  */
 public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
-	private FormatType format;
-	
-	private MatchingType matching;
-	
-	private Boolean showFiles;
-	
-	private Boolean synchronisedScroll;
-	
-	private String matchWordsThreshold;
-	
-	private String matchingMaxComparisons;
-	
+    private FormatType format;
 
-	
-	private LastChangesProjectAction   lastChangesProjectAction;
+    private MatchingType matching;
 
-	private static final String		   GIT_DIR	  = "/.git";
+    private Boolean showFiles;
+
+    private Boolean synchronisedScroll;
+
+    private String matchWordsThreshold;
+
+    private String matchingMaxComparisons;
 
 
-	@DataBoundConstructor
-	public LastChangesPublisher(FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold, String matchingMaxComparisons) {
-		this.format = format;
-		this.matching = matching;
-		this.showFiles = showFiles;
-		this.synchronisedScroll = synchronisedScroll;
-		this.matchWordsThreshold = matchWordsThreshold;
-		this.matchingMaxComparisons = matchingMaxComparisons;
-	}
+    private LastChangesProjectAction lastChangesProjectAction;
+
+    private static final String GIT_DIR = "/.git";
+    private static final String SVN_DIR = "/.svn";
 
 
-	@Override
-	public Action getProjectAction(AbstractProject<?, ?> project) {
-		if (lastChangesProjectAction == null) {
-			lastChangesProjectAction = new LastChangesProjectAction(project);
-		}
-		return lastChangesProjectAction;
-	}
+    @DataBoundConstructor
+    public LastChangesPublisher(FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold, String matchingMaxComparisons) {
+        this.format = format;
+        this.matching = matching;
+        this.showFiles = showFiles;
+        this.synchronisedScroll = synchronisedScroll;
+        this.matchWordsThreshold = matchWordsThreshold;
+        this.matchingMaxComparisons = matchingMaxComparisons;
+    }
 
-	@Override
-	public void perform(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
 
-		FilePath workspaceTargetDir = getMasterWorkspaceDir(build);// here we're are going to generate pretty/rich diff html from diff file (always on master)
+    @Override
+    public Action getProjectAction(AbstractProject<?, ?> project) {
+        if (lastChangesProjectAction == null) {
+            lastChangesProjectAction = new LastChangesProjectAction(project);
+        }
+        return lastChangesProjectAction;
+    }
 
-		File gitRepoSourceDir = new File(workspace.getRemote() + GIT_DIR);//sometimes on slave
+    @Override
+    public void perform(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
 
-		File gitRepoTargetDir = new File(workspaceTargetDir.getRemote());//always on master
+        FilePath workspaceTargetDir = getMasterWorkspaceDir(build);// here we're are going to generate pretty/rich diff html from diff file (always on master)
+        boolean isGit = new File(workspace.getRemote() + GIT_DIR).exists();
+        boolean isSvn = new File(workspace.getRemote() + SVN_DIR).exists();
+        if (!isGit && !isSvn) {
+            throw new RuntimeException("Not git or svn repository found at " + workspace.getRemote());
+        }
+        File sourceDir = null;
+        if (isGit) {
+            sourceDir = new File(workspace.getRemote() + GIT_DIR);
+        } else {
+            sourceDir = new File(workspace.getRemote() + SVN_DIR);
+        }
 
-		try {
-			//workspace can be on slave so copy git resources to master
-			FileUtils.copyDirectoryToDirectory(gitRepoSourceDir, gitRepoTargetDir);
-			//workspace.copyRecursiveTo("**/*", workspaceTargetDir);//not helps because it can't copy .git dir
+        File repoTargetDir = new File(workspaceTargetDir.getRemote());//always on master
 
-			LastChanges lastChanges = LastChanges.of(repository(gitRepoTargetDir.getPath() + GIT_DIR));
-			listener.hyperlink("../" + build.getNumber() + "/" + LastChangesBaseAction.BASE_URL, "Last changes generated successfully!");
-			listener.getLogger().println("");
-			build.addAction(new LastChangesBuildAction(build, lastChanges, new LastChangesConfig(format, matching, showFiles, synchronisedScroll, matchWordsThreshold, matchingMaxComparisons)));
-		} catch (Exception e) {
-			listener.error("Last Changes NOT published due to the following error: " + e.getMessage());
-		}
-		//always success (only warn when no diff was generated)
+        try {
+            //workspace can be on slave so copy resources to master
+            FileUtils.copyDirectoryToDirectory(sourceDir, repoTargetDir);
+            //workspace.copyRecursiveTo("**/*", workspaceTargetDir);//not helps because it can't copy .git dir
+            LastChanges lastChanges = null;
+            if (isGit) {
+                lastChanges = GitLastChanges.of(repository(repoTargetDir.getPath() + GIT_DIR));
+            } else {
+                lastChanges = SvnLastChanges.of(SvnLastChanges.repository(repoTargetDir.getPath() + SVN_DIR));
+            }
+            listener.hyperlink("../" + build.getNumber() + "/" + LastChangesBaseAction.BASE_URL, "Last changes generated successfully!");
+            listener.getLogger().println("");
+            build.addAction(new LastChangesBuildAction(build, lastChanges, new LastChangesConfig(format, matching, showFiles, synchronisedScroll, matchWordsThreshold, matchingMaxComparisons)));
+        } catch (Exception e) {
+            listener.error("Last Changes NOT published due to the following error: " + e.getMessage());
+        }
+        //always success (only warn when no diff was generated)
 
-		build.setResult(Result.SUCCESS);
+        build.setResult(Result.SUCCESS);
 
-	}
+    }
 
-	/**
-	 * mainly for findbugs be happy
-	 *
-	 * @param build
-	 * @return
-	 */
-	private FilePath getMasterWorkspaceDir(Run<?, ?> build) {
-		if (build != null && build.getRootDir() != null) {
-			return new FilePath(build.getRootDir());
-		} else {
-			return new FilePath(Paths.get("").toFile());
-		}
-	}
+    /**
+     * mainly for findbugs be happy
+     *
+     * @param build
+     * @return
+     */
+    private FilePath getMasterWorkspaceDir(Run<?, ?> build) {
+        if (build != null && build.getRootDir() != null) {
+            return new FilePath(build.getRootDir());
+        } else {
+            return new FilePath(Paths.get("").toFile());
+        }
+    }
 
-	@Override
-	public BuildStepMonitor getRequiredMonitorService() {
-		return BuildStepMonitor.NONE;
-	}
+    @Override
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.NONE;
+    }
 
     @Extension
-	public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
-		
-		
-		public boolean isApplicable(Class<? extends AbstractProject> aClass) {
-			// Indicates that this builder can be used with all kinds of project types
-			return true;
-		} 
-
-		/**
-		 * This human readable name is used in the configuration screen.
-		 */
-		public String getDisplayName() {
-			return "Publish Last Changes";
-		}
-
-		public ListBoxModel doFillFormatItems() {
-			ListBoxModel items = new ListBoxModel();
-			for (FormatType formatType : FormatType.values()) {
-				 items.add(formatType.getFormat(), formatType.name());
-			}
-			return items;
-		}
-		
-		public ListBoxModel doFillMatchingItems() {
-			ListBoxModel items = new ListBoxModel();
-			for (MatchingType matchingType : MatchingType.values()) {
-				 items.add(matchingType.getMatching(), matchingType.name());
-			}
-			return items;
-		}
-		 
-
-	}
-
-	public FormatType getFormat() {
-		return format;
-	}
+    public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
 
-	public MatchingType getMatching() {
-		return matching;
-	}
+        public boolean isApplicable(Class<? extends AbstractProject> aClass) {
+            // Indicates that this builder can be used with all kinds of project types
+            return true;
+        }
+
+        /**
+         * This human readable name is used in the configuration screen.
+         */
+        public String getDisplayName() {
+            return "Publish Last Changes";
+        }
+
+        public ListBoxModel doFillFormatItems() {
+            ListBoxModel items = new ListBoxModel();
+            for (FormatType formatType : FormatType.values()) {
+                items.add(formatType.getFormat(), formatType.name());
+            }
+            return items;
+        }
+
+        public ListBoxModel doFillMatchingItems() {
+            ListBoxModel items = new ListBoxModel();
+            for (MatchingType matchingType : MatchingType.values()) {
+                items.add(matchingType.getMatching(), matchingType.name());
+            }
+            return items;
+        }
 
 
-	public String getMatchWordsThreshold() {
-		return matchWordsThreshold;
-	}
+    }
+
+    public FormatType getFormat() {
+        return format;
+    }
 
 
-	public String getMatchingMaxComparisons() {
-		return matchingMaxComparisons;
-	}
+    public MatchingType getMatching() {
+        return matching;
+    }
 
 
-	public Boolean getShowFiles() {
-		return showFiles;
-	}
+    public String getMatchWordsThreshold() {
+        return matchWordsThreshold;
+    }
 
 
-	public Boolean getSynchronisedScroll() {
-		return synchronisedScroll;
-	}
-	
-	
-    
+    public String getMatchingMaxComparisons() {
+        return matchingMaxComparisons;
+    }
+
+
+    public Boolean getShowFiles() {
+        return showFiles;
+    }
+
+
+    public Boolean getSynchronisedScroll() {
+        return synchronisedScroll;
+    }
+
 
 }

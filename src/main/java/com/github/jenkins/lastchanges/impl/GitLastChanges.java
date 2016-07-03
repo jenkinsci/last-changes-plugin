@@ -1,11 +1,12 @@
 /**
  * Created by rmpestano on 6/5/16.
  */
-package com.github.jenkins.lastchanges;
+package com.github.jenkins.lastchanges.impl;
 
 import com.github.jenkins.lastchanges.exception.*;
 import com.github.jenkins.lastchanges.model.CommitInfo;
 
+import com.github.jenkins.lastchanges.model.LastChanges;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -22,27 +23,25 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 
 
-public class LastChanges {
+public class GitLastChanges {
 
-    private CommitInfo commitInfo; //information aboud head commit
-    private String diff; //diff between head and ´head -1'
+   LastChanges lastChanges;
 
-    public LastChanges(CommitInfo commitInfo, String changes) {
-        this.commitInfo = commitInfo;
-        this.diff = changes;
+    public GitLastChanges(CommitInfo commitInfo, String changes) {
+        lastChanges = new LastChanges(commitInfo,changes);
     }
 
     public CommitInfo getCommitInfo() {
-        return commitInfo;
+        return lastChanges.getCommitInfo();
     }
 
     public String getDiff() {
-        return diff;
+        return lastChanges.getDiff();
     }
 
     public String getEscapedDiff(){
-        if(diff != null){
-            return StringEscapeUtils.escapeEcmaScript(diff);
+        if(getDiff() != null){
+            return StringEscapeUtils.escapeEcmaScript(getDiff());
         } else{
             return "";
         }

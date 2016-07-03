@@ -4,6 +4,7 @@ import java.io.File;
 
 import com.github.jenkins.lastchanges.model.LastChangesConfig;
 
+import com.github.jenkins.lastchanges.model.LastChanges;
 import hudson.model.Run;
 
 public class LastChangesBuildAction extends LastChangesBaseAction {
