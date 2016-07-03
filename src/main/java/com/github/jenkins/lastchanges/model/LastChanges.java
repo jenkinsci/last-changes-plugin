@@ -1,5 +1,7 @@
 package com.github.jenkins.lastchanges.model;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 /**
  * Created by rmpestano on 7/3/16.
  */
@@ -19,5 +21,13 @@ public class LastChanges {
 
     public String getDiff() {
         return diff;
+    }
+
+    public String getEscapedDiff(){
+        if(getDiff() != null){
+            return StringEscapeUtils.escapeEcmaScript(getDiff());
+        } else{
+            return "";
+        }
     }
 }
