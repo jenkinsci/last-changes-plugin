@@ -10,6 +10,8 @@ image:https://jenkins.ci.cloudbees.com/buildStatus/icon?job=plugins/last-changes
 
 Last Changes is a *Jenkin plugin* that shows `rich` VCS diffs between builds.
 
+IMPORTANT: Only `Git` and `Svn` are supported.
+
 == Introduction
 
 The plugin uses https://diff2html.rtfpessoa.xyz/[diff2html^] to show last changes of a given build, example:
@@ -25,7 +27,7 @@ NOTE: Last changes means `compare current revision with previous one`.
 
 One of the objectives of this plugin is to easily find the `root cause` of a *failling build*.
 
-Also another area that the plugin can help is in https://en.wikipedia.org/wiki/Continuous_delivery[*Continuous Delivery*^] where each _commit_ generates a release candidate. In this case the plugin will show what has changed on a possible release.
+Also another area that the plugin can help is in https://en.wikipedia.org/wiki/Continuous_delivery[*continuous delivery*^] where each _commit_ generates a release candidate. In this case the plugin will show what has changed on a possible release.
 
 
 == How it works?
