@@ -88,4 +88,4 @@ docker run -it -p 8080:8080 rmpestano/jenkins-last-changes
  
 Job output should look like:
 
-image::last-changes-docker.png[] 
+image::last-changes-docker.png[job-output, 500,400] 
