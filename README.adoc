@@ -39,12 +39,12 @@ Also the plugin _shines_ in a https://en.wikipedia.org/wiki/Continuous_delivery[
 
 == How it works?
 
-. This plugin expects a `git` or `svn` based builds.
+. This plugin expects `git` or `svn` based builds.
 . While your job runs the plugin reads your build workspace to generate VCS diffs;
 . The diff between `actual` and `previous` revisions will be stored on your build;
 . The `diff` for each build can be viewed later in html format.
 
-NOTE: To get most from this plugin use `periodically SCM pooling` to trigger your build, http://www.nailedtothex.org/roller/kyle/entry/articles-jenkins-poll[more details here^].
+NOTE: To get most from this plugin use `periodically SCM pooling` to trigger your builds, http://www.nailedtothex.org/roller/kyle/entry/articles-jenkins-poll[more details here^].
 
 == Usage
 
@@ -66,7 +66,7 @@ image::last-changes04.png[]
 
 == Configuration
 
-The setup id done via `build configuration` and basically reflects https://github.com/rtfpessoa/diff2html#configuration[diff2html options^]:
+The setup is done via `build configuration`and basically reflects https://github.com/rtfpessoa/diff2html#configuration[diff2html options^]:
 
 image::last-changes-config.png[]
  
