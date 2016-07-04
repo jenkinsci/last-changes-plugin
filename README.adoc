@@ -65,7 +65,7 @@ image::last-changes04.png[]
 
 == Configuration
 
-This plugin configuration basically reflects https://github.com/rtfpessoa/diff2html#configuration[diff2html options^]:
+The setup id done via `build configuration` and basically reflects https://github.com/rtfpessoa/diff2html#configuration[diff2html options^]:
 
 image::last-changes-config.png[]
  
