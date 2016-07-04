@@ -47,6 +47,7 @@ import hudson.model.Action;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.scm.SubversionSCM;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
@@ -106,25 +107,27 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         if (!isGit && !isSvn) {
             throw new RuntimeException("Not git or svn repository found at " + workspace.getRemote());
         }
-        File sourceDir = null;
-        if (isGit) {
-            sourceDir = new File(workspace.getRemote() + GIT_DIR);
-        } else {
-            sourceDir = new File(workspace.getRemote() + SVN_DIR);
-        }
-
+       
         File repoTargetDir = new File(workspaceTargetDir.getRemote());//always on master
 
         try {
-            //workspace can be on slave so copy resources to master
-            FileUtils.copyDirectoryToDirectory(sourceDir, repoTargetDir);
-            //workspace.copyRecursiveTo("**/*", workspaceTargetDir);//not helps because it can't copy .git dir
+        	 File sourceDir = null;
+             if (isGit) {
+                 sourceDir = new File(workspace.getRemote() + GIT_DIR);
+                 //workspace can be on slave so copy resources to master
+                 FileUtils.copyDirectoryToDirectory(sourceDir, repoTargetDir);
+                 //workspace.copyRecursiveTo("**/*", workspaceTargetDir);//not helps because it can't copy .git dir
+             }
+
             LastChanges lastChanges = null;
             if (isGit) {
                 lastChanges = GitLastChanges.of(repository(repoTargetDir.getPath() + GIT_DIR));
             } else {
-                lastChanges = SvnLastChanges.of(SvnLastChanges.repository(repoTargetDir.getPath() + SVN_DIR));
-            }
+            	AbstractProject<?, ?> rootProject = (AbstractProject<?,?>)lastChangesProjectAction.getProject();
+                	SubversionSCM scm = SubversionSCM.class.cast(rootProject.getScm());
+                	lastChanges = SvnLastChanges.of(SvnLastChanges.repository(scm.getLocations()[0].getURL()));
+            }  
+
             listener.hyperlink("../" + build.getNumber() + "/" + LastChangesBaseAction.BASE_URL, "Last changes generated successfully!");
             listener.getLogger().println("");
             build.addAction(new LastChangesBuildAction(build, lastChanges, new LastChangesConfig(format, matching, showFiles, synchronisedScroll, matchWordsThreshold, matchingMaxComparisons)));

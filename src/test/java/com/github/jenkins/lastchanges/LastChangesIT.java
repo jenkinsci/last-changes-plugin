@@ -3,6 +3,8 @@ package com.github.jenkins.lastchanges;
 import com.github.jenkins.lastchanges.model.LastChanges;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.scm.SubversionSCM;
+import hudson.scm.SubversionSCM.ModuleLocation;
 import hudson.slaves.DumbSlave;
 import org.assertj.core.api.Assertions;
 import org.junit.Rule;
@@ -15,6 +17,8 @@ import com.github.jenkins.lastchanges.model.FormatType;
 import com.github.jenkins.lastchanges.model.MatchingType;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
@@ -29,11 +33,11 @@ public class LastChangesIT {
 
 
     @Test
-    public void shouldGenerateBuildDiff() throws Exception {
+    public void shouldGetLastChangesOfGitRepository() throws Exception {
 
         // given
         DirectorySCM scm = new DirectorySCM(".git",sampleRepoDir);
-        FreeStyleProject project = jenkins.createFreeStyleProject("test");
+        FreeStyleProject project = jenkins.createFreeStyleProject("git-test");
         project.setScm(scm);
         LastChangesPublisher publisher = new LastChangesPublisher(FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500");
         project.getPublishersList().add(publisher);
@@ -88,12 +92,12 @@ public class LastChangesIT {
     }
 
     @Test
-    public void shouldGenerateBuildDiffOnSlaveNode() throws Exception {
+    public void shouldGetLastChangesOfGitRepositoryOnSlaveNode() throws Exception {
 
         // given
         DirectorySCM scm = new DirectorySCM(".git",sampleRepoDir);
         DumbSlave slave = jenkins.createOnlineSlave();
-        FreeStyleProject project = jenkins.createFreeStyleProject("test-slave");
+        FreeStyleProject project = jenkins.createFreeStyleProject("git-test-slave");
         project.setAssignedNode(slave);
         project.setScm(scm);
         LastChangesPublisher publisher = new LastChangesPublisher(FormatType.SIDE,MatchingType.WORD, true, false, null,null);
@@ -143,6 +147,32 @@ public class LastChangesIT {
                 "  * Walks over this component and all descendants of this component, breadth-first." + GitLastChangesTest.newLine +
                 "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", ""));
 
+    }
+    
+    @Test
+    public void shouldGetLastChangesOfSvnRepository() throws Exception {
+
+        // given
+    	ModuleLocation location = new ModuleLocation("https://subversion.assembla.com/svn/cucumber-json-files/trunk", ""); 
+    	List<ModuleLocation> locations = new ArrayList<>();
+    	locations.add(location);
+        SvnSCM scm = new SvnSCM(".svn",sampleRepoDir,locations);//directory content is irrelevant cause LastChangesPublisher will look only into dir name (in case of svn)
+        FreeStyleProject project = jenkins.createFreeStyleProject("svn-test");
+        project.setScm(scm);
+        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500");
+        project.getPublishersList().add(publisher);
+        project.save();
+        
+        
+        
+        // when
+        FreeStyleBuild build = jenkins.buildAndAssertSuccess(project);
+
+        // then
+        LastChangesBuildAction action = build.getAction(LastChangesBuildAction.class);
+        assertThat(action).isNotNull();
+        assertThat(action.getBuildChanges()).isNotNull();
+        assertThat(action.getBuildChanges().getCommitInfo().getCommiterName()).isEqualTo("rmpestano");
     }
 
 }

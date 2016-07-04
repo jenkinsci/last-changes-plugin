@@ -10,6 +10,8 @@ import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNLogEntry;
 import org.tmatesoft.svn.core.io.SVNRepository;
 
+import hudson.scm.SubversionChangeLogSet.LogEntry;
+
 import java.text.DateFormat;
 import java.util.Collection;
 import java.util.Date;
@@ -69,9 +71,9 @@ public class CommitInfo {
     public static class Builder {
 
         public static CommitInfo buildFromSvn(SVNRepository repository) throws SVNException {
-            Collection entries = repository.log(new String[] { "" }, null, repository.getLatestRevision(), repository.getLatestRevision(), true, true);
-            Iterator iterator = entries.iterator( );
-            SVNLogEntry logEntry = (SVNLogEntry)iterator.next();
+            Collection<SVNLogEntry> entries = repository.log(new String[] { "" }, null, repository.getLatestRevision(), repository.getLatestRevision(), true, true);
+            Iterator<SVNLogEntry> iterator = entries.iterator( );
+            SVNLogEntry logEntry = iterator.next();
             CommitInfo commitInfo = new CommitInfo();
             TimeZone tz = TimeZone.getDefault();
             dateFormat.setTimeZone(tz);
