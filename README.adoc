@@ -13,7 +13,7 @@ image:https://travis-ci.org/rmpestano/last-changes-plugin.svg[Build Status (Trav
 
 image:https://jenkins.ci.cloudbees.com/buildStatus/icon?job=plugins/last-changes-plugin[Build Status (Cloudbees), link=https://jenkins.ci.cloudbees.com/job/plugins/job/last-changes-plugin/]
 
-Last Changes is a *Jenkin plugin* that shows `rich` VCS diffs between builds.
+Last Changes is a *Jenkin plugin* that shows _rich VCS diffs_ between builds.
 
 IMPORTANT: Only `Git` and `Svn` are supported.
 
@@ -41,7 +41,7 @@ Also the plugin _shines_ in a https://en.wikipedia.org/wiki/Continuous_delivery[
 
 . This plugin expects `git` or `svn` based builds.
 . While your job runs the plugin reads your build workspace to generate VCS diffs;
-. The diff between `actual` and `previous` revisions will be stored on your build;
+. The diff between `actual` and `previous` revisions will be stored;
 . The `diff` for each build can be viewed later in html format.
 
 NOTE: To get most from this plugin use `periodically SCM pooling` to trigger your builds, http://www.nailedtothex.org/roller/kyle/entry/articles-jenkins-poll[more details here^].
@@ -66,7 +66,7 @@ image::last-changes04.png[]
 
 == Configuration
 
-The setup is done via `build configuration`and basically reflects https://github.com/rtfpessoa/diff2html#configuration[diff2html options^]:
+The setup is done via `build configuration` and basically reflects https://github.com/rtfpessoa/diff2html#configuration[diff2html options^]:
 
 image::last-changes-config.png[]
  
