@@ -69,3 +69,23 @@ The setup id done via `build configuration` and basically reflects https://githu
 
 image::last-changes-config.png[]
  
+ 
+== Docker
+
+An easy way to test this plugin is using a docker container, here are the steps (assumming you have docker installed):
+
+. Run the image:
++
+----
+docker run -it -p 8080:8080 rmpestano/jenkins-last-changes
+----
++
+. Access localhot:8080/ and create a job
+. Configure this svn repository: https://subversion.assembla.com/svn/cucumber-json-files/trunk/ 
+. Add the *Publish last changes* _post build action_;
+. Just run the job
+
+ 
+Job output should look like:
+
+image::last-changes-docker.png[] 

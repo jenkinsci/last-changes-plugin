@@ -120,6 +120,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
              }
 
             LastChanges lastChanges = null;
+            listener.getLogger().println("Publishing build last changes...");
             if (isGit) {
                 lastChanges = GitLastChanges.of(repository(repoTargetDir.getPath() + GIT_DIR));
             } else {

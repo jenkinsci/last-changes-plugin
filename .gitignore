@@ -45,3 +45,6 @@ test-output/
 
 #linux te files
 *~
+
+# Jenkins
+work/

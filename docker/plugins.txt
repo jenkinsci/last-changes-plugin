@@ -1,0 +1,6 @@
+scm-api:0.2 
+git-client:1.16.1
+git:2.3.5
+subversion:2.5
+last-changes:1.0.0
+
