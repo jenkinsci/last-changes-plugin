@@ -30,9 +30,11 @@ image::last-changes05.png[]
 
 NOTE: Last changes means `compare current revision with previous one`.
 
-One of the objectives of this plugin is to easily find the `root cause` of a *failling build*.
+== Objectives
 
-Also another area that the plugin can help is in https://en.wikipedia.org/wiki/Continuous_delivery[*continuous delivery*^] where each _commit_ generates a release candidate. In this case the plugin will show what has changed on a possible release.
+One of the objectives of this plugin is to easily find the `root cause` of a *failling build* by highlighting what has changed.
+
+Also the plugin _shines_ in a https://en.wikipedia.org/wiki/Continuous_delivery[*continuous delivery*^] environment, where each _commit_ generates a release candidate. In this case the plugin will show what has changed on a `possible release`.
 
 
 == How it works?
