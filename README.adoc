@@ -8,7 +8,7 @@ image:https://travis-ci.org/rmpestano/last-changes-plugin.svg[Build Status (Trav
 
 image:https://jenkins.ci.cloudbees.com/buildStatus/icon?job=plugins/last-changes-plugin[Build Status (Cloudbees), link=https://jenkins.ci.cloudbees.com/job/plugins/job/last-changes-plugin/]
 
-Last Changes is a *Jenkin plugin* that shows `rich` *git* diffs between builds.
+Last Changes is a *Jenkin plugin* that shows `rich` VCS diffs between builds.
 
 == Introduction
 
@@ -30,10 +30,10 @@ Also another area that the plugin can help is in https://en.wikipedia.org/wiki/C
 
 == How it works?
 
-. The plugin expects that your builds are triggered by a SCM change (git push);
+. The plugin expects that your builds are triggered by a SCM change (git push/svn commit);
 . After the change your job will be run;
 . The diff between `actual` and `previous` change will be stored on your build;
-. The *git diff* for each build can be viewed later
+. The `diff` for each build can be viewed later in html format.
 
 
 == Usage
