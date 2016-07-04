@@ -1,14 +1,13 @@
 package com.github.jenkins.lastchanges;
 
 import com.github.jenkins.lastchanges.impl.SvnLastChanges;
-import org.junit.Before;
+import com.github.jenkins.lastchanges.model.LastChanges;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.tmatesoft.svn.core.io.SVNRepository;
 
-import java.util.Locale;
-import java.util.TimeZone;
-
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -17,22 +16,26 @@ import static org.junit.Assert.assertNotNull;
 
 @RunWith(JUnit4.class)
 public class SvnLastChangesTest {
-    public static final String newLine = System.getProperty("line.separator");
 
 
-    String svnRepoPath;
-
-    @Before
-    public void before() {
-        svnRepoPath = SvnLastChangesTest.class.getResource("/svn-sample-repo/").getFile();
-
-        Locale.setDefault(Locale.ENGLISH);
-        TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
-    }
+    final String svnRepoUrl = "https://subversion.assembla.com/svn/cucumber-json-files/trunk";
 
     @Test
     public void shouldInitRepository() {
-        assertNotNull(SvnLastChanges.repository(svnRepoPath));
+        assertNotNull(SvnLastChanges.repository(svnRepoUrl));
+    }
+
+    @Test
+    public void shouldGetLastChanges() {
+
+            SVNRepository repository = SvnLastChanges.repository(svnRepoUrl);
+            assertNotNull(repository);
+            LastChanges lastChanges = SvnLastChanges.of(repository);
+            assertNotNull(lastChanges);
+            assertThat(lastChanges.getCommitInfo()).isNotNull();
+            assertThat(lastChanges.getDiff()).isNotEmpty();
+            assertThat(lastChanges.getCommitInfo().getCommitMessage()).isEqualTo("updated cukedóctor json");
+
     }
 
 

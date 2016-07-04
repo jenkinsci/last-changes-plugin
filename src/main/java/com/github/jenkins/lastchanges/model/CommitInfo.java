@@ -6,9 +6,14 @@ import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
+import org.tmatesoft.svn.core.SVNException;
+import org.tmatesoft.svn.core.SVNLogEntry;
+import org.tmatesoft.svn.core.io.SVNRepository;
 
 import java.text.DateFormat;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.TimeZone;
 
 /**
@@ -63,7 +68,21 @@ public class CommitInfo {
 
     public static class Builder {
 
-        public static CommitInfo buildCommitInfo(Repository repository, ObjectId commitId) {
+        public static CommitInfo buildFromSvn(SVNRepository repository) throws SVNException {
+            Collection entries = repository.log(new String[] { "" }, null, repository.getLatestRevision(), repository.getLatestRevision(), true, true);
+            Iterator iterator = entries.iterator( );
+            SVNLogEntry logEntry = (SVNLogEntry)iterator.next();
+            CommitInfo commitInfo = new CommitInfo();
+            TimeZone tz = TimeZone.getDefault();
+            dateFormat.setTimeZone(tz);
+            commitInfo.commitDate = dateFormat.format(logEntry.getDate()) + " " + tz.getDisplayName();
+            commitInfo.commiterName = logEntry.getAuthor();
+            commitInfo.commitId = logEntry.getRevision()+"";
+            commitInfo.commitMessage = logEntry.getMessage();
+            return commitInfo;
+        }
+
+        public static CommitInfo buildFromGit(Repository repository, ObjectId commitId) {
             RevWalk walk = new RevWalk(repository);
 
             try {

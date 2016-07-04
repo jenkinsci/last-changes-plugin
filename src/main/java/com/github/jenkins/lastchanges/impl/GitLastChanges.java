@@ -81,7 +81,7 @@ public class GitLastChanges {
                 throw new GitTreeNotFoundException("Could not resolve head of repository located at " + repositoryLocation, e);
             }
             try {
-                lastCommitInfo = CommitInfo.Builder.buildCommitInfo(repository, head);
+                lastCommitInfo = CommitInfo.Builder.buildFromGit(repository, head);
             } catch (Exception e) {
                 throw new CommitInfoException("Could not get last commit information", e);
             }
