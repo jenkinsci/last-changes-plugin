@@ -3,6 +3,11 @@
 :sectanchors:
 :sectlink:
 :numbered:
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
 
 image:https://travis-ci.org/rmpestano/last-changes-plugin.svg[Build Status (Travis CI), link=https://travis-ci.org/rmpestano/last-changes-plugin]
 
