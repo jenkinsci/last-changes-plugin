@@ -38,7 +38,7 @@ public class SvnSCM extends SubversionSCM {
     private String targetWorkspaceDirName;
 
     public SvnSCM(String targetWorkspaceDir, File sourceDir, List<ModuleLocation> locations) {
-    	super(locations, null, null, null, null, null, null, null, false, false);
+    	super(locations, null, null, null, null, null, null, null, false, false,null);
         this.targetWorkspaceDirName = targetWorkspaceDir;
         this.sourceDir = sourceDir;
     }
