@@ -1,11 +1,10 @@
 package com.github.jenkins.lastchanges;
 
-import java.io.File;
-
-import com.github.jenkins.lastchanges.model.LastChangesConfig;
-
 import com.github.jenkins.lastchanges.model.LastChanges;
+import com.github.jenkins.lastchanges.model.LastChangesConfig;
 import hudson.model.Run;
+
+import java.io.File;
 
 public class LastChangesBuildAction extends LastChangesBaseAction {
 
@@ -16,15 +15,15 @@ public class LastChangesBuildAction extends LastChangesBaseAction {
     public LastChangesBuildAction(Run<?, ?> build, LastChanges lastChanges, LastChangesConfig config) {
         this.build = build;
         buildChanges = lastChanges;
-        if(config == null){
-        	config = new LastChangesConfig();
+        if (config == null) {
+            config = new LastChangesConfig();
         }
         this.config = config;
     }
 
     @Override
     protected String getTitle() {
-        return "Last Changes of Build #"+this.build.getNumber();
+        return "Last Changes of Build #" + this.build.getNumber();
     }
 
     @Override
@@ -40,9 +39,9 @@ public class LastChangesBuildAction extends LastChangesBaseAction {
         return build;
     }
 
-    public LastChangesConfig getConfig() { 
-		return config;
-	}
-    
-    
+    public LastChangesConfig getConfig() {
+        return config;
+    }
+
+
 }

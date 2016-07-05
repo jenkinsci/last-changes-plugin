@@ -7,9 +7,7 @@ import hudson.model.Run;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 public class LastChangesProjectAction extends LastChangesBaseAction implements ProminentProjectAction {
 
@@ -21,8 +19,8 @@ public class LastChangesProjectAction extends LastChangesBaseAction implements P
         this.project = project;
     }
 
-    public String job(){
-        if(jobName == null){
+    public String job() {
+        if (jobName == null) {
             jobName = project.getName();
         }
         return jobName;
@@ -50,7 +48,9 @@ public class LastChangesProjectAction extends LastChangesBaseAction implements P
         return new File(project.getRootDir(), LastChangesBaseAction.BASE_URL);
     }
 
-    /** Gets the directory where the HTML report is stored for the given build. */
+    /**
+     * Gets the directory where the HTML report is stored for the given build.
+     */
     private File getBuildArchiveDir(Run<?, ?> run) {
         return new File(run.getRootDir(), LastChangesBaseAction.BASE_URL);
     }
@@ -63,7 +63,7 @@ public class LastChangesProjectAction extends LastChangesBaseAction implements P
     public List<Run<?, ?>> getLastChangesBuilds() {
         List<Run<?, ?>> builds = new ArrayList<>();
 
-      for (Run<?, ?> build : project.getBuilds()) {
+        for (Run<?, ?> build : project.getBuilds()) {
             LastChangesBuildAction action = build.getAction(LastChangesBuildAction.class);
             if (action != null) {
                 builds.add(build);

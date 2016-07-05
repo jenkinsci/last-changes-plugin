@@ -6,12 +6,12 @@ package com.github.jenkins.lastchanges.impl;
 import com.github.jenkins.lastchanges.exception.RepositoryNotFoundException;
 import com.github.jenkins.lastchanges.model.CommitInfo;
 import com.github.jenkins.lastchanges.model.LastChanges;
-import org.tmatesoft.svn.core.*;
+import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl;
 import org.tmatesoft.svn.core.internal.wc2.ng.SvnDiffGenerator;
 import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
-import org.tmatesoft.svn.core.wc.*;
+import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.core.wc2.SvnDiff;
 import org.tmatesoft.svn.core.wc2.SvnOperationFactory;
 import org.tmatesoft.svn.core.wc2.SvnTarget;
@@ -19,8 +19,6 @@ import org.tmatesoft.svn.core.wc2.SvnTarget;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.nio.charset.Charset;
-import java.util.Collection;
-import java.util.Iterator;
 
 
 public class SvnLastChanges {
@@ -46,7 +44,9 @@ public class SvnLastChanges {
             SVNRepository svnRepository = SVNRepositoryFactory.create(SVNURL.parseURIEncoded(path));
             /*ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager( "anonymous" , "anonymous");
             svnRepository.setAuthenticationManager( authManager );*/
-            //SVNURL svnurl = SVNURL.fromFile(filePath); //not working
+
+            //FSRepositoryFactory.setup(); //not working, throws svn: E180001: Unable to open an ra_local session to URL
+            //SVNURL svnurl = SVNURL.fromFile(filePath);
             //SVNRepository svnRepository = FSRepositoryFactory.create(svnurl);
             //SVNRepository svnRepository = SVNRepositoryFactory.create(SVNURL.fromFile(filePath));
 
@@ -61,7 +61,7 @@ public class SvnLastChanges {
 
 
     /**
-     * Creates an object containing commit info and git diff from last two commits on repository
+     * Creates an object containing commit info and svn diff from last two commits on repository
      *
      * @param repository svn repository to get last changes
      * @return LastChanges
@@ -81,8 +81,8 @@ public class SvnLastChanges {
             CommitInfo commitInfo = CommitInfo.Builder.buildFromSvn(repository);
 
             return new LastChanges(commitInfo, new String(diffStream.toByteArray(), Charset.forName("UTF-8")));
-        }catch (Exception e){
-            throw new RuntimeException("Could not retrieve last changes of svn repository located at "+repository.getLocation().getPath(),e);
+        } catch (Exception e) {
+            throw new RuntimeException("Could not retrieve last changes of svn repository located at " + repository.getLocation().getPath(), e);
 
         }
     }

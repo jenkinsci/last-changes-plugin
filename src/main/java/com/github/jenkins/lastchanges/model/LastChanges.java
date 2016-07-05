@@ -23,10 +23,10 @@ public class LastChanges {
         return diff;
     }
 
-    public String getEscapedDiff(){
-        if(getDiff() != null){
+    public String getEscapedDiff() {
+        if (diff != null) {
             return StringEscapeUtils.escapeEcmaScript(getDiff());
-        } else{
+        } else {
             return "";
         }
     }

@@ -10,8 +10,6 @@ import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNLogEntry;
 import org.tmatesoft.svn.core.io.SVNRepository;
 
-import hudson.scm.SubversionChangeLogSet.LogEntry;
-
 import java.text.DateFormat;
 import java.util.Collection;
 import java.util.Date;
@@ -59,7 +57,7 @@ public class CommitInfo {
     public String toString() {
         StringBuilder sb = new StringBuilder().
                 append("Commit: ").append(commitId).append(newLine).
-                append("Author: "+commiterName).append(newLine).
+                append("Author: " + commiterName).append(newLine).
                 append("E-mail: ").append(commiterEmail).append(newLine).
                 append("Date: ").append(commitDate).append(newLine).
                 append("Message: ").append(commitMessage).append(newLine).append(newLine);
@@ -71,15 +69,15 @@ public class CommitInfo {
     public static class Builder {
 
         public static CommitInfo buildFromSvn(SVNRepository repository) throws SVNException {
-            Collection<SVNLogEntry> entries = repository.log(new String[] { "" }, null, repository.getLatestRevision(), repository.getLatestRevision(), true, true);
-            Iterator<SVNLogEntry> iterator = entries.iterator( );
+            Collection<SVNLogEntry> entries = repository.log(new String[]{""}, null, repository.getLatestRevision(), repository.getLatestRevision(), true, true);
+            Iterator<SVNLogEntry> iterator = entries.iterator();
             SVNLogEntry logEntry = iterator.next();
             CommitInfo commitInfo = new CommitInfo();
             TimeZone tz = TimeZone.getDefault();
             dateFormat.setTimeZone(tz);
             commitInfo.commitDate = dateFormat.format(logEntry.getDate()) + " " + tz.getDisplayName();
             commitInfo.commiterName = logEntry.getAuthor();
-            commitInfo.commitId = logEntry.getRevision()+"";
+            commitInfo.commitId = logEntry.getRevision() + "";
             commitInfo.commitMessage = logEntry.getMessage();
             return commitInfo;
         }
@@ -103,11 +101,10 @@ public class CommitInfo {
                 commitInfo.commitDate = dateFormat.format(commitDate) + " " + tz.getDisplayName();
                 return commitInfo;
             } catch (Exception e) {
-                throw new RuntimeException("Could not get commit info for commit id: "+commitId,e);
+                throw new RuntimeException("Could not get commit info for commit id: " + commitId, e);
 
-            }
-            finally {
-                if(walk != null){
+            } finally {
+                if (walk != null) {
                     walk.dispose();
                 }
             }
