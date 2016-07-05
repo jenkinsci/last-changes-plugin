@@ -61,29 +61,20 @@ public class GitLastChanges {
 
 
     /**
-     * Creates an object containing commit info and git diff from last two commits on repository
+     * Creates last changes from repository last two revisions
      *
      * @param repository git repository to get last changes
-     * @return LastChangesInfo
+     * @return LastChanges commit info and git diff
      */
     public static LastChanges of(Repository repository) {
         Git git = new Git(repository);
         try {
-            ByteArrayOutputStream diffStream = new ByteArrayOutputStream();
-            CommitInfo lastCommitInfo;
             String repositoryLocation = repository.getDirectory().getAbsolutePath();
-            DiffFormatter formatter = new DiffFormatter(diffStream);
-            formatter.setRepository(repository);
             ObjectId head = null;
             try {
                 head = repository.resolve("HEAD^{tree}");
             } catch (IOException e) {
                 throw new GitTreeNotFoundException("Could not resolve head of repository located at " + repositoryLocation, e);
-            }
-            try {
-                lastCommitInfo = CommitInfo.Builder.buildFromGit(repository, head);
-            } catch (Exception e) {
-                throw new CommitInfoException("Could not get last commit information", e);
             }
             ObjectId previousHead = null;
             try {
@@ -94,17 +85,50 @@ public class GitLastChanges {
             } catch (IOException e) {
                 throw new GitTreeNotFoundException("Could not resolve previous head of repository located at " + repositoryLocation, e);
             }
+
+            return of(repository, head, previousHead); 
+        } finally {
+            if (git != null) {
+                git.close();
+            }
+            if (repository != null) {
+                repository.close();
+            }
+        }
+
+    }
+    
+    /**
+     * Creates last changes by "diffing" two revisions
+     *
+     * @param repository git repository to get last changes
+     * @return LastChanges commit info and git diff between revisions
+     */
+    public static LastChanges of(Repository repository, ObjectId currentRevision, ObjectId previousRevision ) {
+        Git git = new Git(repository);
+        try {
+            ByteArrayOutputStream diffStream = new ByteArrayOutputStream();
+            CommitInfo lastCommitInfo;
+            String repositoryLocation = repository.getDirectory().getAbsolutePath();
+            DiffFormatter formatter = new DiffFormatter(diffStream);
+            formatter.setRepository(repository);
             ObjectReader reader = repository.newObjectReader();
+            try {
+                lastCommitInfo = CommitInfo.Builder.buildFromGit(repository, currentRevision);
+            } catch (Exception e) {
+                throw new CommitInfoException("Could not get last commit information", e);
+            }
+            
             // Create the tree iterator for each commit
             CanonicalTreeParser oldTreeIter = new CanonicalTreeParser();
             try {
-                oldTreeIter.reset(reader, previousHead);
+                oldTreeIter.reset(reader, previousRevision);
             } catch (Exception e) {
                 throw new GitTreeParseException("Could not parse previous commit tree.", e);
             }
             CanonicalTreeParser newTreeIter = new CanonicalTreeParser();
             try {
-                newTreeIter.reset(reader, head);
+                newTreeIter.reset(reader, currentRevision);
             } catch (IOException e) {
                 throw new GitTreeParseException("Could not parse current commit tree.", e);
             }

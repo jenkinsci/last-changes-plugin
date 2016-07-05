@@ -61,19 +61,34 @@ public class SvnLastChanges {
 
 
     /**
-     * Creates an object containing commit info and svn diff from last two commits on repository
+     * Creates last changes from repository last two revisions
      *
      * @param repository svn repository to get last changes
-     * @return LastChanges
+     * @return LastChanges commit info and git diff
      */
     public static LastChanges of(SVNRepository repository) {
+        try {
+            return of(repository,repository.getLatestRevision(),repository.getLatestRevision() - 1);
+        } catch (Exception e) {
+            throw new RuntimeException("Could not retrieve last changes of svn repository located at " + repository.getLocation().getPath(), e);
+
+        }
+    }
+    
+    /**
+     * Creates last changes from two revisions of repository 
+     *
+     * @param repository svn repository to get last changes
+     * @return LastChanges commit info and git diff
+     */
+    public static LastChanges of(SVNRepository repository, long currentRevision, long previousRevision) {
         try {
             final SvnDiffGenerator diffGenerator = new SvnDiffGenerator();
             diffGenerator.setBasePath(new File(""));
             ByteArrayOutputStream diffStream = new ByteArrayOutputStream();
             final SvnOperationFactory svnOperationFactory = new SvnOperationFactory();
             final SvnDiff diff = svnOperationFactory.createDiff();
-            diff.setSources(SvnTarget.fromURL(repository.getLocation(), SVNRevision.create(repository.getLatestRevision())), SvnTarget.fromURL(repository.getLocation(), SVNRevision.create(repository.getLatestRevision() - 1)));
+            diff.setSources(SvnTarget.fromURL(repository.getLocation(), SVNRevision.create(currentRevision)), SvnTarget.fromURL(repository.getLocation(), SVNRevision.create(previousRevision)));
             diff.setDiffGenerator(diffGenerator);
             diff.setOutput(diffStream);
             diff.run();
@@ -86,6 +101,7 @@ public class SvnLastChanges {
 
         }
     }
+
 
 
     public LastChanges getLastChanges() {
