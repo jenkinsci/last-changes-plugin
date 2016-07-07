@@ -9,6 +9,11 @@
 :caution-caption: :fire:
 :warning-caption: :warning:
 
+[quote]
+____
+The simplest way to know what has changed on your Jenkins build!
+____
+
 image:https://travis-ci.org/rmpestano/last-changes-plugin.svg[Build Status (Travis CI), link=https://travis-ci.org/rmpestano/last-changes-plugin]
 
 image:https://jenkins.ci.cloudbees.com/buildStatus/icon?job=plugins/last-changes-plugin[Build Status (Cloudbees), link=https://jenkins.ci.cloudbees.com/job/plugins/job/last-changes-plugin/]
