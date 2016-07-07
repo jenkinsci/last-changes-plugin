@@ -11,7 +11,7 @@
 
 [quote]
 ____
-The simplest way to know what has changed on your Jenkins build!
+The simplest way to know what has changed on your Jenkins builds!
 ____
 
 image:https://travis-ci.org/rmpestano/last-changes-plugin.svg[Build Status (Travis CI), link=https://travis-ci.org/rmpestano/last-changes-plugin]
