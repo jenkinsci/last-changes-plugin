@@ -37,19 +37,23 @@ NOTE: Last changes means `compare current revision with previous one`.
 
 == Objectives
 
-One of the objectives of this plugin is to easily find the `root cause` of a *failling build* by highlighting what has changed.
+The main objective of this plugin is to have fast access to what has changed on a Jenkins build.
 
-Also the plugin _shines_ in a https://en.wikipedia.org/wiki/Continuous_delivery[*continuous delivery*^] environment, where each _commit_ generates a release candidate. In this case the plugin will show what has changed on a `possible release`.
+Another interesting aspect is that it can easily help to find the `root cause` of a `failling build` by highlighting what has changed.
+
+Also the plugin _shines_ in a https://en.wikipedia.org/wiki/Continuous_delivery[*continuous delivery*^] environment, where each _commit_ generates a release candidate.
 
 
 == How it works?
 
 . This plugin expects `git` or `svn` based builds.
-. While your job runs the plugin reads your build workspace to generate VCS diffs;
+. While your job runs the plugin reads your build workspace to retrieve the current VCS revision;
 . The diff between `actual` and `previous` revisions will be stored;
 . The `diff` for each build can be viewed later in html format.
 
-NOTE: To get most from this plugin use `periodically SCM pooling` to trigger your builds, http://www.nailedtothex.org/roller/kyle/entry/articles-jenkins-poll[more details here^].
+IMPORTANT: To get most from this plugin use `periodically SCM pooling` to trigger your builds, http://www.nailedtothex.org/roller/kyle/entry/articles-jenkins-poll[more details here^].
+
+NOTE: The plugin *always* compare current revision with previous one even no new commit has been made.
 
 == Usage
 
