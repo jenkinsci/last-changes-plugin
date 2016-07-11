@@ -8,7 +8,7 @@ import com.github.jenkins.lastchanges.model.LastChanges;
 public interface VCSChanges<REPOSITORY, REVISION> {
 
 
-    LastChanges lastChangesOf(REPOSITORY repository);
+    LastChanges changesOf(REPOSITORY repository);
 
-    LastChanges lastChangesOf(REPOSITORY repository, REVISION currentRevision, REVISION previousRevision);
+    LastChanges changesOf(REPOSITORY repository, REVISION currentRevision, REVISION previousRevision);
 }

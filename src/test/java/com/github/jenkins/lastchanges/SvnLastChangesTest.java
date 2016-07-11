@@ -30,7 +30,7 @@ public class SvnLastChangesTest {
 
             SVNRepository repository = SvnLastChanges.repository(svnRepoUrl);
             assertNotNull(repository);
-            LastChanges lastChanges = SvnLastChanges.getInstance().lastChangesOf(repository);
+            LastChanges lastChanges = SvnLastChanges.getInstance().changesOf(repository);
             assertNotNull(lastChanges);
             assertThat(lastChanges.getCommitInfo()).isNotNull();
             assertThat(lastChanges.getDiff()).isNotEmpty();

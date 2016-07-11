@@ -71,23 +71,23 @@ public class SvnLastChanges implements VCSChanges<SVNRepository,Long>{
      * @return LastChanges commit info and git diff
      */
     @Override
-    public LastChanges lastChangesOf(SVNRepository repository) {
+    public LastChanges changesOf(SVNRepository repository) {
         try {
-            return lastChangesOf(repository, repository.getLatestRevision(), repository.getLatestRevision() - 1);
+            return changesOf(repository, repository.getLatestRevision(), repository.getLatestRevision() - 1);
         } catch (Exception e) {
-            throw new RuntimeException("Could not retrieve last changes lastChangesOf svn repository located at " + repository.getLocation().getPath(), e);
+            throw new RuntimeException("Could not retrieve last changes of svn repository located at " + repository.getLocation().getPath(), e);
 
         }
     }
     
     /**
-     * Creates last changes from two revisions lastChangesOf repository
+     * Creates last changes from two revisions of repository
      *
      * @param repository svn repository to get last changes
      * @return LastChanges commit info and git diff
      */
     @Override
-    public LastChanges lastChangesOf(SVNRepository repository, Long currentRevision, Long previousRevision) {
+    public LastChanges changesOf(SVNRepository repository, Long currentRevision, Long previousRevision) {
         try {
             final SvnDiffGenerator diffGenerator = new SvnDiffGenerator();
             diffGenerator.setBasePath(new File(""));
@@ -103,7 +103,7 @@ public class SvnLastChanges implements VCSChanges<SVNRepository,Long>{
 
             return new LastChanges(commitInfo, new String(diffStream.toByteArray(), Charset.forName("UTF-8")));
         } catch (Exception e) {
-            throw new RuntimeException("Could not retrieve last changes lastChangesOf svn repository located at " + repository.getLocation().getPath(), e);
+            throw new RuntimeException("Could not retrieve last changes of svn repository located at " + repository.getLocation().getPath(), e);
 
         }
     }

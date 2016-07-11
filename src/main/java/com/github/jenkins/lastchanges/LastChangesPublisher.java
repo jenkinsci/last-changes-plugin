@@ -117,11 +117,11 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             LastChanges lastChanges = null;
             listener.getLogger().println("Publishing build last changes...");
             if (isGit) {
-                lastChanges = GitLastChanges.getInstance().lastChangesOf(repository(repoTargetDir.getPath() + GIT_DIR));
+                lastChanges = GitLastChanges.getInstance().changesOf(repository(repoTargetDir.getPath() + GIT_DIR));
             } else {
                 AbstractProject<?, ?> rootProject = (AbstractProject<?, ?>) lastChangesProjectAction.getProject();
                 SubversionSCM scm = SubversionSCM.class.cast(rootProject.getScm());
-                lastChanges = SvnLastChanges.getInstance().lastChangesOf(SvnLastChanges.repository(scm.getLocations()[0].getURL()));
+                lastChanges = SvnLastChanges.getInstance().changesOf(SvnLastChanges.repository(scm.getLocations()[0].getURL()));
             }
 
             listener.hyperlink("../" + build.getNumber() + "/" + LastChangesBaseAction.BASE_URL, "Last changes published successfully!");

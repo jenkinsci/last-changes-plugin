@@ -67,7 +67,7 @@ public class GitLastChangesTest {
 
     @Test
     public void shouldGetLastChangesFromGitRepository() throws FileNotFoundException {
-        LastChanges lastChanges = GitLastChanges.getInstance().lastChangesOf(repository(gitRepoPath));
+        LastChanges lastChanges = GitLastChanges.getInstance().changesOf(repository(gitRepoPath));
         assertThat(lastChanges).isNotNull();
         assertThat(lastChanges.getCommitInfo()).isNotNull();
         assertThat(lastChanges.getCommitInfo().getCommitMessage()).isEqualTo("Added javadoc\n");
@@ -111,7 +111,7 @@ public class GitLastChangesTest {
         String repositoryLocation = GitLastChangesTest.class.getResource("/git-initial-commit-repo").getFile();
         File file = new File(repositoryLocation);
         try {
-            GitLastChanges.getInstance().lastChangesOf(repository(repositoryLocation));
+            GitLastChanges.getInstance().changesOf(repository(repositoryLocation));
             fail("Should not get here");
         }catch (GitTreeNotFoundException e){
             assertThat(e.getMessage()).isEqualTo(String.format("Could not find previous head of repository located at %s. Its your first commit?",file.getAbsolutePath()));

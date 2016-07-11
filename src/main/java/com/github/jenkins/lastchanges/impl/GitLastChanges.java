@@ -77,7 +77,7 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
      * @return LastChanges commit info and git diff
      */
     @Override
-    public LastChanges lastChangesOf(Repository repository) {
+    public LastChanges changesOf(Repository repository) {
         Git git = new Git(repository);
         try {
             String repositoryLocation = repository.getDirectory().getAbsolutePath();
@@ -97,7 +97,7 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
                 throw new GitTreeNotFoundException("Could not resolve previous head of repository located at " + repositoryLocation, e);
             }
 
-            return lastChangesOf(repository, head, previousHead);
+            return changesOf(repository, head, previousHead);
         } finally {
             if (git != null) {
                 git.close();
@@ -116,7 +116,7 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
      * @return LastChanges commit info and git diff between revisions
      */
     @Override
-    public LastChanges lastChangesOf(Repository repository, ObjectId currentRevision, ObjectId previousRevision) {
+    public LastChanges changesOf(Repository repository, ObjectId currentRevision, ObjectId previousRevision) {
         Git git = new Git(repository);
         try {
             ByteArrayOutputStream diffStream = new ByteArrayOutputStream();
