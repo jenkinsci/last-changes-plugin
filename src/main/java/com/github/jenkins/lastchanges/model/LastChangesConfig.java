@@ -7,7 +7,7 @@ public class LastChangesConfig {
 	private String matchWordsThreshold = "0.25";
 	private String matchingMaxComparisons = "1000";
 	private Boolean showFiles = Boolean.TRUE;
-	private Boolean synchronisedScroll = Boolean.FALSE;
+	private Boolean synchronisedScroll = Boolean.TRUE;
 	
 	
 	

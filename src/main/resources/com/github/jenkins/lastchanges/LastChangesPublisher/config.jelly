@@ -15,7 +15,7 @@
        </f:entry>
        
        <f:entry  title="Synchronised scroll" description="Scroll both panes in side-by-side mode.">
-           <f:checkbox value="${instance.synchronisedScroll}"  field="synchronisedScroll" default="false"/>
+           <f:checkbox value="${instance.synchronisedScroll}"  field="synchronisedScroll" default="true"/>
        </f:entry>
        
        <f:entry title="Match words threshold" description="Similarity threshold for word matching." >
