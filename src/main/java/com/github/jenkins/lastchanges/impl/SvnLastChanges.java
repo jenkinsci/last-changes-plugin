@@ -3,6 +3,7 @@
  */
 package com.github.jenkins.lastchanges.impl;
 
+import com.github.jenkins.lastchanges.api.VCSChanges;
 import com.github.jenkins.lastchanges.exception.RepositoryNotFoundException;
 import com.github.jenkins.lastchanges.model.CommitInfo;
 import com.github.jenkins.lastchanges.model.LastChanges;
@@ -21,14 +22,17 @@ import java.io.File;
 import java.nio.charset.Charset;
 
 
-public class SvnLastChanges {
+public class SvnLastChanges implements VCSChanges<SVNRepository,Long>{
 
-    private LastChanges lastChanges;
 
-    public SvnLastChanges(CommitInfo commitInfo, String changes) {
-        lastChanges = new LastChanges(commitInfo, changes);
+    private static SvnLastChanges instance;
+
+    public static SvnLastChanges getInstance() {
+        if(instance == null){
+            instance = new SvnLastChanges();
+        }
+        return instance;
     }
-
 
     /**
      * @param path local svn repository path
@@ -66,22 +70,24 @@ public class SvnLastChanges {
      * @param repository svn repository to get last changes
      * @return LastChanges commit info and git diff
      */
-    public static LastChanges of(SVNRepository repository) {
+    @Override
+    public LastChanges lastChangesOf(SVNRepository repository) {
         try {
-            return of(repository,repository.getLatestRevision(),repository.getLatestRevision() - 1);
+            return lastChangesOf(repository, repository.getLatestRevision(), repository.getLatestRevision() - 1);
         } catch (Exception e) {
-            throw new RuntimeException("Could not retrieve last changes of svn repository located at " + repository.getLocation().getPath(), e);
+            throw new RuntimeException("Could not retrieve last changes lastChangesOf svn repository located at " + repository.getLocation().getPath(), e);
 
         }
     }
     
     /**
-     * Creates last changes from two revisions of repository 
+     * Creates last changes from two revisions lastChangesOf repository
      *
      * @param repository svn repository to get last changes
      * @return LastChanges commit info and git diff
      */
-    public static LastChanges of(SVNRepository repository, long currentRevision, long previousRevision) {
+    @Override
+    public LastChanges lastChangesOf(SVNRepository repository, Long currentRevision, Long previousRevision) {
         try {
             final SvnDiffGenerator diffGenerator = new SvnDiffGenerator();
             diffGenerator.setBasePath(new File(""));
@@ -97,14 +103,10 @@ public class SvnLastChanges {
 
             return new LastChanges(commitInfo, new String(diffStream.toByteArray(), Charset.forName("UTF-8")));
         } catch (Exception e) {
-            throw new RuntimeException("Could not retrieve last changes of svn repository located at " + repository.getLocation().getPath(), e);
+            throw new RuntimeException("Could not retrieve last changes lastChangesOf svn repository located at " + repository.getLocation().getPath(), e);
 
         }
     }
 
 
-
-    public LastChanges getLastChanges() {
-        return lastChanges;
-    }
 }

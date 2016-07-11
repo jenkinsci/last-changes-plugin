@@ -99,7 +99,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         boolean isGit = new File(workspace.getRemote() + GIT_DIR).exists();
         boolean isSvn = new File(workspace.getRemote() + SVN_DIR).exists();
         if (!isGit && !isSvn) {
-            throw new RuntimeException("Not git or svn repository found at " + workspace.getRemote());
+            throw new RuntimeException("No git or svn repository found at " + workspace.getRemote());
         }
 
         File repoTargetDir = new File(workspaceTargetDir.getRemote());//always on master
@@ -109,7 +109,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             if (isGit) {
                 sourceDir = new File(workspace.getRemote() + GIT_DIR);
                 //workspace can be on slave so copy resources to master
-                //we are only copying when on git cause svn we are not
+                //we are only copying when on git cause in svn we are reading the revision from remote repository (see issue https://github.com/rmpestano/last-changes-plugin/issues/2)
                 FileUtils.copyDirectoryToDirectory(sourceDir, repoTargetDir);
                 //workspace.copyRecursiveTo("**/*", workspaceTargetDir);//not helps because it can't copy .git dir
             }
@@ -117,14 +117,14 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             LastChanges lastChanges = null;
             listener.getLogger().println("Publishing build last changes...");
             if (isGit) {
-                lastChanges = GitLastChanges.of(repository(repoTargetDir.getPath() + GIT_DIR));
+                lastChanges = GitLastChanges.getInstance().lastChangesOf(repository(repoTargetDir.getPath() + GIT_DIR));
             } else {
                 AbstractProject<?, ?> rootProject = (AbstractProject<?, ?>) lastChangesProjectAction.getProject();
                 SubversionSCM scm = SubversionSCM.class.cast(rootProject.getScm());
-                lastChanges = SvnLastChanges.of(SvnLastChanges.repository(scm.getLocations()[0].getURL()));
+                lastChanges = SvnLastChanges.getInstance().lastChangesOf(SvnLastChanges.repository(scm.getLocations()[0].getURL()));
             }
 
-            listener.hyperlink("../" + build.getNumber() + "/" + LastChangesBaseAction.BASE_URL, "Last changes generated successfully!");
+            listener.hyperlink("../" + build.getNumber() + "/" + LastChangesBaseAction.BASE_URL, "Last changes published successfully!");
             listener.getLogger().println("");
             build.addAction(new LastChangesBuildAction(build, lastChanges, new LastChangesConfig(format, matching, showFiles, synchronisedScroll, matchWordsThreshold, matchingMaxComparisons)));
         } catch (Exception e) {

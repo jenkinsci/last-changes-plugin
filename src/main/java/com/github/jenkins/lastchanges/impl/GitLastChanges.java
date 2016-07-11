@@ -3,6 +3,7 @@
  */
 package com.github.jenkins.lastchanges.impl;
 
+import com.github.jenkins.lastchanges.api.VCSChanges;
 import com.github.jenkins.lastchanges.exception.*;
 import com.github.jenkins.lastchanges.model.CommitInfo;
 import com.github.jenkins.lastchanges.model.LastChanges;
@@ -21,12 +22,21 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 
 
-public class GitLastChanges {
+public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
 
-    private LastChanges lastChanges;
 
-    public GitLastChanges(CommitInfo commitInfo, String changes) {
-        lastChanges = new LastChanges(commitInfo, changes);
+    private static GitLastChanges instance;
+
+
+    private GitLastChanges() {
+    }
+
+    public static GitLastChanges getInstance(){
+        if(instance == null){
+            instance = new GitLastChanges();
+        }
+
+        return instance;
     }
 
 
@@ -66,7 +76,8 @@ public class GitLastChanges {
      * @param repository git repository to get last changes
      * @return LastChanges commit info and git diff
      */
-    public static LastChanges of(Repository repository) {
+    @Override
+    public LastChanges lastChangesOf(Repository repository) {
         Git git = new Git(repository);
         try {
             String repositoryLocation = repository.getDirectory().getAbsolutePath();
@@ -86,7 +97,7 @@ public class GitLastChanges {
                 throw new GitTreeNotFoundException("Could not resolve previous head of repository located at " + repositoryLocation, e);
             }
 
-            return of(repository, head, previousHead); 
+            return lastChangesOf(repository, head, previousHead);
         } finally {
             if (git != null) {
                 git.close();
@@ -104,7 +115,8 @@ public class GitLastChanges {
      * @param repository git repository to get last changes
      * @return LastChanges commit info and git diff between revisions
      */
-    public static LastChanges of(Repository repository, ObjectId currentRevision, ObjectId previousRevision ) {
+    @Override
+    public LastChanges lastChangesOf(Repository repository, ObjectId currentRevision, ObjectId previousRevision) {
         Git git = new Git(repository);
         try {
             ByteArrayOutputStream diffStream = new ByteArrayOutputStream();
@@ -152,7 +164,5 @@ public class GitLastChanges {
 
     }
 
-    public LastChanges getLastChanges() {
-        return lastChanges;
-    }
+
 }
