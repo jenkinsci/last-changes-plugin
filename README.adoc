@@ -26,11 +26,11 @@ IMPORTANT: Only `Git` and `Svn` based projects are supported.
 
 The plugin uses https://diff2html.rtfpessoa.xyz/[diff2html^] to show last changes of a given build, example:
 
-image::last-changes03.png[]
+image:images/last-changes03.png[]
 
 Or using side-by-side configuration:
 
-image::last-changes05.png[]
+image:images/last-changes05.png[]
 
 
 NOTE: Last changes means `compare current revision with previous one`.
@@ -61,23 +61,23 @@ After installation just activate the post build action named *Publish Last Chang
 
 . Activate build action
 +
-image::last-changes-activation.png[]
+image:images/last-changes-activation.png[]
 . Last changes menu should be available
 +
-image::last-changes01.png[]
+image:images/last-changes01.png[]
 . Build changes history
 +
-image::last-changes02.png[]
+image:images/last-changes02.png[]
 . Last changes menu is available for builds that published changes
 +
-image::last-changes04.png[]
+image:images/last-changes04.png[]
 
 
 == Configuration
 
 The setup is done via `build configuration` and basically reflects https://github.com/rtfpessoa/diff2html#configuration[diff2html options^]:
 
-image::last-changes-config.png[]
+image:images/last-changes-config.png[]
  
  
 == Docker
@@ -98,4 +98,4 @@ docker run -it -p 8080:8080 rmpestano/jenkins-last-changes
  
 Job output should look like:
 
-image::last-changes-docker.png[] 
+image:images/last-changes-docker.png[] 
