@@ -2,15 +2,19 @@
 <j:jelly trim="false" xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <l:layout>
-        <l:main-panel style="container-fluid;width:100%">
+    
+    <l:header>
             <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/github-9.5.0.min.css"/>
-            <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/diff2html-2.0.0-rc.9.min.css"/>
+            <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/diff2html-2.0.1.min.css"/>
             <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/jquery.min.js"/>
+            <script type="text/javascript">window.jQueryJenkins = jQuery.noConflict();</script>
             <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/highlightjs-9.5.0.min.js"/>
-            <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-2.0.0-rc.9.min.js"/>
-            <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-ui-2.0.0-rc.9.min.js"/>
+            <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-2.0.1.min.js"/>
+            <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-ui-2.0.1.min.js"/>
             <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/scala-9.5.0.min.js"/>
-
+    </l:header>
+    
+    <l:main-panel style="container-fluid;width:100%">
             
             <h2 style="text-align:center">View Last Changes of build #${it.build.number}</h2>
 
@@ -24,8 +28,7 @@
                 }
             </style>
             <script>
-            
-                jQuery(document).ready(function() {
+                jQueryJenkins(document).ready(function() {
                   var buildChanges = "${it.buildChanges.escapedDiff}";
                   var sidePanelTD=document.getElementById('side-panel');
                                if(sidePanelTD) {

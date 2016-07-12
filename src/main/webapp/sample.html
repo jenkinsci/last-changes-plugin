@@ -11,15 +11,15 @@
 
 
   <script src="js/jquery.min.js"></script>
-
+  <script type="text/javascript">window.jQueryJenkins = jQuery.noConflict();</script>
   <script src="js/highlightjs-9.5.0.min.js"></script>
   <script src="js/scala-9.5.0.min.js"></script>
   <link rel="stylesheet" type="text/css" href="css/github-9.5.0.min.css">
 
   <!-- diff2html -->
-  <link rel="stylesheet" type="text/css" href="css/diff2html-2.0.0-rc.9.min.css">
-  <script type="text/javascript" src="js/diff2html-2.0.0-rc.9.min.js"></script>
-  <script type="text/javascript" src="js/diff2html-ui-2.0.0-rc.9.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="css/diff2html-2.0.1.min.css">
+  <script type="text/javascript" src="js/diff2html-2.0.1.min.js"></script>
+  <script type="text/javascript" src="js/diff2html-ui-2.0.1.min.js"></script>
   <!-- -->
 
   <script>
@@ -261,7 +261,7 @@
                 " }\n" +
                 "\\ No newline at end of file";
 
-    $(document).ready(function() {
+     jQueryJenkins(document).ready(function() {
       var diff2htmlUi = new Diff2HtmlUI({diff: lineDiffExample});
 
       diff2htmlUi.draw('#line-by-line', {inputFormat: 'json', showFiles: true, matching: 'lines'});
