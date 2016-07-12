@@ -1,10 +1,11 @@
 package com.github.jenkins.lastchanges;
 
+import java.io.File;
+
 import com.github.jenkins.lastchanges.model.LastChanges;
 import com.github.jenkins.lastchanges.model.LastChangesConfig;
-import hudson.model.Run;
 
-import java.io.File;
+import hudson.model.Run;
 
 public class LastChangesBuildAction extends LastChangesBaseAction {
 

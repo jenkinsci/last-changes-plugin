@@ -4,11 +4,11 @@
     <l:layout>
         <l:main-panel style="container-fluid;width:100%">
             <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/github.min.css"/>
-            <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/diff2html.min.css"/>
+            <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/diff2html-2.0.0-rc.9.min.css"/>
             <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/jquery.min.js"/>
-            <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/highlight.min.js"/>
-            <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-2.0.0-rc.8.min.js"/>
-            <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-ui.min.js"/>
+            <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/highlightjs-9.5.0.min.js"/>
+            <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-2.0.0-rc.9.min.js"/>
+            <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-ui-2.0.0-rc.9.min.js"/>
             <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/scala.min.js"/>
 
             
