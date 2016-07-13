@@ -98,13 +98,12 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         FilePath workspaceTargetDir = getMasterWorkspaceDir(build);// here we're are going to generate pretty/rich diff html from diff file (always on master)
         boolean isGit = new File(workspace.getRemote() + GIT_DIR).exists();
         boolean isSvn = new File(workspace.getRemote() + SVN_DIR).exists();
-        if (!isGit && !isSvn) {
-            throw new RuntimeException("No git or svn repository found at " + workspace.getRemote());
-        }
-
-        File repoTargetDir = new File(workspaceTargetDir.getRemote());//always on master
-
+       
         try {
+			if (!isGit && !isSvn) {
+				throw new RuntimeException("No git or svn repository found at " + workspace.getRemote());
+             }
+            File repoTargetDir = new File(workspaceTargetDir.getRemote());//always on master
             File sourceDir = null;
             if (isGit) {
                 sourceDir = new File(workspace.getRemote() + GIT_DIR);
