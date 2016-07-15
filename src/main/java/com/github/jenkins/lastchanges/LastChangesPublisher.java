@@ -23,16 +23,30 @@
  */
 package com.github.jenkins.lastchanges;
 
+import static com.github.jenkins.lastchanges.impl.GitLastChanges.repository;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+
+import org.apache.commons.io.FileUtils;
+import org.kohsuke.stapler.DataBoundConstructor;
+
 import com.github.jenkins.lastchanges.impl.GitLastChanges;
 import com.github.jenkins.lastchanges.impl.SvnLastChanges;
 import com.github.jenkins.lastchanges.model.FormatType;
 import com.github.jenkins.lastchanges.model.LastChanges;
 import com.github.jenkins.lastchanges.model.LastChangesConfig;
 import com.github.jenkins.lastchanges.model.MatchingType;
+
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.*;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.Result;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.scm.SubversionSCM;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
@@ -40,14 +54,6 @@ import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.ListBoxModel;
 import jenkins.tasks.SimpleBuildStep;
-import org.apache.commons.io.FileUtils;
-import org.kohsuke.stapler.DataBoundConstructor;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
-
-import static com.github.jenkins.lastchanges.impl.GitLastChanges.repository;
 
 /**
  * @author rmpestano
@@ -66,15 +72,15 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     private String matchingMaxComparisons;
 
-
     private LastChangesProjectAction lastChangesProjectAction;
 
     private static final String GIT_DIR = "/.git";
+
     private static final String SVN_DIR = "/.svn";
 
-
     @DataBoundConstructor
-    public LastChangesPublisher(FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold, String matchingMaxComparisons) {
+    public LastChangesPublisher(FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold,
+            String matchingMaxComparisons) {
         this.format = format;
         this.matching = matching;
         this.showFiles = showFiles;
@@ -82,7 +88,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         this.matchWordsThreshold = matchWordsThreshold;
         this.matchingMaxComparisons = matchingMaxComparisons;
     }
-
 
     @Override
     public Action getProjectAction(AbstractProject<?, ?> project) {
@@ -96,22 +101,28 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     public void perform(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
 
         FilePath workspaceTargetDir = getMasterWorkspaceDir(build);// here we're are going to generate pretty/rich diff html from diff file (always on master)
+        
         boolean isGit = new File(workspace.getRemote() + GIT_DIR).exists();
         boolean isSvn = new File(workspace.getRemote() + SVN_DIR).exists();
-		
+
         if (!isGit && !isSvn) {
-			 throw new RuntimeException("No git or svn repository found at " + workspace.getRemote());
+            throw new RuntimeException("No git or svn repository found at " + workspace.getRemote());
         }
-		
-        try {			
-            File repoTargetDir = new File(workspaceTargetDir.getRemote());//always on master
+
+        try {
+            File repoTargetDir = new File(workspaceTargetDir.getRemote());// always
+            // on
+            // master
             File sourceDir = null;
             if (isGit) {
                 sourceDir = new File(workspace.getRemote() + GIT_DIR);
-                //workspace can be on slave so copy resources to master
-                //we are only copying when on git cause in svn we are reading the revision from remote repository (see issue https://github.com/rmpestano/last-changes-plugin/issues/2)
+                // workspace can be on slave so copy resources to master
+                // we are only copying when on git cause in svn we are reading
+                // the revision from remote repository (see issue
+                // https://github.com/rmpestano/last-changes-plugin/issues/2)
                 FileUtils.copyDirectoryToDirectory(sourceDir, repoTargetDir);
-                //workspace.copyRecursiveTo("**/*", workspaceTargetDir);//not helps because it can't copy .git dir
+                // workspace.copyRecursiveTo("**/*", workspaceTargetDir);//not
+                // helps because it can't copy .git dir
             }
 
             LastChanges lastChanges = null;
@@ -121,17 +132,18 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             } else {
                 AbstractProject<?, ?> rootProject = (AbstractProject<?, ?>) lastChangesProjectAction.getProject();
                 SubversionSCM scm = SubversionSCM.class.cast(rootProject.getScm());
-                lastChanges = SvnLastChanges.getInstance().changesOf(SvnLastChanges.repository(scm.getLocations()[0].getURL()));
+                lastChanges = SvnLastChanges.getInstance().changesOf(SvnLastChanges.repository(scm, rootProject));
             }
 
             listener.hyperlink("../" + build.getNumber() + "/" + LastChangesBaseAction.BASE_URL, "Last changes published successfully!");
             listener.getLogger().println("");
-            build.addAction(new LastChangesBuildAction(build, lastChanges, new LastChangesConfig(format, matching, showFiles, synchronisedScroll, matchWordsThreshold, matchingMaxComparisons)));
-        } catch (Exception e) {			
-            listener.error("Last Changes NOT published due to the following error: " + e.getMessage());
-			e.printStackTrace();
+            build.addAction(new LastChangesBuildAction(build, lastChanges,
+                    new LastChangesConfig(format, matching, showFiles, synchronisedScroll, matchWordsThreshold, matchingMaxComparisons)));
+        } catch (Exception e) {
+            listener.error("Last Changes NOT published due to the following error: " + e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""));
+            e.printStackTrace();
         }
-        //always success (only warn when no diff was generated)
+        // always success (only warn when no diff was generated)
 
         build.setResult(Result.SUCCESS);
 
@@ -159,9 +171,9 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
-
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
-            // Indicates that this builder can be used with all kinds of project types
+            // Indicates that this builder can be used with all kinds of project
+            // types
             return true;
         }
 
@@ -188,37 +200,30 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             return items;
         }
 
-
     }
 
     public FormatType getFormat() {
         return format;
     }
 
-
     public MatchingType getMatching() {
         return matching;
     }
-
 
     public String getMatchWordsThreshold() {
         return matchWordsThreshold;
     }
 
-
     public String getMatchingMaxComparisons() {
         return matchingMaxComparisons;
     }
-
 
     public Boolean getShowFiles() {
         return showFiles;
     }
 
-
     public Boolean getSynchronisedScroll() {
         return synchronisedScroll;
     }
-
 
 }
