@@ -79,10 +79,17 @@ public class SvnLastChanges implements VCSChanges<SVNRepository, Long> {
     }
 
     public static SVNRepository repository(SubversionSCM scm, AbstractProject<?, ?> rootProject) {
+        
         String path = null;
         try {
             path = scm.getLocations()[0].getURL();
-            ISVNAuthenticationProvider svnAuthProvider = scm.getDescriptor().createAuthenticationProvider(rootProject);
+            ISVNAuthenticationProvider svnAuthProvider;
+            try{
+                svnAuthProvider = scm.createAuthenticationProvider(rootProject, scm.getLocations()[0]);
+            } catch (NoSuchMethodError e) {
+                //fallback for versions under 2.x of org.jenkins-ci.plugins:subversion
+                svnAuthProvider = scm.getDescriptor().createAuthenticationProvider(rootProject);
+            }
             ISVNAuthenticationManager svnAuthManager = SVNWCUtil.createDefaultAuthenticationManager();
             svnAuthManager.setAuthenticationProvider(svnAuthProvider);
             SVNClientManager svnClientManager = SVNClientManager.newInstance(null, svnAuthManager);
@@ -91,6 +98,7 @@ public class SvnLastChanges implements VCSChanges<SVNRepository, Long> {
             throw new RepositoryNotFoundException("Could not find svn repository at " + path, e);
         }
     }
+    
 
     /**
      * Creates last changes from repository last two revisions
