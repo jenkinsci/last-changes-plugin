@@ -3,6 +3,7 @@ package com.github.jenkins.lastchanges;
 import com.github.jenkins.lastchanges.model.LastChanges;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Result;
 import hudson.scm.SubversionSCM;
 import hudson.scm.SubversionSCM.ModuleLocation;
 import hudson.slaves.DumbSlave;
@@ -19,6 +20,7 @@ import com.github.jenkins.lastchanges.model.MatchingType;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
@@ -96,7 +98,7 @@ public class LastChangesIT {
 
         // given
         DirectorySCM scm = new DirectorySCM(".git",sampleRepoDir);
-        DumbSlave slave = jenkins.createOnlineSlave();
+        DumbSlave slave = jenkins.createSlave();
         FreeStyleProject project = jenkins.createFreeStyleProject("git-test-slave");
         project.setAssignedNode(slave);
         project.setScm(scm);
@@ -146,6 +148,7 @@ public class LastChangesIT {
                 " /**" + GitLastChangesTest.newLine +
                 "  * Walks over this component and all descendants of this component, breadth-first." + GitLastChangesTest.newLine +
                 "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", ""));
+        jenkins.assertLogContains("Last changes published successfully!",build);
 
     }
     
@@ -173,6 +176,21 @@ public class LastChangesIT {
         assertThat(action).isNotNull();
         assertThat(action.getBuildChanges()).isNotNull();
         assertThat(action.getBuildChanges().getCommitInfo().getCommiterName()).isEqualTo("rmpestano");
+        jenkins.assertLogContains("Last changes published successfully!",build);
+    }
+
+    @Test
+    public void shouldNotGetLastChangesOfNonExistingRepository() throws Exception {
+        FreeStyleProject project = jenkins.createFreeStyleProject("non-existing-test");
+        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500");
+        project.getPublishersList().add(publisher);
+        project.save();
+
+        // when
+        FreeStyleBuild build = jenkins.assertBuildStatus(Result.FAILURE,project.scheduleBuild2(0).get());
+
+        // then
+        jenkins.assertLogContains("No git or svn repository found at " +build.getWorkspace(),build);
     }
 
 }

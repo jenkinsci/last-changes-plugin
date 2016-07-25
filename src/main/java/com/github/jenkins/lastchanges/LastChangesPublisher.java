@@ -74,9 +74,9 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     private LastChangesProjectAction lastChangesProjectAction;
 
-    private static final String GIT_DIR = "/.git";
+    private static final String GIT_DIR = ".git";
 
-    private static final String SVN_DIR = "/.svn";
+    private static final String SVN_DIR = ".svn";
 
     @DataBoundConstructor
     public LastChangesPublisher(FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold,
@@ -100,35 +100,21 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     @Override
     public void perform(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
 
-        FilePath workspaceTargetDir = getMasterWorkspaceDir(build);// here we're are going to generate pretty/rich diff html from diff file (always on master)
-        
-        boolean isGit = new File(workspace.getRemote() + GIT_DIR).exists();
-        boolean isSvn = new File(workspace.getRemote() + SVN_DIR).exists();
+        FilePath gitDir = workspace.child(GIT_DIR);//can be on master or slave
+        FilePath svnDir = workspace.child(SVN_DIR);
+
+        boolean isGit = gitDir.exists();
+        boolean isSvn = svnDir.exists();
 
         if (!isGit && !isSvn) {
-            throw new RuntimeException("No git or svn repository found at " + workspace.getRemote());
+            throw new RuntimeException("No git or svn repository found at " + workspace.child("").absolutize());
         }
 
         try {
-            File repoTargetDir = new File(workspaceTargetDir.getRemote());// always
-            // on
-            // master
-            File sourceDir = null;
-            if (isGit) {
-                sourceDir = new File(workspace.getRemote() + GIT_DIR);
-                // workspace can be on slave so copy resources to master
-                // we are only copying when on git cause in svn we are reading
-                // the revision from remote repository (see issue
-                // https://github.com/rmpestano/last-changes-plugin/issues/2)
-                FileUtils.copyDirectoryToDirectory(sourceDir, repoTargetDir);
-                // workspace.copyRecursiveTo("**/*", workspaceTargetDir);//not
-                // helps because it can't copy .git dir
-            }
-
             LastChanges lastChanges = null;
             listener.getLogger().println("Publishing build last changes...");
             if (isGit) {
-                lastChanges = GitLastChanges.getInstance().changesOf(repository(repoTargetDir.getPath() + GIT_DIR));
+                lastChanges = GitLastChanges.getInstance().changesOf(repository(gitDir.getRemote()));
             } else {
                 AbstractProject<?, ?> rootProject = (AbstractProject<?, ?>) lastChangesProjectAction.getProject();
                 SubversionSCM scm = SubversionSCM.class.cast(rootProject.getScm());
