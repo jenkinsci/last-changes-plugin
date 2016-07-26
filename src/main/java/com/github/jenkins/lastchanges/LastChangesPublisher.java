@@ -23,30 +23,16 @@
  */
 package com.github.jenkins.lastchanges;
 
-import static com.github.jenkins.lastchanges.impl.GitLastChanges.repository;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
-
-import org.apache.commons.io.FileUtils;
-import org.kohsuke.stapler.DataBoundConstructor;
-
 import com.github.jenkins.lastchanges.impl.GitLastChanges;
 import com.github.jenkins.lastchanges.impl.SvnLastChanges;
 import com.github.jenkins.lastchanges.model.FormatType;
 import com.github.jenkins.lastchanges.model.LastChanges;
 import com.github.jenkins.lastchanges.model.LastChangesConfig;
 import com.github.jenkins.lastchanges.model.MatchingType;
-
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.AbstractProject;
-import hudson.model.Action;
-import hudson.model.Result;
-import hudson.model.Run;
-import hudson.model.TaskListener;
+import hudson.model.*;
 import hudson.scm.SubversionSCM;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
@@ -54,6 +40,14 @@ import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.ListBoxModel;
 import jenkins.tasks.SimpleBuildStep;
+import org.apache.commons.io.FileUtils;
+import org.kohsuke.stapler.DataBoundConstructor;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+
+import static com.github.jenkins.lastchanges.impl.GitLastChanges.repository;
 
 /**
  * @author rmpestano
@@ -80,7 +74,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     @DataBoundConstructor
     public LastChangesPublisher(FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold,
-            String matchingMaxComparisons) {
+                                String matchingMaxComparisons) {
         this.format = format;
         this.matching = matching;
         this.showFiles = showFiles;
@@ -110,11 +104,18 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             throw new RuntimeException("No git or svn repository found at " + workspace.child("").absolutize());
         }
 
+        FilePath workspaceTargetDir = getMasterWorkspaceDir(build);//always on master
+
         try {
             LastChanges lastChanges = null;
             listener.getLogger().println("Publishing build last changes...");
             if (isGit) {
-                lastChanges = GitLastChanges.getInstance().changesOf(repository(gitDir.getRemote()));
+                // workspace can be on slave so copy resources to master
+                // we are only copying when on git because in svn we are reading
+                // the revision from remote repository
+                FileUtils.copyDirectoryToDirectory(new File(gitDir.getRemote()), new File(workspaceTargetDir.getRemote()));
+                // workspace.copyRecursiveTo("**/*", workspaceTargetDir);//not helps because it can't copy .git dir
+                lastChanges = GitLastChanges.getInstance().changesOf(repository(workspaceTargetDir.getRemote()+"/.git"));
             } else {
                 AbstractProject<?, ?> rootProject = (AbstractProject<?, ?>) lastChangesProjectAction.getProject();
                 SubversionSCM scm = SubversionSCM.class.cast(rootProject.getScm());
