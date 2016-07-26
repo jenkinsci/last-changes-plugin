@@ -40,7 +40,6 @@ import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.ListBoxModel;
 import jenkins.tasks.SimpleBuildStep;
-import org.apache.commons.io.FileUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.File;
@@ -113,8 +112,8 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 // workspace can be on slave so copy resources to master
                 // we are only copying when on git because in svn we are reading
                 // the revision from remote repository
-                FileUtils.copyDirectoryToDirectory(new File(gitDir.getRemote()), new File(workspaceTargetDir.getRemote()));
-                // workspace.copyRecursiveTo("**/*", workspaceTargetDir);//not helps because it can't copy .git dir
+                //FileUtils.copyDirectoryToDirectory(new File(gitDir.getRemote()), new File(workspaceTargetDir.getRemote()));
+                gitDir.copyRecursiveTo("**/*", new FilePath(new File(workspaceTargetDir.getRemote()+"/.git")));
                 lastChanges = GitLastChanges.getInstance().changesOf(repository(workspaceTargetDir.getRemote()+"/.git"));
             } else {
                 AbstractProject<?, ?> rootProject = (AbstractProject<?, ?>) lastChangesProjectAction.getProject();
