@@ -135,18 +135,17 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
      */
     private FilePath findGitDir(FilePath workspace) throws IOException, InterruptedException {
 
-        FilePath gitDir = new FilePath(new File(""));
-        findGitDirRecursively(workspace, gitDir);
-        return gitDir;
+        findGitDirRecursively(workspace);
+        return workspace;
     }
 
-    private void findGitDirRecursively(FilePath sourceDir, FilePath gitDir) throws IOException, InterruptedException {
+    private void findGitDirRecursively(FilePath sourceDir) throws IOException, InterruptedException {
         for (FilePath filePath : sourceDir.listDirectories()) {
             if(filePath.getName().equalsIgnoreCase(GIT_DIR)){
-                gitDir = filePath;
+                sourceDir = filePath;
                 break;
             } else{
-                findGitDirRecursively(filePath, gitDir);
+                findGitDirRecursively(filePath);
             }
         }
     }
