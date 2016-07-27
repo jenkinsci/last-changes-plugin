@@ -142,6 +142,9 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         while ((gitDir = findGitDirInSubDirectories(workspace)) == null && recusursionDepth > 0){
             recusursionDepth --;
         }
+        if(gitDir == null){
+            throw new RuntimeException("No .git directory found in workspace.");
+        }
         return gitDir;
     }
 
