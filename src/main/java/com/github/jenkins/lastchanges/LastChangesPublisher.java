@@ -38,11 +38,9 @@ import hudson.scm.SubversionSCM;
 import hudson.tasks.*;
 import hudson.util.ListBoxModel;
 import jenkins.tasks.SimpleBuildStep;
-import org.apache.oro.io.GlobFilenameFilter;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -93,8 +91,8 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     @Override
     public void perform(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
 
-        boolean isGit = ((AbstractProject)lastChangesProjectAction.getProject()).getScm() instanceof GitSCM;
-        boolean isSvn = ((AbstractProject)lastChangesProjectAction.getProject()).getScm() instanceof SubversionSCM;
+        boolean isGit = ((AbstractProject) lastChangesProjectAction.getProject()).getScm() instanceof GitSCM;
+        boolean isSvn = ((AbstractProject) lastChangesProjectAction.getProject()).getScm() instanceof SubversionSCM;
 
         if (!isGit && !isSvn) {
             throw new RuntimeException("No git or svn repository found at " + workspace.child("").absolutize());
@@ -111,7 +109,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 // we are only copying when on git because in svn we are reading
                 // the revision from remote repository
                 gitDir.copyRecursiveTo("**/*", new FilePath(new File(workspaceTargetDir.getRemote() + "/.git")));
-                lastChanges = GitLastChanges.getInstance().changesOf(repository(workspaceTargetDir.getRemote()+"/.git"));
+                lastChanges = GitLastChanges.getInstance().changesOf(repository(workspaceTargetDir.getRemote() + "/.git"));
             } else {
                 AbstractProject<?, ?> rootProject = (AbstractProject<?, ?>) lastChangesProjectAction.getProject();
                 SubversionSCM scm = SubversionSCM.class.cast(rootProject.getScm());
@@ -135,18 +133,22 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     /**
      * .git directory can be on a workspace sub dir, see JENKINS-36971
      */
-    private FilePath findGitDir(FilePath relativeDir) throws IOException, InterruptedException, FileNotFoundException {
+    private FilePath findGitDir(FilePath workspace) throws IOException, InterruptedException {
 
-        for (FilePath filePath : relativeDir.list()) {
-            if(filePath.isDirectory()){
-                if(filePath.getName().equalsIgnoreCase(GIT_DIR)){
-                    return filePath;
-                } else{
-                    return findGitDir(filePath);
-                }
+        FilePath gitDir = new FilePath(new File(""));
+        findGitDirRecursively(workspace, gitDir);
+        return gitDir;
+    }
+
+    private void findGitDirRecursively(FilePath sourceDir, FilePath gitDir) throws IOException, InterruptedException {
+        for (FilePath filePath : sourceDir.listDirectories()) {
+            if(filePath.getName().equalsIgnoreCase(GIT_DIR)){
+                gitDir = filePath;
+                break;
+            } else{
+                findGitDirRecursively(filePath, gitDir);
             }
         }
-        throw new FileNotFoundException("No .git repository found on workspace ");
     }
 
     /**
