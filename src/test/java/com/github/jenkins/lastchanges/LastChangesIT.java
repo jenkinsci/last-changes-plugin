@@ -4,6 +4,10 @@ import com.github.jenkins.lastchanges.model.LastChanges;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
+import hudson.plugins.git.*;
+import hudson.plugins.git.GitSCM;
+import hudson.plugins.git.extensions.GitSCMExtension;
+import hudson.plugins.git.extensions.impl.DisableRemotePoll;
 import hudson.scm.SubversionSCM;
 import hudson.scm.SubversionSCM.ModuleLocation;
 import hudson.slaves.DumbSlave;
@@ -19,6 +23,7 @@ import com.github.jenkins.lastchanges.model.MatchingType;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
 
@@ -38,7 +43,13 @@ public class LastChangesIT {
     public void shouldGetLastChangesOfGitRepository() throws Exception {
 
         // given
-        DirectorySCM scm = new DirectorySCM(".git",sampleRepoDir);
+        List<UserRemoteConfig> remoteConfigs = new ArrayList<UserRemoteConfig>();
+        remoteConfigs.add(new UserRemoteConfig(sampleRepoDir.getAbsolutePath(), "origin", "", null));
+        List<BranchSpec> branches = new ArrayList<>();
+        branches.add(new BranchSpec("master"));
+        GitSCM scm = new GitSCM(remoteConfigs, branches, false,
+                Collections.<SubmoduleConfig>emptyList(), null, null,
+                Collections.<GitSCMExtension>singletonList(new DisableRemotePoll()));
         FreeStyleProject project = jenkins.createFreeStyleProject("git-test");
         project.setScm(scm);
         LastChangesPublisher publisher = new LastChangesPublisher(FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500");
@@ -93,11 +104,18 @@ public class LastChangesIT {
 
     }
 
+
     @Test
     public void shouldGetLastChangesOfGitRepositoryOnSlaveNode() throws Exception {
 
         // given
-        DirectorySCM scm = new DirectorySCM(".git",sampleRepoDir);
+        List<UserRemoteConfig> remoteConfigs = new ArrayList<UserRemoteConfig>();
+        remoteConfigs.add(new UserRemoteConfig(sampleRepoDir.getAbsolutePath(), "origin", "", null));
+        List<BranchSpec> branches = new ArrayList<>();
+        branches.add(new BranchSpec("master"));
+        GitSCM scm = new GitSCM(remoteConfigs, branches, false,
+                Collections.<SubmoduleConfig>emptyList(), null, null,
+                Collections.<GitSCMExtension>singletonList(new DisableRemotePoll()));
         DumbSlave slave = jenkins.createSlave();
         FreeStyleProject project = jenkins.createFreeStyleProject("git-test-slave");
         project.setAssignedNode(slave);

@@ -33,18 +33,19 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.*;
+import hudson.plugins.git.GitSCM;
 import hudson.scm.SubversionSCM;
-import hudson.tasks.BuildStepDescriptor;
-import hudson.tasks.BuildStepMonitor;
-import hudson.tasks.Publisher;
-import hudson.tasks.Recorder;
+import hudson.tasks.*;
 import hudson.util.ListBoxModel;
 import jenkins.tasks.SimpleBuildStep;
+import org.apache.oro.io.GlobFilenameFilter;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static com.github.jenkins.lastchanges.impl.GitLastChanges.repository;
 
@@ -69,8 +70,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     private static final String GIT_DIR = ".git";
 
-    private static final String SVN_DIR = ".svn";
-
     @DataBoundConstructor
     public LastChangesPublisher(FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold,
                                 String matchingMaxComparisons) {
@@ -93,11 +92,8 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     @Override
     public void perform(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
 
-        FilePath gitDir = workspace.child(GIT_DIR);//can be on master or slave
-        FilePath svnDir = workspace.child(SVN_DIR);
-
-        boolean isGit = gitDir.exists();
-        boolean isSvn = svnDir.exists();
+        boolean isGit = ((AbstractProject)lastChangesProjectAction.getProject()).getScm() instanceof GitSCM;
+        boolean isSvn = ((AbstractProject)lastChangesProjectAction.getProject()).getScm() instanceof SubversionSCM;
 
         if (!isGit && !isSvn) {
             throw new RuntimeException("No git or svn repository found at " + workspace.child("").absolutize());
@@ -109,11 +105,14 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             LastChanges lastChanges = null;
             listener.getLogger().println("Publishing build last changes...");
             if (isGit) {
+                FilePath gitDir = workspace.child(GIT_DIR).exists() ? workspace.child(GIT_DIR) : findGitDir(workspace);
+                if(gitDir == null){
+                    throw new RuntimeException("No git repository found on workspace " + workspace.child("").absolutize());
+                }
                 // workspace can be on slave so copy resources to master
                 // we are only copying when on git because in svn we are reading
                 // the revision from remote repository
-                //FileUtils.copyDirectoryToDirectory(new File(gitDir.getRemote()), new File(workspaceTargetDir.getRemote()));
-                gitDir.copyRecursiveTo("**/*", new FilePath(new File(workspaceTargetDir.getRemote()+"/.git")));
+                gitDir.copyRecursiveTo("**/*", new FilePath(new File(workspaceTargetDir.getRemote() + "/.git")));
                 lastChanges = GitLastChanges.getInstance().changesOf(repository(workspaceTargetDir.getRemote()+"/.git"));
             } else {
                 AbstractProject<?, ?> rootProject = (AbstractProject<?, ?>) lastChangesProjectAction.getProject();
@@ -133,6 +132,23 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
         build.setResult(Result.SUCCESS);
 
+    }
+
+    /**
+     * .git directory can be on a workspace sub dir, see JENKINS-36971
+     */
+    private FilePath findGitDir(FilePath relativeDir) throws IOException, InterruptedException {
+
+        for (FilePath filePath : relativeDir.list()) {
+            if(filePath.isDirectory()){
+                if(filePath.getName().equalsIgnoreCase(GIT_DIR)){
+                    return filePath;
+                } else{
+                    return findGitDir(filePath);
+                }
+            }
+        }
+        return null;
     }
 
     /**
