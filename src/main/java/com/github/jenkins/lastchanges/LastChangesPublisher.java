@@ -43,6 +43,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
@@ -106,9 +107,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             listener.getLogger().println("Publishing build last changes...");
             if (isGit) {
                 FilePath gitDir = workspace.child(GIT_DIR).exists() ? workspace.child(GIT_DIR) : findGitDir(workspace);
-                if(gitDir == null){
-                    throw new RuntimeException("No git repository found on workspace " + workspace.child("").absolutize());
-                }
                 // workspace can be on slave so copy resources to master
                 // we are only copying when on git because in svn we are reading
                 // the revision from remote repository
@@ -137,7 +135,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     /**
      * .git directory can be on a workspace sub dir, see JENKINS-36971
      */
-    private FilePath findGitDir(FilePath relativeDir) throws IOException, InterruptedException {
+    private FilePath findGitDir(FilePath relativeDir) throws IOException, InterruptedException, FileNotFoundException {
 
         for (FilePath filePath : relativeDir.list()) {
             if(filePath.isDirectory()){
@@ -148,7 +146,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 }
             }
         }
-        return null;
+        throw new FileNotFoundException("No .git repository found on workspace ");
     }
 
     /**
