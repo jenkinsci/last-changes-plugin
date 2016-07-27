@@ -35,16 +35,17 @@ import hudson.Launcher;
 import hudson.model.*;
 import hudson.plugins.git.GitSCM;
 import hudson.scm.SubversionSCM;
-import hudson.tasks.*;
+import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.BuildStepMonitor;
+import hudson.tasks.Publisher;
+import hudson.tasks.Recorder;
 import hudson.util.ListBoxModel;
 import jenkins.tasks.SimpleBuildStep;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.List;
 
 import static com.github.jenkins.lastchanges.impl.GitLastChanges.repository;
 
@@ -52,6 +53,8 @@ import static com.github.jenkins.lastchanges.impl.GitLastChanges.repository;
  * @author rmpestano
  */
 public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
+
+    private static final short RECURSION_DEPTH = 50;
 
     private FormatType format;
 
@@ -134,20 +137,23 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
      * .git directory can be on a workspace sub dir, see JENKINS-36971
      */
     private FilePath findGitDir(FilePath workspace) throws IOException, InterruptedException {
-
-        findGitDirRecursively(workspace);
-        return workspace;
+        FilePath gitDir = null;
+        int recusursionDepth = RECURSION_DEPTH;
+        while ((gitDir = findGitDirInSubDirectories(workspace)) == null && recusursionDepth > 0){
+            recusursionDepth --;
+        }
+        return gitDir;
     }
 
-    private void findGitDirRecursively(FilePath sourceDir) throws IOException, InterruptedException {
+    private FilePath findGitDirInSubDirectories(FilePath sourceDir) throws IOException, InterruptedException {
         for (FilePath filePath : sourceDir.listDirectories()) {
             if(filePath.getName().equalsIgnoreCase(GIT_DIR)){
-                sourceDir = filePath;
-                break;
+                return filePath;
             } else{
-                findGitDirRecursively(filePath);
+                return findGitDirInSubDirectories(filePath);
             }
         }
+        return null;
     }
 
     /**
