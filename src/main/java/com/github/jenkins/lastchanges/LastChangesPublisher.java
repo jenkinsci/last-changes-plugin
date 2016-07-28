@@ -98,7 +98,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         boolean isSvn = ((AbstractProject) lastChangesProjectAction.getProject()).getScm() instanceof SubversionSCM;
 
         if (!isGit && !isSvn) {
-            throw new RuntimeException("No git or svn repository found at " + workspace.child("").absolutize());
+            throw new RuntimeException("Git or Svn must be configured on your job to publish Last Changes.");
         }
 
         FilePath workspaceTargetDir = getMasterWorkspaceDir(build);//always on master
