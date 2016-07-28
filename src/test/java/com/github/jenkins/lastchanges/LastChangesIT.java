@@ -208,7 +208,7 @@ public class LastChangesIT {
         FreeStyleBuild build = jenkins.assertBuildStatus(Result.FAILURE,project.scheduleBuild2(0).get());
 
         // then
-        jenkins.assertLogContains("No git or svn repository found at " +build.getWorkspace(),build);
+        jenkins.assertLogContains("Git or Svn must be configured on your job to publish Last Changes." ,build);
     }
 
 }
