@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.TimeZone;
+import java.util.logging.Logger;
 
 /**
  * Created by rmpestano on 6/26/16.
@@ -68,17 +69,21 @@ public class CommitInfo {
 
     public static class Builder {
 
-        public static CommitInfo buildFromSvn(SVNRepository repository) throws SVNException {
-            Collection<SVNLogEntry> entries = repository.log(new String[]{""}, null, repository.getLatestRevision(), repository.getLatestRevision(), true, true);
-            Iterator<SVNLogEntry> iterator = entries.iterator();
-            SVNLogEntry logEntry = iterator.next();
+        public static CommitInfo buildFromSvn(SVNRepository repository,long revision ) throws SVNException {
             CommitInfo commitInfo = new CommitInfo();
-            TimeZone tz = TimeZone.getDefault();
-            dateFormat.setTimeZone(tz);
-            commitInfo.commitDate = dateFormat.format(logEntry.getDate()) + " " + tz.getDisplayName();
-            commitInfo.commiterName = logEntry.getAuthor();
-            commitInfo.commitId = logEntry.getRevision() + "";
-            commitInfo.commitMessage = logEntry.getMessage();
+            try {
+                Collection<SVNLogEntry> entries = repository.log(new String[]{""}, null, revision, revision, true, true);
+                Iterator<SVNLogEntry> iterator = entries.iterator();
+                SVNLogEntry logEntry = iterator.next();
+                TimeZone tz = TimeZone.getDefault();
+                dateFormat.setTimeZone(tz);
+                commitInfo.commitDate = dateFormat.format(logEntry.getDate()) + " " + tz.getDisplayName();
+                commitInfo.commiterName = logEntry.getAuthor();
+                commitInfo.commitId = logEntry.getRevision() + "";
+                commitInfo.commitMessage = logEntry.getMessage();
+            }catch (Exception e){
+                Logger.getLogger(CommitInfo.class.getName()).warning(String.format("Could not get commit info from revision %d due to following error "+e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""),revision));
+            }
             return commitInfo;
         }
 

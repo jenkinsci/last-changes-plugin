@@ -3,10 +3,13 @@
  */
 package com.github.jenkins.lastchanges.impl;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.nio.charset.Charset;
-
+import com.github.jenkins.lastchanges.api.VCSChanges;
+import com.github.jenkins.lastchanges.exception.RepositoryNotFoundException;
+import com.github.jenkins.lastchanges.model.CommitInfo;
+import com.github.jenkins.lastchanges.model.LastChanges;
+import hudson.model.AbstractProject;
+import hudson.scm.SubversionSCM;
+import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationProvider;
@@ -21,13 +24,9 @@ import org.tmatesoft.svn.core.wc2.SvnDiff;
 import org.tmatesoft.svn.core.wc2.SvnOperationFactory;
 import org.tmatesoft.svn.core.wc2.SvnTarget;
 
-import com.github.jenkins.lastchanges.api.VCSChanges;
-import com.github.jenkins.lastchanges.exception.RepositoryNotFoundException;
-import com.github.jenkins.lastchanges.model.CommitInfo;
-import com.github.jenkins.lastchanges.model.LastChanges;
-
-import hudson.model.AbstractProject;
-import hudson.scm.SubversionSCM;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.nio.charset.Charset;
 
 public class SvnLastChanges implements VCSChanges<SVNRepository, Long> {
 
@@ -109,11 +108,10 @@ public class SvnLastChanges implements VCSChanges<SVNRepository, Long> {
      */
     @Override
     public LastChanges changesOf(SVNRepository repository) {
-        try {
+         try {
             return changesOf(repository, repository.getLatestRevision(), repository.getLatestRevision() - 1);
-        } catch (Exception e) {
-            throw new RuntimeException("Could not retrieve last changes of svn repository located at " + repository.getLocation().getPath(), e);
-
+        } catch (SVNException e) {
+            throw new RuntimeException("Could not retrieve lastest revision of svn repository located at " + repository.getLocation().getPath() + " due to following error: "+e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""), e);
         }
     }
 
@@ -131,6 +129,7 @@ public class SvnLastChanges implements VCSChanges<SVNRepository, Long> {
             diffGenerator.setBasePath(new File(""));
             ByteArrayOutputStream diffStream = new ByteArrayOutputStream();
             final SvnOperationFactory svnOperationFactory = new SvnOperationFactory();
+            svnOperationFactory.setAuthenticationManager(repository.getAuthenticationManager());
             final SvnDiff diff = svnOperationFactory.createDiff();
             diff.setSources(SvnTarget.fromURL(repository.getLocation(), SVNRevision.create(currentRevision)),
                     SvnTarget.fromURL(repository.getLocation(), SVNRevision.create(previousRevision)));
@@ -138,11 +137,11 @@ public class SvnLastChanges implements VCSChanges<SVNRepository, Long> {
             diff.setOutput(diffStream);
             diff.run();
 
-            CommitInfo commitInfo = CommitInfo.Builder.buildFromSvn(repository);
+            CommitInfo commitInfo = CommitInfo.Builder.buildFromSvn(repository,currentRevision);
 
             return new LastChanges(commitInfo, new String(diffStream.toByteArray(), Charset.forName("UTF-8")));
         } catch (Exception e) {
-            throw new RuntimeException("Could not retrieve last changes of svn repository located at " + repository.getLocation().getPath(), e);
+            throw new RuntimeException("Could not retrieve last changes of svn repository located at " + repository.getLocation().getPath() + " due to following error: "+e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""), e);
 
         }
     }
