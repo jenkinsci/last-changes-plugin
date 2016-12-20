@@ -105,7 +105,7 @@ public class SvnLastChanges implements VCSChanges<SVNRepository, Long> {
      *
      * @param repository
      *            svn repository to get last changes
-     * @return LastChanges commit info and git diff
+     * @return LastChanges commit info and svn diff
      */
     @Override
     public LastChanges changesOf(SVNRepository repository) {
@@ -121,7 +121,7 @@ public class SvnLastChanges implements VCSChanges<SVNRepository, Long> {
      *
      * @param repository
      *            svn repository to get last changes
-     * @return LastChanges commit info and git diff
+     * @return LastChanges commit info and svn diff
      */
     @Override
     public LastChanges changesOf(SVNRepository repository, Long currentRevision, Long previousRevision) {
@@ -133,8 +133,8 @@ public class SvnLastChanges implements VCSChanges<SVNRepository, Long> {
             final SvnOperationFactory svnOperationFactory = new SvnOperationFactory();
             svnOperationFactory.setAuthenticationManager(repository.getAuthenticationManager());
             final SvnDiff diff = svnOperationFactory.createDiff();
-            diff.setSources(SvnTarget.fromURL(repository.getLocation(), SVNRevision.create(currentRevision)),
-                    SvnTarget.fromURL(repository.getLocation(), SVNRevision.create(previousRevision)));
+            diff.setSources(SvnTarget.fromURL(repository.getLocation(), SVNRevision.create(previousRevision)),
+                    SvnTarget.fromURL(repository.getLocation(), SVNRevision.create(currentRevision)));
             diff.setDiffGenerator(diffGenerator);
             diff.setOutput(diffStream);
             diff.run();
