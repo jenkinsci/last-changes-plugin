@@ -26,6 +26,7 @@ import org.tmatesoft.svn.core.wc2.SvnTarget;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
 
 public class SvnLastChanges implements VCSChanges<SVNRepository, Long> {
@@ -124,10 +125,11 @@ public class SvnLastChanges implements VCSChanges<SVNRepository, Long> {
      */
     @Override
     public LastChanges changesOf(SVNRepository repository, Long currentRevision, Long previousRevision) {
+    	ByteArrayOutputStream diffStream = null;
         try {
             final SvnDiffGenerator diffGenerator = new SvnDiffGenerator();
             diffGenerator.setBasePath(new File(""));
-            ByteArrayOutputStream diffStream = new ByteArrayOutputStream();
+            diffStream = new ByteArrayOutputStream();
             final SvnOperationFactory svnOperationFactory = new SvnOperationFactory();
             svnOperationFactory.setAuthenticationManager(repository.getAuthenticationManager());
             final SvnDiff diff = svnOperationFactory.createDiff();
@@ -144,6 +146,16 @@ public class SvnLastChanges implements VCSChanges<SVNRepository, Long> {
             throw new RuntimeException("Could not retrieve last changes of svn repository located at " + repository.getLocation().getPath() + " due to following error: "+e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""), e);
 
         }
+        finally {
+			if(diffStream != null) {
+				try {
+					diffStream.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+				
+		}
     }
 
 }
