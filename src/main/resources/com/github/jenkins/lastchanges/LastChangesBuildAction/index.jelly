@@ -2,62 +2,60 @@
 <j:jelly trim="false" xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <l:layout>
-    
-    <l:header>
+
+        <l:header>
             <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/github-9.5.0.min.css"/>
-            <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/diff2html-2.0.1.min.css"/>
+            <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/diff2html-2.3.0.min.css"/>
             <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/jquery.min.js"/>
             <script type="text/javascript">window.jQueryJenkins = jQuery.noConflict();</script>
-            <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/highlightjs-9.5.0.min.js"/>
-            <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-2.0.1.min.js"/>
-            <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-ui-2.0.1.min.js"/>
+            <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/highlightjs-9.12.0.min.js"/>
+            <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-2.3.0.min.js"/>
+            <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-ui-2.0.12.min.js"/>
             <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/scala-9.5.0.min.js"/>
-    </l:header>
-    
-    <l:main-panel style="container-fluid;width:100%">
-            
+        </l:header>
+
+        <l:main-panel style="container-fluid;width:100%">
+
             <h2 style="text-align:center">View Last Changes of build #${it.build.number}</h2>
 
             <style>
-                .row{
-                    text-align:center!important;
+                .row {
+                    text-align: center !important;
                 }
-                
+
                 #main-panel {
-                   margin-left:10px!important;	
+                    margin-left: 10px !important;
                 }
             </style>
             <script>
-                jQueryJenkins(document).ready(function() {
-                  var buildChanges = "${it.buildChanges.escapedDiff}";
-                  var sidePanelTD=document.getElementById('side-panel');
-                               if(sidePanelTD) {
-                                 sidePanelTD.parentNode.removeChild(sidePanelTD);
-                               }
-                var diff2htmlUi = new Diff2HtmlUI({diff: buildChanges});
+                jQueryJenkins(document).ready(function () {
+                    var buildChanges = "${it.buildChanges.escapedDiff}";
+                    var sidePanelTD = document.getElementById('side-panel');
+                    if (sidePanelTD) {
+                        sidePanelTD.parentNode.removeChild(sidePanelTD);
+                    }
+                    var diff2htmlUi = new Diff2HtmlUI({diff: buildChanges});
 
                     diff2htmlUi.draw('#${it.config.format().getFormat()}', {
-                         inputFormat: 'json',
-                         outputFormat: '${it.config.format().getFormat()}',
-                         showFiles: ${it.config.showFiles()},
-                         synchronisedScroll: ${it.config.synchronisedScroll()},
-                         matchWordsThreshold: '${it.config.matchWordsThreshold()}',
-                         matchingMaxComparisons: '${it.config.matchingMaxComparisons()}',
-                         matching: '${it.config.matching().getMatching()}'
-                         }
-                        );
+                            inputFormat: 'json',
+                            outputFormat: '${it.config.format().getFormat()}',
+                            showFiles: ${it.config.showFiles()},
+                            synchronisedScroll: ${it.config.synchronisedScroll()},
+                            matchWordsThreshold: '${it.config.matchWordsThreshold()}',
+                            matchingMaxComparisons: '${it.config.matchingMaxComparisons()}',
+                            matching: '${it.config.matching().getMatching()}'
+                        }
+                    );
                     diff2htmlUi.fileListCloseable('#${it.config.format().getFormat()}', false);
                     diff2htmlUi.highlightCode('#${it.config.format().getFormat()}');
 
                 }); //end documentReady
 
-                
-
 
             </script>
 
             <div style="width:100%; font-family: 'Source Sans Pro',sans-serif;">
-                    
+
                 <div class="d2h-file-header" style="text-align:center;margin: 0 auto;">
 
                     <b>Commit:</b> ${it.buildChanges.commitInfo.commitId}
