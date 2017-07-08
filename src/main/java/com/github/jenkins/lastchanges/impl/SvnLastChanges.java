@@ -8,6 +8,7 @@ import com.github.jenkins.lastchanges.exception.RepositoryNotFoundException;
 import com.github.jenkins.lastchanges.model.CommitInfo;
 import com.github.jenkins.lastchanges.model.LastChanges;
 import hudson.model.AbstractProject;
+import hudson.model.Job;
 import hudson.scm.SubversionSCM;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNURL;
@@ -89,6 +90,27 @@ public class SvnLastChanges implements VCSChanges<SVNRepository, Long> {
             } catch (NoSuchMethodError e) {
                 //fallback for versions under 2.x of org.jenkins-ci.plugins:subversion
                 svnAuthProvider = scm.getDescriptor().createAuthenticationProvider(rootProject);
+            }
+            ISVNAuthenticationManager svnAuthManager = SVNWCUtil.createDefaultAuthenticationManager();
+            svnAuthManager.setAuthenticationProvider(svnAuthProvider);
+            SVNClientManager svnClientManager = SVNClientManager.newInstance(null, svnAuthManager);
+            return svnClientManager.createRepository(SVNURL.parseURIEncoded(path), false);
+        } catch (Exception e) {
+            throw new RepositoryNotFoundException("Could not find svn repository at " + path, e);
+        }
+    }
+
+    public static SVNRepository repository(SubversionSCM scm, Job<?, ?> job) {
+
+        String path = null;
+        try {
+            path = scm.getLocations()[0].getURL();
+            ISVNAuthenticationProvider svnAuthProvider;
+            try{
+                svnAuthProvider = scm.createAuthenticationProvider(job, scm.getLocations()[0]);
+            } catch (NoSuchMethodError e) {
+                //fallback for versions under 2.x of org.jenkins-ci.plugins:subversion
+                svnAuthProvider = scm.getDescriptor().createAuthenticationProvider();
             }
             ISVNAuthenticationManager svnAuthManager = SVNWCUtil.createDefaultAuthenticationManager();
             svnAuthManager.setAuthenticationProvider(svnAuthProvider);

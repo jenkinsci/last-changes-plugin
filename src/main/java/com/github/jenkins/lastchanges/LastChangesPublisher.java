@@ -34,6 +34,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.*;
 import hudson.plugins.git.GitSCM;
+import hudson.scm.SCM;
 import hudson.scm.SubversionSCM;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
@@ -42,10 +43,12 @@ import hudson.tasks.Recorder;
 import hudson.util.ListBoxModel;
 import jenkins.tasks.SimpleBuildStep;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Collection;
 
 import static com.github.jenkins.lastchanges.impl.GitLastChanges.repository;
 
@@ -68,8 +71,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     private String matchingMaxComparisons;
 
-    private LastChangesProjectAction lastChangesProjectAction;
-
     private static final String GIT_DIR = ".git";
 
     @DataBoundConstructor
@@ -83,19 +84,32 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         this.matchingMaxComparisons = matchingMaxComparisons;
     }
 
-    @Override
-    public Action getProjectAction(AbstractProject<?, ?> project) {
-        if (lastChangesProjectAction == null) {
-            lastChangesProjectAction = new LastChangesProjectAction(project);
-        }
-        return lastChangesProjectAction;
-    }
 
     @Override
     public void perform(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
 
-        boolean isGit = ((AbstractProject) lastChangesProjectAction.getProject()).getScm() instanceof GitSCM;
-        boolean isSvn = ((AbstractProject) lastChangesProjectAction.getProject()).getScm() instanceof SubversionSCM;
+        LastChangesProjectAction projectAction = new LastChangesProjectAction(build.getParent());
+        boolean isGit = false;
+        boolean isSvn = false;
+        if (projectAction.isRunningInPipelineWorkflow()) {
+            WorkflowJob wkfJob = (WorkflowJob) projectAction.getProject();
+            Collection<? extends SCM> scMs = wkfJob.getSCMs();
+            for (SCM scm : scMs) {
+                if (scm instanceof GitSCM) {
+                    isGit = true;
+                    break;
+                }
+
+                if (scm instanceof SubversionSCM) {
+                    isSvn = true;
+                    break;
+                }
+            }
+
+        } else if (projectAction.getProject() instanceof AbstractProject) { // non pipeline build
+            isGit = ((AbstractProject) projectAction.getProject()).getScm() instanceof GitSCM;
+            isSvn = ((AbstractProject) projectAction.getProject()).getScm() instanceof SubversionSCM;
+        }
 
         if (!isGit && !isSvn) {
             throw new RuntimeException("Git or Svn must be configured on your job to publish Last Changes.");
@@ -114,9 +128,18 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 gitDir.copyRecursiveTo("**/*", new FilePath(new File(workspaceTargetDir.getRemote() + "/.git")));
                 lastChanges = GitLastChanges.getInstance().changesOf(repository(workspaceTargetDir.getRemote() + "/.git"));
             } else {
-                AbstractProject<?, ?> rootProject = (AbstractProject<?, ?>) lastChangesProjectAction.getProject();
-                SubversionSCM scm = SubversionSCM.class.cast(rootProject.getScm());
-                lastChanges = SvnLastChanges.getInstance().changesOf(SvnLastChanges.repository(scm, rootProject));
+                SubversionSCM scm = null;
+                if (projectAction.isRunningInPipelineWorkflow()) {
+                    WorkflowJob workflowJob = (WorkflowJob) projectAction.getProject();
+                    scm = (SubversionSCM) workflowJob.getSCMs().iterator().next();
+                    lastChanges = SvnLastChanges.getInstance().changesOf(SvnLastChanges.repository(scm, projectAction.getProject()));
+
+                } else {
+                    AbstractProject<?, ?> rootProject = (AbstractProject<?, ?>) projectAction.getProject();
+                    scm = SubversionSCM.class.cast(rootProject.getScm());
+                    lastChanges = SvnLastChanges.getInstance().changesOf(SvnLastChanges.repository(scm, (AbstractProject<?, ?>) projectAction.getProject()));
+                }
+
             }
 
             listener.hyperlink("../" + build.getNumber() + "/" + LastChangesBaseAction.BASE_URL, "Last changes published successfully!");
@@ -139,10 +162,10 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     private FilePath findGitDir(FilePath workspace) throws IOException, InterruptedException {
         FilePath gitDir = null;
         int recusursionDepth = RECURSION_DEPTH;
-        while ((gitDir = findGitDirInSubDirectories(workspace)) == null && recusursionDepth > 0){
-            recusursionDepth --;
+        while ((gitDir = findGitDirInSubDirectories(workspace)) == null && recusursionDepth > 0) {
+            recusursionDepth--;
         }
-        if(gitDir == null){
+        if (gitDir == null) {
             throw new RuntimeException("No .git directory found in workspace.");
         }
         return gitDir;
@@ -150,9 +173,9 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     private FilePath findGitDirInSubDirectories(FilePath sourceDir) throws IOException, InterruptedException {
         for (FilePath filePath : sourceDir.listDirectories()) {
-            if(filePath.getName().equalsIgnoreCase(GIT_DIR)){
+            if (filePath.getName().equalsIgnoreCase(GIT_DIR)) {
                 return filePath;
-            } else{
+            } else {
                 return findGitDirInSubDirectories(filePath);
             }
         }

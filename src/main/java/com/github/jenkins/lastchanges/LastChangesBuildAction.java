@@ -1,17 +1,23 @@
 package com.github.jenkins.lastchanges;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import com.github.jenkins.lastchanges.model.LastChanges;
 import com.github.jenkins.lastchanges.model.LastChangesConfig;
 
+import hudson.model.Action;
 import hudson.model.Run;
+import jenkins.tasks.SimpleBuildStep;
 
-public class LastChangesBuildAction extends LastChangesBaseAction {
+public class LastChangesBuildAction extends LastChangesBaseAction implements SimpleBuildStep.LastBuildAction {
 
     private final Run<?, ?> build;
     private LastChanges buildChanges;
     private LastChangesConfig config;
+    private List<LastChangesProjectAction> projectActions;
 
     public LastChangesBuildAction(Run<?, ?> build, LastChanges lastChanges, LastChangesConfig config) {
         this.build = build;
@@ -20,6 +26,9 @@ public class LastChangesBuildAction extends LastChangesBaseAction {
             config = new LastChangesConfig();
         }
         this.config = config;
+        List<LastChangesProjectAction> projectActions = new ArrayList<>();
+        projectActions.add(new LastChangesProjectAction(build.getParent()));
+        this.projectActions = projectActions;
     }
 
     @Override
@@ -45,4 +54,8 @@ public class LastChangesBuildAction extends LastChangesBaseAction {
     }
 
 
+    @Override
+    public Collection<? extends Action> getProjectActions() {
+        return this.projectActions;
+    }
 }
