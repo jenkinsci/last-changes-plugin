@@ -69,9 +69,9 @@ public class GitLastChangesTest {
     public void shouldGetLastChangesFromGitRepository() throws FileNotFoundException {
         LastChanges lastChanges = GitLastChanges.getInstance().changesOf(repository(gitRepoPath));
         assertThat(lastChanges).isNotNull();
-        assertThat(lastChanges.getCommitInfo()).isNotNull();
-        assertThat(lastChanges.getCommitInfo().getCommitMessage()).isEqualTo("Added javadoc\n");
-        assertThat(lastChanges.getCommitInfo().getCommitId()).isEqualTo("27ad83a8fbee4b551670a03fc035bf87f7a3bcfb");
+        assertThat(lastChanges.getCurrentRevision()).isNotNull();
+        assertThat(lastChanges.getCurrentRevision().getCommitMessage()).isEqualTo("Added javadoc\n");
+        assertThat(lastChanges.getCurrentRevision().getCommitId()).isEqualTo("27ad83a8fbee4b551670a03fc035bf87f7a3bcfb");
 
         assertThat(lastChanges.getDiff()).isEqualToIgnoringWhitespace(("diff --git a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + newLine +
                 "index 6d28c9b..bcc2ac0 100644" + newLine +

@@ -52,7 +52,7 @@ public class LastChangesIT {
                 Collections.<GitSCMExtension>singletonList(new DisableRemotePoll()));
         FreeStyleProject project = jenkins.createFreeStyleProject("git-test");
         project.setScm(scm);
-        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500");
+        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null);
         project.getPublishersList().add(publisher);
         project.save();
 
@@ -65,9 +65,9 @@ public class LastChangesIT {
         LastChanges lastChanges = action.getBuildChanges();
         assertThat(lastChanges).isNotNull();
         assertThat(lastChanges).isNotNull();
-        assertThat(lastChanges.getCommitInfo()).isNotNull();
-        assertThat(lastChanges.getCommitInfo().getCommitMessage()).isEqualTo("Added javadoc\n");
-        assertThat(lastChanges.getCommitInfo().getCommitId()).isEqualTo("27ad83a8fbee4b551670a03fc035bf87f7a3bcfb");
+        assertThat(lastChanges.getCurrentRevision()).isNotNull();
+        assertThat(lastChanges.getCurrentRevision().getCommitMessage()).isEqualTo("Added javadoc\n");
+        assertThat(lastChanges.getCurrentRevision().getCommitId()).isEqualTo("27ad83a8fbee4b551670a03fc035bf87f7a3bcfb");
         Assertions.assertThat(lastChanges.getDiff()).isEqualToIgnoringWhitespace(("diff --git a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + GitLastChangesTest.newLine +
                 "index 6d28c9b..bcc2ac0 100644" + GitLastChangesTest.newLine +
                 "--- a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + GitLastChangesTest.newLine +
@@ -120,7 +120,7 @@ public class LastChangesIT {
         FreeStyleProject project = jenkins.createFreeStyleProject("git-test-slave");
         project.setAssignedNode(slave);
         project.setScm(scm);
-        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.SIDE,MatchingType.WORD, true, false, null,null);
+        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.SIDE,MatchingType.WORD, true, false, null,null,null);
         project.getPublishersList().add(publisher);
         project.save();
 
@@ -133,9 +133,9 @@ public class LastChangesIT {
         LastChanges lastChanges = action.getBuildChanges();
         assertThat(lastChanges).isNotNull();
         assertThat(lastChanges).isNotNull();
-        assertThat(lastChanges.getCommitInfo()).isNotNull();
-        assertThat(lastChanges.getCommitInfo().getCommitMessage()).isEqualTo("Added javadoc\n");
-        assertThat(lastChanges.getCommitInfo().getCommitId()).isEqualTo("27ad83a8fbee4b551670a03fc035bf87f7a3bcfb");
+        assertThat(lastChanges.getCurrentRevision()).isNotNull();
+        assertThat(lastChanges.getCurrentRevision().getCommitMessage()).isEqualTo("Added javadoc\n");
+        assertThat(lastChanges.getCurrentRevision().getCommitId()).isEqualTo("27ad83a8fbee4b551670a03fc035bf87f7a3bcfb");
         Assertions.assertThat(lastChanges.getDiff()).isEqualToIgnoringWhitespace(("diff --git a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + GitLastChangesTest.newLine +
                 "index 6d28c9b..bcc2ac0 100644" + GitLastChangesTest.newLine +
                 "--- a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + GitLastChangesTest.newLine +
@@ -180,7 +180,7 @@ public class LastChangesIT {
         SvnSCM scm = new SvnSCM(".svn",sampleRepoDir,locations);//directory content is irrelevant cause LastChangesPublisher will look only into dir name (in case of svn)
         FreeStyleProject project = jenkins.createFreeStyleProject("svn-test");
         project.setScm(scm);
-        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500");
+        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null);
         project.getPublishersList().add(publisher);
         project.save();
         
@@ -193,14 +193,14 @@ public class LastChangesIT {
         LastChangesBuildAction action = build.getAction(LastChangesBuildAction.class);
         assertThat(action).isNotNull();
         assertThat(action.getBuildChanges()).isNotNull();
-        assertThat(action.getBuildChanges().getCommitInfo().getCommiterName()).isEqualTo("rmpestano");
+        assertThat(action.getBuildChanges().getCurrentRevision().getCommiterName()).isEqualTo("rmpestano");
         jenkins.assertLogContains("Last changes published successfully!",build);
     }
 
     @Test
     public void shouldNotGetLastChangesOfNonExistingRepository() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("non-existing-test");
-        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500");
+        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null);
         project.getPublishersList().add(publisher);
         project.save();
 

@@ -32,9 +32,9 @@ public class SvnLastChangesTest {
             assertNotNull(repository);
             LastChanges lastChanges = SvnLastChanges.getInstance().changesOf(repository);
             assertNotNull(lastChanges);
-            assertThat(lastChanges.getCommitInfo()).isNotNull();
+            assertThat(lastChanges.getCurrentRevision()).isNotNull();
             assertThat(lastChanges.getDiff()).isNotEmpty();
-            assertThat(lastChanges.getCommitInfo().getCommitMessage()).isEqualTo("updated cukedóctor json");
+            assertThat(lastChanges.getCurrentRevision().getCommitMessage()).isEqualTo("updated cukedóctor json");
 
     }
 
