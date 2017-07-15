@@ -16,8 +16,6 @@ ____
 
 image:https://travis-ci.org/jenkinsci/last-changes-plugin.svg[Build Status (Travis CI), link=https://travis-ci.org/jenkinsci/last-changes-plugin]
 
-image:https://jenkins.ci.cloudbees.com/buildStatus/icon?job=plugins/last-changes-plugin[Build Status (Cloudbees), link=https://jenkins.ci.cloudbees.com/job/plugins/job/last-changes-plugin/]
-
 Last Changes is a *Jenkin plugin* that shows _rich VCS diffs_ between builds.
 
 IMPORTANT: Only `Git` and `Svn` based projects are supported.
