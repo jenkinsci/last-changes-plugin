@@ -67,13 +67,16 @@
                         <br/>
                         <b>Author:</b> ${it.buildChanges.currentRevision.commiterName}
                         <br/>
-                        <b>E-mail:</b> ${it.buildChanges.currentRevision.commiterEmail}
-                        <br/>
+                        <j:if test="${empty it.buildChanges.currentRevision.commiterEmail}">
+                            <b>E-mail:</b> ${it.buildChanges.currentRevision.commiterEmail}
+                            <br/>
+                        </j:if>
                         <b>Date:</b> ${it.buildChanges.currentRevision.commitDate}
                         <br/>
-                        <b>Message:</b> ${it.buildChanges.currentRevision.commitMessage}
-                        <br/>
-
+                        <j:if test="${empty it.buildChanges.currentRevision.commitMessage}">
+                          <b>Message:</b> ${it.buildChanges.currentRevision.commitMessage}
+                          <br/>
+                        </j:if>
                     </div>
 
                     <div class="col-sm-24 col-md-24 col-lg-12 col-xlg-12">
@@ -82,13 +85,16 @@
                         <br/>
                         <b>Author:</b> ${it.buildChanges.oldRevision.commiterName}
                         <br/>
-                        <b>E-mail:</b> ${it.buildChanges.oldRevision.commiterEmail}
-                        <br/>
+                         <j:if test="${empty it.buildChanges.oldRevision.commiterEmail}">
+                            <b>E-mail:</b> ${it.buildChanges.oldRevision.commiterEmail}
+                            <br/>
+                         </j:if>
                         <b>Date:</b> ${it.buildChanges.oldRevision.commitDate}
                         <br/>
-                        <b>Message:</b> ${it.buildChanges.oldRevision.commitMessage}
-                        <br/>
-
+                        <j:if test="${empty it.buildChanges.oldRevision.commitMessage}">
+                           <b>E-mail:</b> ${it.buildChanges.oldRevision.commitMessage}
+                           <br/>
+                        </j:if>
                     </div>
                 </div>
                 <br/>
