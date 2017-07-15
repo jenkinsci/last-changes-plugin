@@ -8,18 +8,18 @@ public class LastChangesConfig {
 	private String matchingMaxComparisons = "1000";
 	private Boolean showFiles = Boolean.TRUE;
 	private Boolean synchronisedScroll = Boolean.TRUE;
-	private String oldRevision="";//by default it is current revision -1
+	private String endRevision ="";//by default it is previous repository revision
 	
 	
 	
 	public LastChangesConfig() {
 	}
 
-	public LastChangesConfig(String oldRevision, FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold, String matchingMaxComparisons) {
+	public LastChangesConfig(String endRevision, FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold, String matchingMaxComparisons) {
 		super();
 
-		if(oldRevision != null) {
-			this.oldRevision = oldRevision;
+		if(endRevision != null) {
+			this.endRevision = endRevision;
 		}
 		if(format != null){
 			this.format = format;
@@ -55,8 +55,8 @@ public class LastChangesConfig {
 		return format;
 	}
 
-	public String pldRevision() {
-		return oldRevision;
+	public String getEndRevision() {
+		return endRevision;
 	}
 
 	public MatchingType matching() {

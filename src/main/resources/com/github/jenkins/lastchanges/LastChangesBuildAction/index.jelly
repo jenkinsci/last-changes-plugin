@@ -81,18 +81,18 @@
 
                     <div class="col-sm-24 col-md-24 col-lg-12 col-xlg-12">
 
-                        <b><span style="text-decoration:underline;font-weight:bolder">Old</span> revision:</b> ${it.buildChanges.oldRevision.commitId}
+                        <b><span style="text-decoration:underline;font-weight:bolder">End</span> revision:</b> ${it.buildChanges.endRevision.commitId}
                         <br/>
-                        <b>Author:</b> ${it.buildChanges.oldRevision.commiterName}
+                        <b>Author:</b> ${it.buildChanges.endRevision.commiterName}
                         <br/>
-                         <j:if test="${not empty it.buildChanges.oldRevision.commiterEmail}">
-                            <b>E-mail:</b> ${it.buildChanges.oldRevision.commiterEmail}
+                         <j:if test="${not empty it.buildChanges.endRevision.commiterEmail}">
+                            <b>E-mail:</b> ${it.buildChanges.endRevision.commiterEmail}
                             <br/>
                          </j:if>
-                        <b>Date:</b> ${it.buildChanges.oldRevision.commitDate}
+                        <b>Date:</b> ${it.buildChanges.endRevision.commitDate}
                         <br/>
-                        <j:if test="${not empty it.buildChanges.oldRevision.commitMessage}">
-                           <b>E-mail:</b> ${it.buildChanges.oldRevision.commitMessage}
+                        <j:if test="${not empty it.buildChanges.endRevision.commitMessage}">
+                           <b>E-Message:</b> ${it.buildChanges.endRevision.commitMessage}
                            <br/>
                         </j:if>
                     </div>
