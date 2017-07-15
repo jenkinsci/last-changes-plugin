@@ -24,11 +24,11 @@ IMPORTANT: Only `Git` and `Svn` based projects are supported.
 
 The plugin uses https://diff2html.rtfpessoa.xyz/[diff2html^] to show last changes of a given build, example:
 
-image:images/last-changes.png[]
+image:images/last-changes03.png[]
 
 Or using side-by-side configuration:
 
-image:images/side-by-side.png[]
+image:images/last-changes05.png[]
 
 
 NOTE: Last changes means `compare current repository revision with an old revision`. By default the plugin will diff current and previous revisions.
