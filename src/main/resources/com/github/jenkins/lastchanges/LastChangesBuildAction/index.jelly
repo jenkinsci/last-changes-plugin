@@ -67,13 +67,13 @@
                         <br/>
                         <b>Author:</b> ${it.buildChanges.currentRevision.commiterName}
                         <br/>
-                        <j:if test="${empty it.buildChanges.currentRevision.commiterEmail}">
+                        <j:if test="${not empty it.buildChanges.currentRevision.commiterEmail}">
                             <b>E-mail:</b> ${it.buildChanges.currentRevision.commiterEmail}
                             <br/>
                         </j:if>
                         <b>Date:</b> ${it.buildChanges.currentRevision.commitDate}
                         <br/>
-                        <j:if test="${empty it.buildChanges.currentRevision.commitMessage}">
+                        <j:if test="${not empty it.buildChanges.currentRevision.commitMessage}">
                           <b>Message:</b> ${it.buildChanges.currentRevision.commitMessage}
                           <br/>
                         </j:if>
@@ -85,13 +85,13 @@
                         <br/>
                         <b>Author:</b> ${it.buildChanges.oldRevision.commiterName}
                         <br/>
-                         <j:if test="${empty it.buildChanges.oldRevision.commiterEmail}">
+                         <j:if test="${not empty it.buildChanges.oldRevision.commiterEmail}">
                             <b>E-mail:</b> ${it.buildChanges.oldRevision.commiterEmail}
                             <br/>
                          </j:if>
                         <b>Date:</b> ${it.buildChanges.oldRevision.commitDate}
                         <br/>
-                        <j:if test="${empty it.buildChanges.oldRevision.commitMessage}">
+                        <j:if test="${not empty it.buildChanges.oldRevision.commitMessage}">
                            <b>E-mail:</b> ${it.buildChanges.oldRevision.commitMessage}
                            <br/>
                         </j:if>
