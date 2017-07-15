@@ -71,7 +71,7 @@ public class GitLastChangesTest {
         assertThat(lastChanges).isNotNull();
         assertThat(lastChanges.getCurrentRevision()).isNotNull();
         assertThat(lastChanges.getCurrentRevision().getCommitMessage()).isEqualTo("Added javadoc\n");
-        assertThat(lastChanges.getCurrentRevision().getCommitId()).isEqualTo("bb8a132b314888f2e8bee83bf534fa3e3f2815f9");
+        assertThat(lastChanges.getCurrentRevision().getCommitId()).isEqualTo("27ad83a8fbee4b551670a03fc035bf87f7a3bcfb");
 
         assertThat(lastChanges.getDiff()).isEqualToIgnoringWhitespace(("diff --git a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + newLine +
                 "index 6d28c9b..bcc2ac0 100644" + newLine +
