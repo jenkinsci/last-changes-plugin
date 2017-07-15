@@ -14,6 +14,8 @@ import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 
 import java.io.ByteArrayOutputStream;
@@ -31,8 +33,8 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
     private GitLastChanges() {
     }
 
-    public static GitLastChanges getInstance(){
-        if(instance == null){
+    public static GitLastChanges getInstance() {
+        if (instance == null) {
             instance = new GitLastChanges();
         }
 
@@ -81,12 +83,7 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
         Git git = new Git(repository);
         try {
             String repositoryLocation = repository.getDirectory().getAbsolutePath();
-            ObjectId head = null;
-            try {
-                head = repository.resolve("HEAD^{tree}");
-            } catch (IOException e) {
-                throw new GitTreeNotFoundException("Could not resolve head of repository located at " + repositoryLocation, e);
-            }
+            ObjectId head = resolveCurrentRevision(repository);
             ObjectId previousHead = null;
             try {
                 previousHead = repository.resolve("HEAD~^{tree}");
@@ -108,7 +105,17 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
         }
 
     }
-    
+
+    public static ObjectId resolveCurrentRevision(Repository repository) {
+        String repositoryLocation = repository.getDirectory().getAbsolutePath();
+        try {
+            return repository.resolve("HEAD^{tree}");
+        } catch (IOException e) {
+            throw new GitTreeNotFoundException("Could not resolve head of repository located at " + repositoryLocation, e);
+        }
+
+    }
+
     /**
      * Creates last changes by "diffing" two revisions
      *
@@ -121,26 +128,38 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
         try {
             ByteArrayOutputStream diffStream = new ByteArrayOutputStream();
             CommitInfo lastCommitInfo;
+            CommitInfo oldCommitInfo;
             String repositoryLocation = repository.getDirectory().getAbsolutePath();
             DiffFormatter formatter = new DiffFormatter(diffStream);
             formatter.setRepository(repository);
             ObjectReader reader = repository.newObjectReader();
-            try {
-                lastCommitInfo = CommitInfo.Builder.buildFromGit(repository, currentRevision);
-            } catch (Exception e) {
-                throw new CommitInfoException("Could not get last commit information", e);
-            }
-            
+
+            lastCommitInfo = CommitInfo.Builder.buildFromGit(repository, currentRevision);
+            oldCommitInfo = CommitInfo.Builder.buildFromGit(repository, previousRevision);
+
             // Create the tree iterator for each commit
             CanonicalTreeParser oldTreeIter = new CanonicalTreeParser();
             try {
-                oldTreeIter.reset(reader, previousRevision);
+                RevWalk revWalk = new RevWalk(repository);
+                if (revWalk.parseAny(previousRevision) instanceof RevCommit) {
+                    RevCommit revCommit = revWalk.parseCommit(previousRevision);
+                    oldTreeIter.reset(reader, revCommit.getTree().getId());
+                } else {
+                    oldTreeIter.reset(reader, previousRevision);
+                }
             } catch (Exception e) {
                 throw new GitTreeParseException("Could not parse previous commit tree.", e);
             }
             CanonicalTreeParser newTreeIter = new CanonicalTreeParser();
             try {
-                newTreeIter.reset(reader, currentRevision);
+                RevWalk revWalk = new RevWalk(repository);
+                if (revWalk.parseAny(currentRevision) instanceof RevCommit) {
+                    RevCommit revCommit = revWalk.parseCommit(currentRevision);
+                    newTreeIter.reset(reader, revCommit.getTree().getId());
+                } else {
+                    newTreeIter.reset(reader, currentRevision);
+                }
+
             } catch (IOException e) {
                 throw new GitTreeParseException("Could not parse current commit tree.", e);
             }
@@ -152,7 +171,7 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
                 throw new GitDiffException("Could not get last changes of repository located at " + repositoryLocation, e);
             }
 
-            return new LastChanges(lastCommitInfo, new String(diffStream.toByteArray(), Charset.forName("UTF-8")));
+            return new LastChanges(lastCommitInfo, oldCommitInfo, new String(diffStream.toByteArray(), Charset.forName("UTF-8")));
         } finally {
             if (git != null) {
                 git.close();

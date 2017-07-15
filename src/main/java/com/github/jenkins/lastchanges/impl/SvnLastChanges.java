@@ -125,8 +125,7 @@ public class SvnLastChanges implements VCSChanges<SVNRepository, Long> {
     /**
      * Creates last changes from repository last two revisions
      *
-     * @param repository
-     *            svn repository to get last changes
+     * @param repository svn repository to get last changes
      * @return LastChanges commit info and svn diff
      */
     @Override
@@ -137,6 +136,7 @@ public class SvnLastChanges implements VCSChanges<SVNRepository, Long> {
             throw new RuntimeException("Could not retrieve lastest revision of svn repository located at " + repository.getLocation().getPath() + " due to following error: "+e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""), e);
         }
     }
+
 
     /**
      * Creates last changes from two revisions of repository
@@ -161,9 +161,11 @@ public class SvnLastChanges implements VCSChanges<SVNRepository, Long> {
             diff.setOutput(diffStream);
             diff.run();
 
-            CommitInfo commitInfo = CommitInfo.Builder.buildFromSvn(repository,currentRevision);
+            CommitInfo lastCommitInfo = CommitInfo.Builder.buildFromSvn(repository,currentRevision);
+            CommitInfo oldCommitInfo = CommitInfo.Builder.buildFromSvn(repository,previousRevision);
 
-            return new LastChanges(commitInfo, new String(diffStream.toByteArray(), Charset.forName("UTF-8")));
+
+            return new LastChanges(lastCommitInfo, oldCommitInfo, new String(diffStream.toByteArray(), Charset.forName("UTF-8")));
         } catch (Exception e) {
             throw new RuntimeException("Could not retrieve last changes of svn repository located at " + repository.getLocation().getPath() + " due to following error: "+e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""), e);
 

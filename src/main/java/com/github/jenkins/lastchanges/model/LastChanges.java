@@ -7,16 +7,22 @@ import org.apache.commons.lang3.StringEscapeUtils;
  */
 public class LastChanges {
 
-    private CommitInfo commitInfo; //information aboud head commit
+    private CommitInfo currentRevision; //information aboud head commit
+    private CommitInfo oldRevision;
     private String diff; //diff between head and ´head -1'
 
-    public LastChanges(CommitInfo commitInfo, String diff) {
-        this.commitInfo = commitInfo;
+    public LastChanges(CommitInfo current, CommitInfo old, String diff) {
+        this.currentRevision = current;
+        this.oldRevision = old;
         this.diff = diff;
     }
 
-    public CommitInfo getCommitInfo() {
-        return commitInfo;
+    public CommitInfo getCurrentRevision() {
+        return currentRevision;
+    }
+
+    public CommitInfo getOldRevision() {
+        return oldRevision;
     }
 
     public String getDiff() {

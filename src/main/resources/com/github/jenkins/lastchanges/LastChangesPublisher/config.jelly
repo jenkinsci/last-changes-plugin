@@ -3,13 +3,15 @@
          xmlns:f="/lib/form">
 
   <f:section title="Last Changes Configuration" >
-      <f:entry title="Format " field="format" description="Diff format: libe-by-line (default) or side-by-side.">
+      <f:entry title="Old revision" description="Revision id to create the diff with the current repository revision. Default is previous revision." >
+             <f:textbox value="${instance.oldRevision}" field="oldRevision"  />
+          </f:entry>
+      <f:entry title="Format" field="format" description="Diff format: libe-by-line (default) or side-by-side.">
             <f:select value="${instance.format}" field="format" />
        </f:entry>
        <f:entry title="Matching" field="matching" description="Matching level: 'lines' for matching lines, 'words' for matching lines and words or 'none', default is none.">
             <f:select value="${instance.matching}"  field="matching" />
        </f:entry>
-       
        <f:entry  title="Show files" description="Show a file list before the diff.">
            <f:checkbox value="${instance.showFiles}" field="showFiles" default="true"/>
        </f:entry>

@@ -8,14 +8,19 @@ public class LastChangesConfig {
 	private String matchingMaxComparisons = "1000";
 	private Boolean showFiles = Boolean.TRUE;
 	private Boolean synchronisedScroll = Boolean.TRUE;
+	private String oldRevision="";//by default it is current revision -1
 	
 	
 	
 	public LastChangesConfig() {
 	}
 
-	public LastChangesConfig(FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold, String matchingMaxComparisons) {
+	public LastChangesConfig(String oldRevision, FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold, String matchingMaxComparisons) {
 		super();
+
+		if(oldRevision != null) {
+			this.oldRevision = oldRevision;
+		}
 		if(format != null){
 			this.format = format;
 		}
@@ -49,11 +54,15 @@ public class LastChangesConfig {
 	public FormatType format() {
 		return format;
 	}
+
+	public String pldRevision() {
+		return oldRevision;
+	}
+
 	public MatchingType matching() {
 		return matching;
 	}
-	
-	
+
 	public String showFiles(){
 		return showFiles.toString();
 	}

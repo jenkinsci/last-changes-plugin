@@ -29,6 +29,9 @@
             </style>
             <script>
                 jQueryJenkins(document).ready(function () {
+                    if (jQueryJenkins('#main-panel').length) {
+                        jQueryJenkins('#main-panel').attr('class','col-sm-24 col-md-24 col-lg-24 col-xlg-24');
+                    }
                     var buildChanges = "${it.buildChanges.escapedDiff}";
                     var sidePanelTD = document.getElementById('side-panel');
                     if (sidePanelTD) {
@@ -54,20 +57,39 @@
 
             </script>
 
-            <div style="width:100%; font-family: 'Source Sans Pro',sans-serif;">
+            <div class="col-sm-24 col-md-24" style="width:100%; font-family: 'Source Sans Pro',sans-serif;">
 
-                <div class="d2h-file-header" style="text-align:center;margin: 0 auto;">
+                <div style="text-align:center;margin: 0 auto;">
 
-                    <b>Commit:</b> ${it.buildChanges.commitInfo.commitId}
-                    <br/>
-                    <b>Author:</b> ${it.buildChanges.commitInfo.commiterName}
-                    <br/>
-                    <b>E-mail:</b> ${it.buildChanges.commitInfo.commiterEmail}
-                    <br/>
-                    <b>Date:</b> ${it.buildChanges.commitInfo.commitDate}
-                    <br/>
-                    <b>Message:</b> ${it.buildChanges.commitInfo.commitMessage}
-                    <br/>
+                    <div class="col-sm-24 col-md-24 col-lg-12 col-xlg-12">
+
+                        <b><span style="text-decoration:underline;font-weight:bolder">Current</span> revision:</b> ${it.buildChanges.currentRevision.commitId}
+                        <br/>
+                        <b>Author:</b> ${it.buildChanges.currentRevision.commiterName}
+                        <br/>
+                        <b>E-mail:</b> ${it.buildChanges.currentRevision.commiterEmail}
+                        <br/>
+                        <b>Date:</b> ${it.buildChanges.currentRevision.commitDate}
+                        <br/>
+                        <b>Message:</b> ${it.buildChanges.currentRevision.commitMessage}
+                        <br/>
+
+                    </div>
+
+                    <div class="col-sm-24 col-md-24 col-lg-12 col-xlg-12">
+
+                        <b><span style="text-decoration:underline;font-weight:bolder">Old</span> revision:</b> ${it.buildChanges.oldRevision.commitId}
+                        <br/>
+                        <b>Author:</b> ${it.buildChanges.oldRevision.commiterName}
+                        <br/>
+                        <b>E-mail:</b> ${it.buildChanges.oldRevision.commiterEmail}
+                        <br/>
+                        <b>Date:</b> ${it.buildChanges.oldRevision.commitDate}
+                        <br/>
+                        <b>Message:</b> ${it.buildChanges.oldRevision.commitMessage}
+                        <br/>
+
+                    </div>
                 </div>
                 <br/>
                 <div id="line-by-line" style="margin: 0 auto;">

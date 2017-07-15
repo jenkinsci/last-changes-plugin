@@ -33,7 +33,7 @@ Or using side-by-side configuration:
 image:images/last-changes05.png[]
 
 
-NOTE: Last changes means `compare current revision with previous one`.
+NOTE: Last changes means `compare current repository revision with an old revision`. By default the plugin will diff current and previous revisions.
 
 == Objectives
 
@@ -48,12 +48,12 @@ And finally the plugin _shines_ in a https://en.wikipedia.org/wiki/Continuous_de
 
 . This plugin expects `git` or `svn` based builds (a.k.a _Source Code Management_ configuration section).
 . While your job runs the plugin reads your build workspace to retrieve the current VCS revision;
-. The diff between `actual` and `previous` revisions will be stored;
+. The diff between `actual` and `old` revisions will be stored; Note that `old` revision can be provided in plugin configuration. If no revision is provided then previous repository revision will be used.
 . The `diff` for each build can be viewed later in html format.
 
 IMPORTANT: To get most from this plugin use `periodically SCM pooling` to trigger your builds, http://www.nailedtothex.org/roller/kyle/entry/articles-jenkins-poll[more details here^].
 
-WARNING: The plugin *always* compare current revision with previous one even no new commit has been made.
+WARNING: The plugin *always* compare current revision with old one even no new commit has been made.
 
 == Usage
 

@@ -1,11 +1,10 @@
 package com.github.jenkins.lastchanges.model;
 
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.PersonIdent;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.lib.*;
+import org.eclipse.jgit.revwalk.*;
+import org.eclipse.jgit.treewalk.AbstractTreeIterator;
+import org.eclipse.jgit.treewalk.CanonicalTreeParser;
+import org.eclipse.jgit.treewalk.TreeWalk;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNLogEntry;
 import org.tmatesoft.svn.core.io.SVNRepository;
@@ -69,7 +68,7 @@ public class CommitInfo {
 
     public static class Builder {
 
-        public static CommitInfo buildFromSvn(SVNRepository repository,long revision ) throws SVNException {
+        public static CommitInfo buildFromSvn(SVNRepository repository, long revision) throws SVNException {
             CommitInfo commitInfo = new CommitInfo();
             try {
                 Collection<SVNLogEntry> entries = repository.log(new String[]{""}, null, revision, revision, true, true);
@@ -81,40 +80,54 @@ public class CommitInfo {
                 commitInfo.commiterName = logEntry.getAuthor();
                 commitInfo.commitId = logEntry.getRevision() + "";
                 commitInfo.commitMessage = logEntry.getMessage();
-            }catch (Exception e){
-                Logger.getLogger(CommitInfo.class.getName()).warning(String.format("Could not get commit info from revision %d due to following error "+e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""),revision));
+            } catch (Exception e) {
+                Logger.getLogger(CommitInfo.class.getName()).warning(String.format("Could not get commit info from revision %d due to following error " + e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""), revision));
             }
             return commitInfo;
         }
 
         public static CommitInfo buildFromGit(Repository repository, ObjectId commitId) {
-            RevWalk walk = new RevWalk(repository);
-
+            RevWalk revWalk = new RevWalk(repository);
+            CommitInfo commitInfo = new CommitInfo();
+            PersonIdent committerIdent = null;
+            RevCommit commit = null;
             try {
-                ObjectId lastCommitId = repository.resolve(Constants.HEAD);
-                RevWalk revWalk = new RevWalk(repository);
-                RevCommit commit = revWalk.parseCommit(lastCommitId);
-                CommitInfo commitInfo = new CommitInfo();
-                PersonIdent committerIdent = commit.getCommitterIdent();
+                if (revWalk.parseAny(commitId) instanceof RevCommit) {
+                    commit = revWalk.parseCommit(commitId);
+                    committerIdent = commit.getCommitterIdent();
+                } else if(revWalk.parseAny(commitId) instanceof RevTree) {
+
+                    RevCommit rootCommit = revWalk.parseCommit(repository.resolve(Constants.HEAD));
+                    revWalk.sort(RevSort.COMMIT_TIME_DESC);
+                    revWalk.markStart(rootCommit);
+                    //resolve commit from tree
+                    RevTree tree = revWalk.parseTree(commitId);
+                    for (RevCommit revCommit : revWalk) {
+                        if(revCommit.getTree().getId().equals(tree.getId())){
+                            commit = revCommit;
+                            committerIdent = commit.getCommitterIdent();
+                            break;
+                        }
+                    }
+
+                }
+
                 Date commitDate = committerIdent.getWhen();
-                commitInfo.commitId = lastCommitId.getName();
+                commitInfo.commitId = commitId.getName();
                 commitInfo.commitMessage = commit.getFullMessage();
                 commitInfo.commiterName = committerIdent.getName();
                 commitInfo.commiterEmail = committerIdent.getEmailAddress();
                 TimeZone tz = committerIdent.getTimeZone() != null ? committerIdent.getTimeZone() : TimeZone.getDefault();
                 dateFormat.setTimeZone(tz);
                 commitInfo.commitDate = dateFormat.format(commitDate) + " " + tz.getDisplayName();
-                return commitInfo;
             } catch (Exception e) {
-                throw new RuntimeException("Could not get commit info for commit id: " + commitId, e);
-
+                Logger.getLogger(CommitInfo.class.getName()).warning(String.format("Could not get commit info from revision %d due to following error " + e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""), commitId));
             } finally {
-                if (walk != null) {
-                    walk.dispose();
-                }
+                  revWalk.dispose();
             }
-
+            return commitInfo;
         }
+
     }
 
 }
