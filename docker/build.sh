@@ -1,2 +1,2 @@
 #!/bin/bash
-docker build -t rmpestano/jenkins-last-changes ../docker
+docker build -t rmpestano/jenkins-last-changes .
