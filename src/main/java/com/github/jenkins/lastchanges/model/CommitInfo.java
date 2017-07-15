@@ -113,7 +113,7 @@ public class CommitInfo {
                 }
 
                 Date commitDate = committerIdent.getWhen();
-                commitInfo.commitId = commitId.getName();
+                commitInfo.commitId = commit.getName();
                 commitInfo.commitMessage = commit.getFullMessage();
                 commitInfo.commiterName = committerIdent.getName();
                 commitInfo.commiterEmail = committerIdent.getEmailAddress();
