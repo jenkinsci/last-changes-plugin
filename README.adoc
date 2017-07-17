@@ -28,7 +28,7 @@ image:images/last-changes03.png[]
 
 Or using side-by-side configuration:
 
-image:images/last-changes05.png[]
+image::https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/last-changes05.png[]
 
 
 NOTE: Last changes means `compare current repository revision with an old revision`. By default the plugin will diff current and previous revisions.
