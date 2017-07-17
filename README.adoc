@@ -24,7 +24,7 @@ IMPORTANT: Only `Git` and `Svn` based projects are supported.
 
 The plugin uses https://diff2html.rtfpessoa.xyz/[diff2html^] to show last changes of a given build, example:
 
-image:images/last-changes03.png[]
+image::https://github.com/jenkinsci/last-changes-plugin/blob/master/images/last-changes03.png?raw=true[]
 
 Or using side-by-side configuration:
 
