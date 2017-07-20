@@ -42,6 +42,7 @@ import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.ListBoxModel;
 import jenkins.tasks.SimpleBuildStep;
+import jenkins.triggers.SCMTriggerItem;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -97,24 +98,18 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         LastChangesProjectAction projectAction = new LastChangesProjectAction(build.getParent());
         boolean isGit = false;
         boolean isSvn = false;
-        if (projectAction.isRunningInPipelineWorkflow()) {
-            WorkflowJob wkfJob = (WorkflowJob) projectAction.getProject();
-            Collection<? extends SCM> scMs = wkfJob.getSCMs();
-            for (SCM scm : scMs) {
-                if (scm instanceof GitSCM) {
-                    isGit = true;
-                    break;
-                }
 
-                if (scm instanceof SubversionSCM) {
-                    isSvn = true;
-                    break;
-                }
+        Collection<? extends SCM> scms = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(projectAction.getProject()).getSCMs();
+        for (SCM scm : scms) {
+            if (scm instanceof GitSCM) {
+                isGit = true;
+                break;
             }
 
-        } else if (projectAction.getProject() instanceof AbstractProject) { // non pipeline build
-            isGit = ((AbstractProject) projectAction.getProject()).getScm() instanceof GitSCM;
-            isSvn = ((AbstractProject) projectAction.getProject()).getScm() instanceof SubversionSCM;
+            if (scm instanceof SubversionSCM) {
+                isSvn = true;
+                break;
+            }
         }
 
         if (!isGit && !isSvn) {
@@ -132,7 +127,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 // we are only copying when on git because in svn we are reading
                 // the endRevision from remote repository
                 gitDir.copyRecursiveTo("**/*", new FilePath(new File(workspaceTargetDir.getRemote() + "/.git")));
-                if(endRevision != null && !"".equals(endRevision.trim())) {
+                if (endRevision != null && !"".equals(endRevision.trim())) {
                     Repository repository = repository(workspaceTargetDir.getRemote() + "/.git");
                     lastChanges = GitLastChanges.getInstance().changesOf(repository, GitLastChanges.resolveCurrentRevision(repository), ObjectId.fromString((endRevision)));
                 } else {
@@ -143,10 +138,10 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 if (projectAction.isRunningInPipelineWorkflow()) {
                     WorkflowJob workflowJob = (WorkflowJob) projectAction.getProject();
                     scm = (SubversionSCM) workflowJob.getSCMs().iterator().next();
-                    if(endRevision != null && !"".equals(endRevision.trim())) {
+                    if (endRevision != null && !"".equals(endRevision.trim())) {
                         Long svnRevision = Long.parseLong(endRevision);
                         SVNRepository repository = SvnLastChanges.repository(scm, projectAction.getProject());
-                        lastChanges = SvnLastChanges.getInstance().changesOf(repository,repository.getLatestRevision(),svnRevision);
+                        lastChanges = SvnLastChanges.getInstance().changesOf(repository, repository.getLatestRevision(), svnRevision);
                     } else {
                         lastChanges = SvnLastChanges.getInstance().changesOf(SvnLastChanges.repository(scm, projectAction.getProject()));
                     }
@@ -154,10 +149,10 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 } else {
                     AbstractProject<?, ?> rootProject = (AbstractProject<?, ?>) projectAction.getProject();
                     scm = SubversionSCM.class.cast(rootProject.getScm());
-                    if(endRevision != null && !"".equals(endRevision.trim())) {
+                    if (endRevision != null && !"".equals(endRevision.trim())) {
                         Long svnRevision = Long.parseLong(endRevision);
                         SVNRepository repository = SvnLastChanges.repository(scm, (AbstractProject<?, ?>) projectAction.getProject());
-                        lastChanges = SvnLastChanges.getInstance().changesOf(repository,repository.getLatestRevision(), svnRevision);
+                        lastChanges = SvnLastChanges.getInstance().changesOf(repository, repository.getLatestRevision(), svnRevision);
                     } else {
                         lastChanges = SvnLastChanges.getInstance().changesOf(SvnLastChanges.repository(scm, (AbstractProject<?, ?>) projectAction.getProject()));
                     }
@@ -168,7 +163,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             listener.hyperlink("../" + build.getNumber() + "/" + LastChangesBaseAction.BASE_URL, "Last changes published successfully!");
             listener.getLogger().println("");
             build.addAction(new LastChangesBuildAction(build, lastChanges,
-                    new LastChangesConfig(endRevision,format, matching, showFiles, synchronisedScroll, matchWordsThreshold, matchingMaxComparisons)));
+                    new LastChangesConfig(endRevision, format, matching, showFiles, synchronisedScroll, matchWordsThreshold, matchingMaxComparisons)));
         } catch (Exception e) {
             listener.error("Last Changes NOT published due to the following error: " + e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""));
             e.printStackTrace();
