@@ -29,6 +29,7 @@ import com.github.jenkins.lastchanges.model.FormatType;
 import com.github.jenkins.lastchanges.model.LastChanges;
 import com.github.jenkins.lastchanges.model.LastChangesConfig;
 import com.github.jenkins.lastchanges.model.MatchingType;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -118,6 +119,13 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
         FilePath workspaceTargetDir = getMasterWorkspaceDir(build);//always on master
 
+        boolean hasEndRevision = endRevision != null && !"".equals(endRevision.trim());
+
+        if(hasEndRevision) {
+            final EnvVars env = build.getEnvironment(listener);
+            endRevision = env.expand(endRevision);
+        }
+
         try {
             LastChanges lastChanges = null;
             listener.getLogger().println("Publishing build last changes...");
@@ -127,7 +135,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 // we are only copying when on git because in svn we are reading
                 // the endRevision from remote repository
                 gitDir.copyRecursiveTo("**/*", new FilePath(new File(workspaceTargetDir.getRemote() + "/.git")));
-                if (endRevision != null && !"".equals(endRevision.trim())) {
+                if (hasEndRevision) {
                     Repository repository = repository(workspaceTargetDir.getRemote() + "/.git");
                     lastChanges = GitLastChanges.getInstance().changesOf(repository, GitLastChanges.resolveCurrentRevision(repository), ObjectId.fromString((endRevision)));
                 } else {
@@ -138,7 +146,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 if (projectAction.isRunningInPipelineWorkflow()) {
                     WorkflowJob workflowJob = (WorkflowJob) projectAction.getProject();
                     scm = (SubversionSCM) workflowJob.getSCMs().iterator().next();
-                    if (endRevision != null && !"".equals(endRevision.trim())) {
+                    if (hasEndRevision) {
                         Long svnRevision = Long.parseLong(endRevision);
                         SVNRepository repository = SvnLastChanges.repository(scm, projectAction.getProject());
                         lastChanges = SvnLastChanges.getInstance().changesOf(repository, repository.getLatestRevision(), svnRevision);
