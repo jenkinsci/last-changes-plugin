@@ -133,7 +133,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 FilePath gitDir = workspace.child(GIT_DIR).exists() ? workspace.child(GIT_DIR) : findGitDir(workspace);
                 // workspace can be on slave so copy resources to master
                 // we are only copying when on git because in svn we are reading
-                // the endRevision from remote repository
+                // the current revision from remote repository
                 gitDir.copyRecursiveTo("**/*", new FilePath(new File(workspaceTargetDir.getRemote() + "/.git")));
                 if (hasEndRevision) {
                     Repository repository = repository(workspaceTargetDir.getRemote() + "/.git");
