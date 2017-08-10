@@ -121,7 +121,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
         boolean hasEndRevision = endRevision != null && !"".equals(endRevision.trim());
 
-        if(hasEndRevision) {
+        if (hasEndRevision) {
             final EnvVars env = build.getEnvironment(listener);
             endRevision = env.expand(endRevision);
         }
@@ -136,36 +136,27 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 // the current revision from remote repository
                 gitDir.copyRecursiveTo("**/*", new FilePath(new File(workspaceTargetDir.getRemote() + "/.git")));
                 if (hasEndRevision) {
+                    //compares current repository revision with provided endRevision
                     Repository repository = repository(workspaceTargetDir.getRemote() + "/.git");
                     lastChanges = GitLastChanges.getInstance().changesOf(repository, GitLastChanges.resolveCurrentRevision(repository), ObjectId.fromString((endRevision)));
                 } else {
+                    //compares current repository revision with previous one
                     lastChanges = GitLastChanges.getInstance().changesOf(repository(workspaceTargetDir.getRemote() + "/.git"));
                 }
             } else {
-                SubversionSCM scm = null;
-                if (projectAction.isRunningInPipelineWorkflow()) {
-                    WorkflowJob workflowJob = (WorkflowJob) projectAction.getProject();
-                    scm = (SubversionSCM) workflowJob.getSCMs().iterator().next();
-                    if (hasEndRevision) {
-                        Long svnRevision = Long.parseLong(endRevision);
-                        SVNRepository repository = SvnLastChanges.repository(scm, projectAction.getProject());
-                        lastChanges = SvnLastChanges.getInstance().changesOf(repository, repository.getLatestRevision(), svnRevision);
-                    } else {
-                        lastChanges = SvnLastChanges.getInstance().changesOf(SvnLastChanges.repository(scm, projectAction.getProject()));
-                    }
+                //svn repository
+                SubversionSCM scm = (SubversionSCM) SCMTriggerItem.SCMTriggerItems
+                        .asSCMTriggerItem(projectAction.getProject()).getSCMs().iterator().next();
 
+                if (hasEndRevision) {
+                    //compares current repository revision with provided endRevision
+                    Long svnRevision = Long.parseLong(endRevision);
+                    SVNRepository repository = SvnLastChanges.repository(scm, projectAction.getProject());
+                    lastChanges = SvnLastChanges.getInstance().changesOf(repository, repository.getLatestRevision(), svnRevision);
                 } else {
-                    AbstractProject<?, ?> rootProject = (AbstractProject<?, ?>) projectAction.getProject();
-                    scm = SubversionSCM.class.cast(rootProject.getScm());
-                    if (endRevision != null && !"".equals(endRevision.trim())) {
-                        Long svnRevision = Long.parseLong(endRevision);
-                        SVNRepository repository = SvnLastChanges.repository(scm, (AbstractProject<?, ?>) projectAction.getProject());
-                        lastChanges = SvnLastChanges.getInstance().changesOf(repository, repository.getLatestRevision(), svnRevision);
-                    } else {
-                        lastChanges = SvnLastChanges.getInstance().changesOf(SvnLastChanges.repository(scm, (AbstractProject<?, ?>) projectAction.getProject()));
-                    }
+                    //compares current repository revision with previous one
+                    lastChanges = SvnLastChanges.getInstance().changesOf(SvnLastChanges.repository(scm, projectAction.getProject()));
                 }
-
             }
 
             listener.hyperlink("../" + build.getNumber() + "/" + LastChangesBaseAction.BASE_URL, "Last changes published successfully!");
