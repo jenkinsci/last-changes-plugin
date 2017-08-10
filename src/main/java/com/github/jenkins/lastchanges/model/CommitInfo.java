@@ -71,7 +71,7 @@ public class CommitInfo {
         public static CommitInfo buildFromSvn(SVNRepository repository, long revision) throws SVNException {
             CommitInfo commitInfo = new CommitInfo();
             try {
-                Collection<SVNLogEntry> entries = repository.log(new String[]{""}, null, revision, revision, false, true);
+                Collection<SVNLogEntry> entries = repository.log(new String[]{""}, null, revision, revision, true, true);
                 Iterator<SVNLogEntry> iterator = entries.iterator();
                 if(iterator.hasNext()) {
                     SVNLogEntry logEntry = iterator.next();
