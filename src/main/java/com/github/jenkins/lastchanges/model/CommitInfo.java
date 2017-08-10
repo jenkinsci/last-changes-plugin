@@ -71,15 +71,17 @@ public class CommitInfo {
         public static CommitInfo buildFromSvn(SVNRepository repository, long revision) throws SVNException {
             CommitInfo commitInfo = new CommitInfo();
             try {
-                Collection<SVNLogEntry> entries = repository.log(new String[]{""}, null, revision, revision, true, true);
+                Collection<SVNLogEntry> entries = repository.log(new String[]{""}, null, revision, revision, false, true);
                 Iterator<SVNLogEntry> iterator = entries.iterator();
-                SVNLogEntry logEntry = iterator.next();
-                TimeZone tz = TimeZone.getDefault();
-                dateFormat.setTimeZone(tz);
-                commitInfo.commitDate = dateFormat.format(logEntry.getDate()) + " " + tz.getDisplayName();
-                commitInfo.commiterName = logEntry.getAuthor();
-                commitInfo.commitId = logEntry.getRevision() + "";
-                commitInfo.commitMessage = logEntry.getMessage();
+                if(iterator.hasNext()) {
+                    SVNLogEntry logEntry = iterator.next();
+                    TimeZone tz = TimeZone.getDefault();
+                    dateFormat.setTimeZone(tz);
+                    commitInfo.commitDate = dateFormat.format(logEntry.getDate()) + " " + tz.getDisplayName();
+                    commitInfo.commiterName = logEntry.getAuthor();
+                    commitInfo.commitId = logEntry.getRevision() + "";
+                    commitInfo.commitMessage = logEntry.getMessage();
+                }
             } catch (Exception e) {
                 Logger.getLogger(CommitInfo.class.getName()).warning(String.format("Could not get commit info from revision %d due to following error " + e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""), revision));
             }
