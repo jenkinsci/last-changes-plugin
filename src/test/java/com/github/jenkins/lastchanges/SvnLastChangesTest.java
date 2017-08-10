@@ -34,7 +34,7 @@ public class SvnLastChangesTest {
             assertNotNull(lastChanges);
             assertThat(lastChanges.getCurrentRevision()).isNotNull();
             assertThat(lastChanges.getDiff()).isNotEmpty();
-            assertThat(lastChanges.getCurrentRevision().getCommitMessage()).isEqualTo("updated cukedóctor json");
+            assertThat(lastChanges.getCurrentRevision().getCommitMessage()).isEqualTo("removes theme and css files");
 
     }
 
