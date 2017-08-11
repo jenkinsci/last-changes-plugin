@@ -83,8 +83,12 @@ Following is an example of pipeline step using this plugin:
 
 ----
 node {
-    checkout([$class: 'SubversionSCM', additionalCredentials: [], excludedCommitMessages: '', excludedRegions: '', excludedRevprop: '', excludedUsers: '', filterChangelog: false, ignoreDirPropChanges: false, includedRegions: '', locations: [[credentialsId: '', depthOption: 'infinity', ignoreExternalsOption: true, local: '.', remote: 'https://subversion.assembla.com/svn/cucumber-json-files/trunk']], workspaceUpdater: [$class: 'UpdateUpdater']])
-    step([$class: 'LastChangesPublisher', format: 'LINE', matchWordsThreshold: '0.25', matching: 'NONE', matchingMaxComparisons: '1000', showFiles: true, synchronisedScroll: true, endRevision: ''])
+      stage ('Build') {
+           svn 'https://subversion.assembla.com/svn/cucumber-json-files/trunk/'
+           step([$class: 'LastChangesPublisher', format: 'LINE', matchWordsThreshold: '0.25', matching: 'NONE', matchingMaxComparisons: '1000', showFiles: true, synchronisedScroll: true, endRevision: ''])
+
+      }
+
 }
 ----
 
