@@ -33,4 +33,4 @@ workflow-job:2.8
 workflow-scm-step:2.2
 workflow-step-api:2.2
 workflow-support:2.2
-last-changes:1.0.7
+last-changes:1.0.9
