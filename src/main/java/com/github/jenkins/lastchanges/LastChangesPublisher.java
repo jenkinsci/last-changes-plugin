@@ -120,10 +120,10 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         FilePath workspaceTargetDir = getMasterWorkspaceDir(build);//always on master
 
         boolean hasEndRevision = endRevision != null && !"".equals(endRevision.trim());
-
+        String endRevisionExpanded = null;
         if (hasEndRevision) {
             final EnvVars env = build.getEnvironment(listener);
-            endRevision = env.expand(endRevision);
+            endRevisionExpanded = env.expand(endRevision);
         }
 
         try {
@@ -138,7 +138,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 if (hasEndRevision) {
                     //compares current repository revision with provided endRevision
                     Repository repository = repository(workspaceTargetDir.getRemote() + "/.git");
-                    lastChanges = GitLastChanges.getInstance().changesOf(repository, GitLastChanges.resolveCurrentRevision(repository), ObjectId.fromString((endRevision)));
+                    lastChanges = GitLastChanges.getInstance().changesOf(repository, GitLastChanges.resolveCurrentRevision(repository), ObjectId.fromString((endRevisionExpanded)));
                 } else {
                     //compares current repository revision with previous one
                     lastChanges = GitLastChanges.getInstance().changesOf(repository(workspaceTargetDir.getRemote() + "/.git"));
@@ -150,7 +150,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
                 if (hasEndRevision) {
                     //compares current repository revision with provided endRevision
-                    Long svnRevision = Long.parseLong(endRevision);
+                    Long svnRevision = Long.parseLong(endRevisionExpanded);
                     SVNRepository repository = SvnLastChanges.repository(scm, projectAction.getProject());
                     lastChanges = SvnLastChanges.getInstance().changesOf(repository, repository.getLatestRevision(), svnRevision);
                 } else {
