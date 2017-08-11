@@ -119,11 +119,12 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
         FilePath workspaceTargetDir = getMasterWorkspaceDir(build);//always on master
 
-        boolean hasEndRevision = endRevision != null && !"".equals(endRevision.trim());
+        boolean hasEndRevision = false;
         String endRevisionExpanded = null;
-        if (hasEndRevision) {
+        if (endRevision != null) {
             final EnvVars env = build.getEnvironment(listener);
             endRevisionExpanded = env.expand(endRevision);
+            hasEndRevision = endRevisionExpanded != null && !"".equals(endRevisionExpanded);
         }
 
         try {
@@ -159,8 +160,10 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 }
             }
 
-            listener.hyperlink("../" + build.getNumber() + "/" + LastChangesBaseAction.BASE_URL, "Last changes published successfully!");
+            String resultMessage = String.format("Last changes from revision %s to %s published successfully!",truncate(lastChanges.getCurrentRevision().getCommitId(),8),truncate(lastChanges.getEndRevision().getCommitId(),8));
+            listener.hyperlink("../" + build.getNumber() + "/" + LastChangesBaseAction.BASE_URL, resultMessage);
             listener.getLogger().println("");
+
             build.addAction(new LastChangesBuildAction(build, lastChanges,
                     new LastChangesConfig(endRevision, format, matching, showFiles, synchronisedScroll, matchWordsThreshold, matchingMaxComparisons)));
         } catch (Exception e) {
@@ -171,6 +174,14 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
         build.setResult(Result.SUCCESS);
 
+    }
+
+    private String truncate(String value, int length) {
+        if(value == null || value.length() <= length) {
+            return value;
+        }
+
+        return value.substring(0,length-1);
     }
 
     /**

@@ -37,20 +37,25 @@
                     if (sidePanelTD) {
                         sidePanelTD.parentNode.removeChild(sidePanelTD);
                     }
-                    var diff2htmlUi = new Diff2HtmlUI({diff: buildChanges});
 
-                    diff2htmlUi.draw('#${it.config.format().getFormat()}', {
-                            inputFormat: 'json',
-                            outputFormat: '${it.config.format().getFormat()}',
-                            showFiles: ${it.config.showFiles()},
-                            synchronisedScroll: ${it.config.synchronisedScroll()},
-                            matchWordsThreshold: '${it.config.matchWordsThreshold()}',
-                            matchingMaxComparisons: '${it.config.matchingMaxComparisons()}',
-                            matching: '${it.config.matching().getMatching()}'
-                        }
-                    );
-                    diff2htmlUi.fileListCloseable('#${it.config.format().getFormat()}', false);
-                    diff2htmlUi.highlightCode('#${it.config.format().getFormat()}');
+                    if(buildChanges) {
+                        var diff2htmlUi = new Diff2HtmlUI({diff: buildChanges});
+
+                        diff2htmlUi.draw('#${it.config.format().getFormat()}', {
+                                inputFormat: 'json',
+                                outputFormat: '${it.config.format().getFormat()}',
+                                showFiles: ${it.config.showFiles()},
+                                synchronisedScroll: ${it.config.synchronisedScroll()},
+                                matchWordsThreshold: '${it.config.matchWordsThreshold()}',
+                                matchingMaxComparisons: '${it.config.matchingMaxComparisons()}',
+                                matching: '${it.config.matching().getMatching()}'
+                            }
+                        );
+                        diff2htmlUi.fileListCloseable('#${it.config.format().getFormat()}', false);
+                        diff2htmlUi.highlightCode('#${it.config.format().getFormat()}');
+                    } else {
+                        jQueryJenkins('#line-by-line').append('<p style="margin-top:150px;text-align:center;font-size:14px;">No changes between revision <span style="font-weight:600;text-decoration:underline">${it.buildChanges.currentRevision.commitId}</span> and <span style="font-weight:600;text-decoration:underline">${it.buildChanges.endRevision.commitId}</span> </p>')
+                    }
 
                 }); //end documentReady
 
@@ -103,6 +108,8 @@
 
                 <div id="side-by-side" style="margin: 0 auto;">
                 </div>
+
+
 
             </div>
         </l:main-panel>
