@@ -114,7 +114,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         }
 
         if (!isGit && !isSvn) {
-            throw new RuntimeException("Git or Svn must be configured on your job to publish Last Changes.");
+            throw new RuntimeException("Git or Svn must be configured on your job to publish Last Changes. Ignore this message and RERUN your job if you're running on a Jenkins pipeline workflow (See JENKINS-45720 for more details).");
         }
 
         FilePath workspaceTargetDir = getMasterWorkspaceDir(build);//always on master

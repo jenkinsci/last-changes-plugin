@@ -100,7 +100,7 @@ public class LastChangesIT {
                 "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", ""));
         
 
-        jenkins.assertLogContains("Last changes published successfully!", build);
+        jenkins.assertLogContains("Last changes from revision 27ad83a to a511a43 published successfully!", build);
 
     }
 
@@ -166,7 +166,7 @@ public class LastChangesIT {
                 " /**" + GitLastChangesTest.newLine +
                 "  * Walks over this component and all descendants of this component, breadth-first." + GitLastChangesTest.newLine +
                 "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", ""));
-        jenkins.assertLogContains("Last changes published successfully!",build);
+        jenkins.assertLogContains("Last changes from revision 27ad83a to a511a43 published successfully!",build);
 
     }
     
@@ -185,7 +185,6 @@ public class LastChangesIT {
         project.save();
         
         
-        
         // when
         FreeStyleBuild build = jenkins.buildAndAssertSuccess(project);
 
@@ -194,7 +193,7 @@ public class LastChangesIT {
         assertThat(action).isNotNull();
         assertThat(action.getBuildChanges()).isNotNull();
         assertThat(action.getBuildChanges().getCurrentRevision().getCommiterName()).isEqualTo("rmpestano");
-        jenkins.assertLogContains("Last changes published successfully!",build);
+        jenkins.assertLogContains("published successfully!",build);
     }
 
     @Test
@@ -208,7 +207,7 @@ public class LastChangesIT {
         FreeStyleBuild build = jenkins.assertBuildStatus(Result.FAILURE,project.scheduleBuild2(0).get());
 
         // then
-        jenkins.assertLogContains("Git or Svn must be configured on your job to publish Last Changes." ,build);
+        jenkins.assertLogContains("Git or Svn must be configured on your job to publish Last Changes. Ignore this message and RERUN your job if you're running on a Jenkins pipeline workflow (See JENKINS-45720 for more details)." ,build);
     }
 
 }
