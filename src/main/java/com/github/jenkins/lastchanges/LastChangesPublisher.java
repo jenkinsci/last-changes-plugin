@@ -50,6 +50,8 @@ import jenkins.triggers.SCMTriggerItem;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.tmatesoft.svn.core.io.SVNRepository;
@@ -249,6 +251,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             return "Publish Last Changes";
         }
 
+        @Restricted(NoExternalUse.class) // Only for UI calls
         public ListBoxModel doFillFormatItems() {
             ListBoxModel items = new ListBoxModel();
             for (FormatType formatType : FormatType.values()) {
@@ -257,6 +260,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             return items;
         }
 
+        @Restricted(NoExternalUse.class) // Only for UI calls
         public ListBoxModel doFillMatchingItems() {
             ListBoxModel items = new ListBoxModel();
             for (MatchingType matchingType : MatchingType.values()) {
