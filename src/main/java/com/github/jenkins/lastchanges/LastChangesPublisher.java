@@ -33,7 +33,10 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.*;
+import hudson.model.AbstractProject;
+import hudson.model.Result;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.plugins.git.GitSCM;
 import hudson.scm.SCM;
 import hudson.scm.SubversionSCM;
@@ -46,8 +49,9 @@ import jenkins.tasks.SimpleBuildStep;
 import jenkins.triggers.SCMTriggerItem;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.jenkinsci.plugins.workflow.job.WorkflowJob;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.tmatesoft.svn.core.io.SVNRepository;
 
 import java.io.File;
@@ -229,7 +233,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         return BuildStepMonitor.NONE;
     }
 
-    @Extension
+    @Extension @Symbol("lastChanges")
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
@@ -291,4 +295,38 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         return synchronisedScroll;
     }
 
+    @DataBoundSetter
+    public void setEndRevision(String endRevision) {
+        this.endRevision = endRevision;
+    }
+
+    @DataBoundSetter
+    public void setFormat(FormatType format) {
+        this.format = format;
+    }
+
+    @DataBoundSetter
+    public void setMatching(MatchingType matching) {
+        this.matching = matching;
+    }
+
+    @DataBoundSetter
+    public void setMatchingMaxComparisons(String matchingMaxComparisons) {
+        this.matchingMaxComparisons = matchingMaxComparisons;
+    }
+
+    @DataBoundSetter
+    public void setMatchWordsThreshold(String matchWordsThreshold) {
+        this.matchWordsThreshold = matchWordsThreshold;
+    }
+
+    @DataBoundSetter
+    public void setShowFiles(Boolean showFiles) {
+        this.showFiles = showFiles;
+    }
+
+    @DataBoundSetter
+    public void setSynchronisedScroll(Boolean synchronisedScroll) {
+        this.synchronisedScroll = synchronisedScroll;
+    }
 }
