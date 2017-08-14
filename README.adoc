@@ -93,7 +93,35 @@ node {
 ----
 
 NOTE: Empty *endRevision* will set endRevision to previous repository revision.
- 
+
+=== Pipeline script DSL
+
+Since version `1.0.10` it is possible to use the _lastChanges()_ shortcut in pipeline DSL:
+
+----
+node {
+     git 'https://github.com/jenkinsci/last-changes-plugin.git'
+     lastChanges()
+}
+----
+
+Parameters should be declared as `key: 'value'` as example below:
+
+----
+node {
+     git 'https://github.com/jenkinsci/last-changes-plugin.git'
+     lastChanges format:'SIDE'
+}
+----
+
+For multiple parameters use parenthesis:
+
+----
+node {
+     git 'https://github.com/jenkinsci/last-changes-plugin.git'
+     lastChanges(format:'SIDE',matching: 'WORD')
+}
+----
  
 == Docker
 
