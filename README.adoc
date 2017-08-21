@@ -110,19 +110,11 @@ Parameters should be declared as `key: 'value'` as example below:
 ----
 node {
      git 'https://github.com/jenkinsci/last-changes-plugin.git'
-     lastChanges format:'SIDE'
-}
-----
-
-For multiple parameters use parenthesis:
-
-----
-node {
-     git 'https://github.com/jenkinsci/last-changes-plugin.git'
-     lastChanges(format:'SIDE',matching: 'WORD')
+     lastChanges format:'SIDE',matching: 'WORD', endRevision: 'c546ec31e854de3f27755273d3e1db6185aee4b4'
 }
 ----
  
+
 == Docker
 
 An easy way to test this plugin is using a docker container, here are the steps (assumming you have docker installed):
