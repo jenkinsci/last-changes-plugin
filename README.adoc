@@ -114,7 +114,7 @@ node {
 }
 ----
 
-Or using declarative pipeline
+Or using https://jenkins.io/doc/book/pipeline/syntax/[declarative pipeline^]
 
 ----
 pipeline {
