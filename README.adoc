@@ -113,7 +113,23 @@ node {
      lastChanges format:'SIDE',matching: 'WORD', endRevision: 'c546ec31e854de3f27755273d3e1db6185aee4b4'
 }
 ----
- 
+
+Or using declarative pipeline
+
+----
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/jenkinsci/last-changes-plugin.git'
+                lastChanges format:'SIDE',matching: 'LINE'
+            }
+        }
+    }
+}
+----
+
 
 == Docker
 
