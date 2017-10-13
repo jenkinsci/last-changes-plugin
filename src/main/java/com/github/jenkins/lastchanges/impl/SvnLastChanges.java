@@ -7,6 +7,7 @@ import com.github.jenkins.lastchanges.api.VCSChanges;
 import com.github.jenkins.lastchanges.exception.RepositoryNotFoundException;
 import com.github.jenkins.lastchanges.model.CommitInfo;
 import com.github.jenkins.lastchanges.model.LastChanges;
+import hudson.EnvVars;
 import hudson.model.AbstractProject;
 import hudson.model.Job;
 import hudson.scm.SubversionSCM;
@@ -100,11 +101,11 @@ public class SvnLastChanges implements VCSChanges<SVNRepository, Long> {
         }
     }
 
-    public static SVNRepository repository(SubversionSCM scm, Job<?, ?> job) {
+    public static SVNRepository repository(SubversionSCM scm, Job<?, ?> job, EnvVars env) {
 
         String path = null;
         try {
-            path = scm.getLocations()[0].getURL();
+            path = scm.getLocations()[0].getExpandedLocation(env).getURL();
             ISVNAuthenticationProvider svnAuthProvider;
             try{
                 svnAuthProvider = scm.createAuthenticationProvider(job, scm.getLocations()[0]);

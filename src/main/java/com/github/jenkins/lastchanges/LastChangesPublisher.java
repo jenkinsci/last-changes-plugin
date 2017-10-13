@@ -127,8 +127,8 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
         boolean hasEndRevision = false;
         String endRevisionExpanded = null;
+        final EnvVars env = build.getEnvironment(listener);
         if (endRevision != null) {
-            final EnvVars env = build.getEnvironment(listener);
             endRevisionExpanded = env.expand(endRevision);
             hasEndRevision = endRevisionExpanded != null && !"".equals(endRevisionExpanded);
         }
@@ -158,11 +158,11 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 if (hasEndRevision) {
                     //compares current repository revision with provided endRevision
                     Long svnRevision = Long.parseLong(endRevisionExpanded);
-                    SVNRepository repository = SvnLastChanges.repository(scm, projectAction.getProject());
+                    SVNRepository repository = SvnLastChanges.repository(scm, projectAction.getProject(),env);
                     lastChanges = SvnLastChanges.getInstance().changesOf(repository, repository.getLatestRevision(), svnRevision);
                 } else {
                     //compares current repository revision with previous one
-                    lastChanges = SvnLastChanges.getInstance().changesOf(SvnLastChanges.repository(scm, projectAction.getProject()));
+                    lastChanges = SvnLastChanges.getInstance().changesOf(SvnLastChanges.repository(scm, projectAction.getProject(),env));
                 }
             }
 
