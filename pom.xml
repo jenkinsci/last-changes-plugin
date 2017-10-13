@@ -9,7 +9,7 @@
         <relativePath />
     </parent>
     <artifactId>last-changes</artifactId>
-    <version>1.0.11-SNAPSHOT</version>
+    <version>1.0.11</version>
     <packaging>hpi</packaging>
 
     <properties>
@@ -52,7 +52,7 @@
         <connection>scm:git:ssh://github.com/jenkinsci/last-changes-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/jenkinsci/last-changes-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/last-changes-plugin</url>
-    <tag>HEAD</tag>
+    <tag>v1.0.11</tag>
   </scm>
 
     <dependencies>
