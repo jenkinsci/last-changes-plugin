@@ -133,16 +133,17 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         final EnvVars env = build.getEnvironment(listener);
         if (endRevision != null) {
             endRevisionExpanded = env.expand(endRevision);
-            hasEndRevision = endRevisionExpanded != null && !"".equals(endRevisionExpanded);
         }
 
         if(lastSuccessfulBuild != null && lastSuccessfulBuild) {
             LastChangesBuildAction action = projectAction.getProject().getLastSuccessfulBuild().getAction(LastChangesBuildAction.class);
             if(action != null && action.getBuildChanges().getCurrentRevision() != null) {
                 endRevision = action.getBuildChanges().getCurrentRevision().getCommitId();
-                hasEndRevision = true;
+                endRevisionExpanded = endRevision;
             }
         }
+
+        hasEndRevision = endRevisionExpanded != null && !"".equals(endRevisionExpanded);
 
         try {
             LastChanges lastChanges = null;
