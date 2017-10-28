@@ -80,6 +80,8 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     private Boolean synchronisedScroll;
 
+    private Boolean lastSuccessfulBuild;
+
     private String matchWordsThreshold;
 
     private String matchingMaxComparisons;
@@ -88,7 +90,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     @DataBoundConstructor
     public LastChangesPublisher(FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold,
-                                String matchingMaxComparisons, String endRevision) {
+                                String matchingMaxComparisons, String endRevision, Boolean lastSuccessfulBuild) {
         this.endRevision = endRevision;
         this.format = format;
         this.matching = matching;
@@ -96,6 +98,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         this.synchronisedScroll = synchronisedScroll;
         this.matchWordsThreshold = matchWordsThreshold;
         this.matchingMaxComparisons = matchingMaxComparisons;
+        this.lastSuccessfulBuild = lastSuccessfulBuild;
     }
 
 
@@ -131,6 +134,13 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         if (endRevision != null) {
             endRevisionExpanded = env.expand(endRevision);
             hasEndRevision = endRevisionExpanded != null && !"".equals(endRevisionExpanded);
+        }
+
+        if(lastSuccessfulBuild != null && lastSuccessfulBuild) {
+            LastChangesBuildAction action = projectAction.getProject().getLastSuccessfulBuild().getAction(LastChangesBuildAction.class);
+            if(action != null && action.getBuildChanges().getCurrentRevision() != null) {
+                endRevision = action.getBuildChanges().getCurrentRevision().getCommitId();
+            }
         }
 
         try {
@@ -171,7 +181,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             listener.getLogger().println("");
 
             build.addAction(new LastChangesBuildAction(build, lastChanges,
-                    new LastChangesConfig(endRevision, format, matching, showFiles, synchronisedScroll, matchWordsThreshold, matchingMaxComparisons)));
+                    new LastChangesConfig(endRevision, lastSuccessfulBuild, format, matching, showFiles, synchronisedScroll, matchWordsThreshold, matchingMaxComparisons)));
         } catch (Exception e) {
             listener.error("Last Changes NOT published due to the following error: " + e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""));
             e.printStackTrace();
@@ -299,9 +309,18 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         return synchronisedScroll;
     }
 
+    public Boolean getLastSuccessfulBuild() {
+        return lastSuccessfulBuild;
+    }
+
     @DataBoundSetter
     public void setEndRevision(String endRevision) {
         this.endRevision = endRevision;
+    }
+
+    @DataBoundSetter
+    public void setLastSuccessfulBuild(Boolean lastSuccessfulBuild) {
+        this.lastSuccessfulBuild = lastSuccessfulBuild;
     }
 
     @DataBoundSetter

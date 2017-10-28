@@ -52,7 +52,7 @@ public class LastChangesIT {
                 Collections.<GitSCMExtension>singletonList(new DisableRemotePoll()));
         FreeStyleProject project = jenkins.createFreeStyleProject("git-test");
         project.setScm(scm);
-        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null);
+        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null,null);
         project.getPublishersList().add(publisher);
         project.save();
 
@@ -120,7 +120,7 @@ public class LastChangesIT {
         FreeStyleProject project = jenkins.createFreeStyleProject("git-test-slave");
         project.setAssignedNode(slave);
         project.setScm(scm);
-        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.SIDE,MatchingType.WORD, true, false, null,null,null);
+        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.SIDE,MatchingType.WORD, true, false, null,null,null, null);
         project.getPublishersList().add(publisher);
         project.save();
 
@@ -180,7 +180,7 @@ public class LastChangesIT {
         SvnSCM scm = new SvnSCM(".svn",sampleRepoDir,locations);//directory content is irrelevant cause LastChangesPublisher will look only into dir name (in case of svn)
         FreeStyleProject project = jenkins.createFreeStyleProject("svn-test");
         project.setScm(scm);
-        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null);
+        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null, null);
         project.getPublishersList().add(publisher);
         project.save();
         
@@ -199,7 +199,7 @@ public class LastChangesIT {
     @Test
     public void shouldNotGetLastChangesOfNonExistingRepository() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("non-existing-test");
-        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null);
+        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null,null);
         project.getPublishersList().add(publisher);
         project.save();
 
