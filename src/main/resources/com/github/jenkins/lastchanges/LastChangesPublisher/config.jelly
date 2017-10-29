@@ -6,7 +6,7 @@
       <f:entry title="Previous revision" description="Revision id to create the diff with the current repository revision. Default is (current revision -1)." >
              <f:textbox value="${instance.previousRevision}" field="previousRevision"  />
       </f:entry>
-      <f:entry title="Since last successful build?" description="Compares current revision with the revision of last successful build. If true then 'previousRevision' will be set to last successful build revision, default is false." >
+      <f:entry title="Since last successful build?" description="Compares current revision with the revision of the last successful build. If true then 'previousRevision' will be set to last successful build revision, default is false." >
               <f:checkbox value="${instance.sinceLastSuccessfulBuild}" field="sinceLastSuccessfulBuild" default="false"/>
        </f:entry>
       <f:entry title="Format" field="format" description="Diff format: libe-by-line (default) or side-by-side.">
