@@ -9,21 +9,21 @@ public class LastChangesConfig {
     private Boolean showFiles = Boolean.TRUE;
     private Boolean synchronisedScroll = Boolean.TRUE;
     private String previousRevision = "";//by default it is current revision -1
-    private Boolean lastSuccessFulBuild = Boolean.FALSE;
+    private Boolean sinceLastSuccessFulBuild = Boolean.FALSE;
 
 
     public LastChangesConfig() {
     }
 
-    public LastChangesConfig(String previousRevision, Boolean lastSuccessFulBuild, FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold, String matchingMaxComparisons) {
+    public LastChangesConfig(String previousRevision, Boolean sinceLastSuccessFulBuild, FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold, String matchingMaxComparisons) {
         super();
 
         if (previousRevision != null) {
             this.previousRevision = previousRevision;
         }
 
-        if (lastSuccessFulBuild != null) {
-            this.lastSuccessFulBuild = lastSuccessFulBuild;
+        if (sinceLastSuccessFulBuild != null) {
+            this.sinceLastSuccessFulBuild = sinceLastSuccessFulBuild;
         }
 
         if (format != null) {
@@ -88,7 +88,7 @@ public class LastChangesConfig {
         return matchWordsThreshold;
     }
 
-    public Boolean lastSuccessFulBuild() {
-         return lastSuccessFulBuild;
+    public Boolean sinceLastSuccessFulBuild() {
+         return sinceLastSuccessFulBuild;
     }
 }

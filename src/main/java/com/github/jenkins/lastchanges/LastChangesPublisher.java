@@ -80,7 +80,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     private Boolean synchronisedScroll;
 
-    private Boolean lastSuccessfulBuild;
+    private Boolean sinceLastSuccessfulBuild;
 
     private String matchWordsThreshold;
 
@@ -90,7 +90,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     @DataBoundConstructor
     public LastChangesPublisher(FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold,
-                                String matchingMaxComparisons, String previousRevision, Boolean lastSuccessfulBuild) {
+                                String matchingMaxComparisons, String previousRevision, Boolean sinceLastSuccessfulBuild) {
         this.previousRevision = previousRevision;
         this.format = format;
         this.matching = matching;
@@ -98,7 +98,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         this.synchronisedScroll = synchronisedScroll;
         this.matchWordsThreshold = matchWordsThreshold;
         this.matchingMaxComparisons = matchingMaxComparisons;
-        this.lastSuccessfulBuild = lastSuccessfulBuild;
+        this.sinceLastSuccessfulBuild = sinceLastSuccessfulBuild;
     }
 
 
@@ -135,7 +135,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             previousRevisionExpanded = env.expand(previousRevision);
         }
 
-        if(lastSuccessfulBuild != null && lastSuccessfulBuild) {
+        if(sinceLastSuccessfulBuild != null && sinceLastSuccessfulBuild) {
             LastChangesBuildAction action = projectAction.getProject().getLastSuccessfulBuild().getAction(LastChangesBuildAction.class);
             if(action != null && action.getBuildChanges().getCurrentRevision() != null) {
                 previousRevision = action.getBuildChanges().getCurrentRevision().getCommitId();
@@ -183,7 +183,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             listener.getLogger().println("");
 
             build.addAction(new LastChangesBuildAction(build, lastChanges,
-                    new LastChangesConfig(previousRevision, lastSuccessfulBuild, format, matching, showFiles, synchronisedScroll, matchWordsThreshold, matchingMaxComparisons)));
+                    new LastChangesConfig(previousRevision, sinceLastSuccessfulBuild, format, matching, showFiles, synchronisedScroll, matchWordsThreshold, matchingMaxComparisons)));
         } catch (Exception e) {
             listener.error("Last Changes NOT published due to the following error: " + e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""));
             e.printStackTrace();
@@ -311,8 +311,8 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         return synchronisedScroll;
     }
 
-    public Boolean getLastSuccessfulBuild() {
-        return lastSuccessfulBuild;
+    public Boolean getSinceLastSuccessfulBuild() {
+        return sinceLastSuccessfulBuild;
     }
 
     @DataBoundSetter
@@ -321,8 +321,8 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     }
 
     @DataBoundSetter
-    public void setLastSuccessfulBuild(Boolean lastSuccessfulBuild) {
-        this.lastSuccessfulBuild = lastSuccessfulBuild;
+    public void setSinceLastSuccessfulBuild(Boolean sinceLastSuccessfulBuild) {
+        this.sinceLastSuccessfulBuild = sinceLastSuccessfulBuild;
     }
 
     @DataBoundSetter
