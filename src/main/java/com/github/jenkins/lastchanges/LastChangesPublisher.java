@@ -70,7 +70,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     private static final short RECURSION_DEPTH = 50;
 
-    private String endRevision;
+    private String previousRevision;
 
     private FormatType format;
 
@@ -90,8 +90,8 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     @DataBoundConstructor
     public LastChangesPublisher(FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold,
-                                String matchingMaxComparisons, String endRevision, Boolean lastSuccessfulBuild) {
-        this.endRevision = endRevision;
+                                String matchingMaxComparisons, String previousRevision, Boolean lastSuccessfulBuild) {
+        this.previousRevision = previousRevision;
         this.format = format;
         this.matching = matching;
         this.showFiles = showFiles;
@@ -128,22 +128,22 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
         FilePath workspaceTargetDir = getMasterWorkspaceDir(build);//always on master
 
-        boolean hasEndRevision = false;
-        String endRevisionExpanded = null;
+        boolean hasPreviousRevision = false;
+        String previousRevisionExpanded = null;
         final EnvVars env = build.getEnvironment(listener);
-        if (endRevision != null) {
-            endRevisionExpanded = env.expand(endRevision);
+        if (previousRevision != null) {
+            previousRevisionExpanded = env.expand(previousRevision);
         }
 
         if(lastSuccessfulBuild != null && lastSuccessfulBuild) {
             LastChangesBuildAction action = projectAction.getProject().getLastSuccessfulBuild().getAction(LastChangesBuildAction.class);
             if(action != null && action.getBuildChanges().getCurrentRevision() != null) {
-                endRevision = action.getBuildChanges().getCurrentRevision().getCommitId();
-                endRevisionExpanded = endRevision;
+                previousRevision = action.getBuildChanges().getCurrentRevision().getCommitId();
+                previousRevisionExpanded = previousRevision;
             }
         }
 
-        hasEndRevision = endRevisionExpanded != null && !"".equals(endRevisionExpanded);
+        hasPreviousRevision = previousRevisionExpanded != null && !"".equals(previousRevisionExpanded);
 
         try {
             LastChanges lastChanges = null;
@@ -154,10 +154,10 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 // we are only copying when on git because in svn we are reading
                 // the current revision from remote repository
                 gitDir.copyRecursiveTo("**/*", new FilePath(new File(workspaceTargetDir.getRemote() + "/.git")));
-                if (hasEndRevision) {
-                    //compares current repository revision with provided endRevision
+                if (hasPreviousRevision) {
+                    //compares current repository revision with provided previousRevision
                     Repository repository = repository(workspaceTargetDir.getRemote() + "/.git");
-                    lastChanges = GitLastChanges.getInstance().changesOf(repository, GitLastChanges.resolveCurrentRevision(repository), ObjectId.fromString((endRevisionExpanded)));
+                    lastChanges = GitLastChanges.getInstance().changesOf(repository, GitLastChanges.resolveCurrentRevision(repository), ObjectId.fromString((previousRevisionExpanded)));
                 } else {
                     //compares current repository revision with previous one
                     lastChanges = GitLastChanges.getInstance().changesOf(repository(workspaceTargetDir.getRemote() + "/.git"));
@@ -167,9 +167,9 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 SubversionSCM scm = (SubversionSCM) SCMTriggerItem.SCMTriggerItems
                         .asSCMTriggerItem(projectAction.getProject()).getSCMs().iterator().next();
 
-                if (hasEndRevision) {
-                    //compares current repository revision with provided endRevision
-                    Long svnRevision = Long.parseLong(endRevisionExpanded);
+                if (hasPreviousRevision) {
+                    //compares current repository revision with provided previousRevision
+                    Long svnRevision = Long.parseLong(previousRevisionExpanded);
                     SVNRepository repository = SvnLastChanges.repository(scm, projectAction.getProject(),env);
                     lastChanges = SvnLastChanges.getInstance().changesOf(repository, repository.getLatestRevision(), svnRevision);
                 } else {
@@ -178,12 +178,12 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 }
             }
 
-            String resultMessage = String.format("Last changes from revision %s to %s published successfully!",truncate(lastChanges.getCurrentRevision().getCommitId(),8),truncate(lastChanges.getEndRevision().getCommitId(),8));
+            String resultMessage = String.format("Last changes from revision %s to %s published successfully!",truncate(lastChanges.getCurrentRevision().getCommitId(),8),truncate(lastChanges.getPreviousRevision().getCommitId(),8));
             listener.hyperlink("../" + build.getNumber() + "/" + LastChangesBaseAction.BASE_URL, resultMessage);
             listener.getLogger().println("");
 
             build.addAction(new LastChangesBuildAction(build, lastChanges,
-                    new LastChangesConfig(endRevision, lastSuccessfulBuild, format, matching, showFiles, synchronisedScroll, matchWordsThreshold, matchingMaxComparisons)));
+                    new LastChangesConfig(previousRevision, lastSuccessfulBuild, format, matching, showFiles, synchronisedScroll, matchWordsThreshold, matchingMaxComparisons)));
         } catch (Exception e) {
             listener.error("Last Changes NOT published due to the following error: " + e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""));
             e.printStackTrace();
@@ -283,8 +283,8 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     }
 
-    public String getEndRevision() {
-        return endRevision;
+    public String getPreviousRevision() {
+        return previousRevision;
     }
 
     public FormatType getFormat() {
@@ -316,8 +316,8 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     }
 
     @DataBoundSetter
-    public void setEndRevision(String endRevision) {
-        this.endRevision = endRevision;
+    public void setPreviousRevision(String previousRevision) {
+        this.previousRevision = previousRevision;
     }
 
     @DataBoundSetter

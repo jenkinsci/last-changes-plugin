@@ -8,18 +8,18 @@ public class LastChangesConfig {
     private String matchingMaxComparisons = "1000";
     private Boolean showFiles = Boolean.TRUE;
     private Boolean synchronisedScroll = Boolean.TRUE;
-    private String endRevision = "";//by default it is previous repository revision
+    private String previousRevision = "";//by default it is current revision -1
     private Boolean lastSuccessFulBuild = Boolean.FALSE;
 
 
     public LastChangesConfig() {
     }
 
-    public LastChangesConfig(String endRevision, Boolean lastSuccessFulBuild, FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold, String matchingMaxComparisons) {
+    public LastChangesConfig(String previousRevision, Boolean lastSuccessFulBuild, FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold, String matchingMaxComparisons) {
         super();
 
-        if (endRevision != null) {
-            this.endRevision = endRevision;
+        if (previousRevision != null) {
+            this.previousRevision = previousRevision;
         }
 
         if (lastSuccessFulBuild != null) {
@@ -64,8 +64,8 @@ public class LastChangesConfig {
         return format;
     }
 
-    public String getEndRevision() {
-        return endRevision;
+    public String previousRevision() {
+        return previousRevision;
     }
 
     public MatchingType matching() {

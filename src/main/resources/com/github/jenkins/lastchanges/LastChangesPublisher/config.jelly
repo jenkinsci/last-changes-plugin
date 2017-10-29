@@ -3,10 +3,10 @@
          xmlns:f="/lib/form">
 
   <f:section title="Last Changes Configuration" >
-      <f:entry title="End revision" description="Revision id to create the diff with the current repository revision. Default is previous revision." >
-             <f:textbox value="${instance.endRevision}" field="endRevision"  />
+      <f:entry title="Previous revision" description="Revision id to create the diff with the current repository revision. Default is (current revision -1)." >
+             <f:textbox value="${instance.previousRevision}" field="previousRevision"  />
       </f:entry>
-      <f:entry title="LastSuccessfulBuild?" description="Compares current revision with the revision of last successful build. If true then 'endRevision' will be set to last successful build revision, default is false." >
+      <f:entry title="Since last successful build?" description="Compares current revision with the revision of last successful build. If true then 'previousRevision' will be set to last successful build revision, default is false." >
               <f:checkbox value="${instance.lastSuccessfulBuild}" field="lastSuccessfulBuild" default="false"/>
        </f:entry>
       <f:entry title="Format" field="format" description="Diff format: libe-by-line (default) or side-by-side.">

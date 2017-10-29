@@ -26,6 +26,11 @@
                 #main-panel {
                     margin-left: 10px !important;
                 }
+
+              .d2h-files-diff > div:nth-child(1) {
+                  float: right;
+              }
+
             </style>
             <script>
                 jQueryJenkins(document).ready(function () {
@@ -54,7 +59,7 @@
                         diff2htmlUi.fileListCloseable('#${it.config.format().getFormat()}', false);
                         diff2htmlUi.highlightCode('#${it.config.format().getFormat()}');
                     } else {
-                        jQueryJenkins('#line-by-line').append('<p style="margin-top:150px;text-align:center;font-size:14px;">No changes between revision <span style="font-weight:600;text-decoration:underline">${it.buildChanges.currentRevision.commitId}</span> and <span style="font-weight:600;text-decoration:underline">${it.buildChanges.endRevision.commitId}</span> </p>')
+                        jQueryJenkins('#line-by-line').append('<p style="margin-top:150px;text-align:center;font-size:14px;">No changes between revision <span style="font-weight:600;text-decoration:underline">${it.buildChanges.currentRevision.commitId}</span> and <span style="font-weight:600;text-decoration:underline">${it.buildChanges.previousRevision.commitId}</span> </p>')
                     }
 
                 }); //end documentReady
@@ -86,18 +91,18 @@
 
                     <div class="col-sm-24 col-md-24 col-lg-12 col-xlg-12">
 
-                        <b><span style="text-decoration:underline;font-weight:bolder">End</span> revision:</b> ${it.buildChanges.endRevision.commitId}
+                        <b><span style="text-decoration:underline;font-weight:bolder">Previous</span> revision:</b> ${it.buildChanges.previousRevision.commitId}
                         <br/>
-                        <b>Author:</b> ${it.buildChanges.endRevision.commiterName}
+                        <b>Author:</b> ${it.buildChanges.previousRevision.commiterName}
                         <br/>
-                         <j:if test="${not empty it.buildChanges.endRevision.commiterEmail}">
-                            <b>E-mail:</b> ${it.buildChanges.endRevision.commiterEmail}
+                         <j:if test="${not empty it.buildChanges.previousRevision.commiterEmail}">
+                            <b>E-mail:</b> ${it.buildChanges.previousRevision.commiterEmail}
                             <br/>
                          </j:if>
-                        <b>Date:</b> ${it.buildChanges.endRevision.commitDate}
+                        <b>Date:</b> ${it.buildChanges.previousRevision.commitDate}
                         <br/>
-                        <j:if test="${not empty it.buildChanges.endRevision.commitMessage}">
-                           <b>E-Message:</b> ${it.buildChanges.endRevision.commitMessage}
+                        <j:if test="${not empty it.buildChanges.previousRevision.commitMessage}">
+                           <b>E-Message:</b> ${it.buildChanges.previousRevision.commitMessage}
                            <br/>
                         </j:if>
                     </div>
