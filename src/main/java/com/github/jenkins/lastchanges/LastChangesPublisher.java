@@ -157,7 +157,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 if (hasPreviousRevision) {
                     //compares current repository revision with provided previousRevision
                     Repository repository = repository(workspaceTargetDir.getRemote() + "/.git");
-                    lastChanges = GitLastChanges.getInstance().changesOf(repository, GitLastChanges.resolveCurrentRevision(repository), ObjectId.fromString((previousRevisionExpanded)));
+                    lastChanges = GitLastChanges.getInstance().changesOf(repository, GitLastChanges.resolveCurrentRevision(repository), repository.resolve(previousRevisionExpanded));
                 } else {
                     //compares current repository revision with previous one
                     lastChanges = GitLastChanges.getInstance().changesOf(repository(workspaceTargetDir.getRemote() + "/.git"));
@@ -185,7 +185,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             build.addAction(new LastChangesBuildAction(build, lastChanges,
                     new LastChangesConfig(previousRevision, sinceLastSuccessfulBuild, format, matching, showFiles, synchronisedScroll, matchWordsThreshold, matchingMaxComparisons)));
         } catch (Exception e) {
-            listener.error("Last Changes NOT published due to the following error: " + e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""));
+            listener.error("Last Changes NOT published due to the following error: " + (e.getMessage() == null ? e.toString() : e.getMessage()) + (e.getCause() != null ? " - " + e.getCause() : ""));
             e.printStackTrace();
         }
         // always success (only warn when no diff was generated)
