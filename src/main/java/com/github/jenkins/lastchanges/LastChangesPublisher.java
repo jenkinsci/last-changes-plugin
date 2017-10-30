@@ -135,7 +135,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             previousRevisionExpanded = env.expand(previousRevision);
         }
 
-        if(sinceLastSuccessfulBuild != null && sinceLastSuccessfulBuild) {
+        if(sinceLastSuccessfulBuild != null && sinceLastSuccessfulBuild && projectAction.getProject().getLastSuccessfulBuild() != null) {
             LastChangesBuildAction action = projectAction.getProject().getLastSuccessfulBuild().getAction(LastChangesBuildAction.class);
             if(action != null && action.getBuildChanges().getCurrentRevision() != null) {
                 previousRevision = action.getBuildChanges().getCurrentRevision().getCommitId();
