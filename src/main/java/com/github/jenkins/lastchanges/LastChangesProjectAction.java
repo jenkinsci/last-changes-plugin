@@ -3,7 +3,6 @@ package com.github.jenkins.lastchanges;
 import hudson.model.Job;
 import hudson.model.ProminentProjectAction;
 import hudson.model.Run;
-import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -73,7 +72,4 @@ public class LastChangesProjectAction extends LastChangesBaseAction implements P
         return builds;
     }
 
-    public boolean isRunningInPipelineWorkflow() {
-        return getProject() != null && getProject() instanceof WorkflowJob;
-    }
 }
