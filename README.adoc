@@ -31,13 +31,15 @@ Or using side-by-side configuration:
 image::https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/last-changes05.png[]
 
 
-NOTE: Last changes means `compare current repository revision with an old revision`. By default the plugin will diff current and previous revisions.
+NOTE: Last changes means `compare current repository revision with an old revision`. By default the plugin will diff current and previous revision.
 
 == Objectives
 
 The main objective of this plugin is to have _fast_ access to what has changed on a Jenkins build.
 
-Another interesting aspect is that it can easily help to find the `root cause` of a `failling build` by highlighting what has changed.
+Another interesting aspect is that it can easily help to find the `root cause` of a `failing build` by highlighting what has changed.
+
+TIP: Use `sinceLastSuccessfulBuild` option to diff against the last successful build revision.
 
 And finally the plugin _shines_ in a https://en.wikipedia.org/wiki/Continuous_delivery[*continuous delivery*^] environment, where each _commit_ generates a release candidate.
 
@@ -46,7 +48,9 @@ And finally the plugin _shines_ in a https://en.wikipedia.org/wiki/Continuous_de
 
 . This plugin expects `git` or `svn` based builds (a.k.a _Source Code Management_ configuration section).
 . While your job runs the plugin reads your build workspace to retrieve the current VCS revision;
-. The diff between `actual` and `old` revisions will be stored; Note that `old` revision can be provided in plugin configuration. If no revision is provided then previous repository revision will be used.
+. The diff between `actual` and `old` revisions will be stored; Note that `old` revision can be provided in plugin configuration using `previousRevision` field. If no revision is provided then previous repository revision will be used.
++
+TIP: You can use https://wiki.jenkins.io/display/JENKINS/Parameterized+Build[parameters] is previous revision. In case of git, expressions like `HEAD^{tree}` or `HEAD^^` can be used.
 . The `diff` for each build can be viewed later in html format.
 
 IMPORTANT: To get most from this plugin use `periodically SCM pooling` to trigger your builds, http://www.nailedtothex.org/roller/kyle/entry/articles-jenkins-poll[more details here^].
@@ -76,6 +80,8 @@ image:images/last-changes04.png[]
 The setup is done via `build configuration` and basically reflects https://github.com/rtfpessoa/diff2html#configuration[diff2html options^]:
 
 image:images/last-changes-config.png[]
+
+Only *previousRevision* and *sinceLastSuccessfulBuild* options are not related to diff2html. The first expects a revision id to create the diff and the second, when checked, will set previous revision to last successful build revision.
 
 == Jenkins pipeline step (since version 1.0.7)
 
