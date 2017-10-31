@@ -48,7 +48,7 @@ And finally the plugin _shines_ in a https://en.wikipedia.org/wiki/Continuous_de
 
 . This plugin expects `git` or `svn` based builds (a.k.a _Source Code Management_ configuration section).
 . While your job runs the plugin reads your build workspace to retrieve the current VCS revision;
-. The diff between `actual` and `old` revisions will be stored; Note that `old` revision can be provided in plugin configuration using `previousRevision` field. If no revision is provided then previous repository revision will be used.
+. The diff between `actual` and `previous` revisions will be stored; Note that `previous` revision can be provided in plugin configuration using `previousRevision` field. If no revision is provided then previous repository revision will be used.
 +
 TIP: You can use https://wiki.jenkins.io/display/JENKINS/Parameterized+Build[parameters] is previous revision. In case of git, expressions like `HEAD^{tree}` or `HEAD^^` can be used.
 . The `diff` for each build can be viewed later in html format.
