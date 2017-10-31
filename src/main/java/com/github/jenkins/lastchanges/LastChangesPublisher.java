@@ -124,12 +124,12 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         if (!isGit && !isSvn) {
             //if scm is not found try to find .git dir.
             //Note that last changes does depend on a SCM only for Subversion, in git we can retrieve repository information from .git
-            if(workspace.child(GIT_DIR).exists() || findGitDir(workspace) != null ) {
+            if (workspace.child(GIT_DIR).exists() || findGitDir(workspace) != null) {
                 isGit = true;
-            }
-            else {
+            } else {
                 throw new RuntimeException("Git or Svn must be configured as SCM on your job to publish Last Changes. Ignore this message and RERUN your job if you're using SVN on a Jenkins pipeline workflow for the first time. (See JENKINS-45720 for more details).");
             }
+
         }
 
         FilePath workspaceTargetDir = getMasterWorkspaceDir(build);//always on master
@@ -141,9 +141,9 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             previousRevisionExpanded = env.expand(previousRevision);
         }
 
-        if(sinceLastSuccessfulBuild != null && sinceLastSuccessfulBuild && projectAction.getProject().getLastSuccessfulBuild() != null) {
+        if (sinceLastSuccessfulBuild != null && sinceLastSuccessfulBuild && projectAction.getProject().getLastSuccessfulBuild() != null) {
             LastChangesBuildAction action = projectAction.getProject().getLastSuccessfulBuild().getAction(LastChangesBuildAction.class);
-            if(action != null && action.getBuildChanges().getCurrentRevision() != null) {
+            if (action != null && action.getBuildChanges().getCurrentRevision() != null) {
                 previousRevision = action.getBuildChanges().getCurrentRevision().getCommitId();
                 previousRevisionExpanded = previousRevision;
             }
@@ -156,6 +156,9 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             listener.getLogger().println("Publishing build last changes...");
             if (isGit) {
                 FilePath gitDir = workspace.child(GIT_DIR).exists() ? workspace.child(GIT_DIR) : findGitDir(workspace);
+                if(gitDir == null) {
+                    throw new RuntimeException("No .git directory found in workspace.");
+                }
                 // workspace can be on slave so copy resources to master
                 // we are only copying when on git because in svn we are reading
                 // the current revision from remote repository
@@ -176,15 +179,15 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 if (hasPreviousRevision) {
                     //compares current repository revision with provided previousRevision
                     Long svnRevision = Long.parseLong(previousRevisionExpanded);
-                    SVNRepository repository = SvnLastChanges.repository(scm, projectAction.getProject(),env);
+                    SVNRepository repository = SvnLastChanges.repository(scm, projectAction.getProject(), env);
                     lastChanges = SvnLastChanges.getInstance().changesOf(repository, repository.getLatestRevision(), svnRevision);
                 } else {
                     //compares current repository revision with previous one
-                    lastChanges = SvnLastChanges.getInstance().changesOf(SvnLastChanges.repository(scm, projectAction.getProject(),env));
+                    lastChanges = SvnLastChanges.getInstance().changesOf(SvnLastChanges.repository(scm, projectAction.getProject(), env));
                 }
             }
 
-            String resultMessage = String.format("Last changes from revision %s to %s published successfully!",truncate(lastChanges.getCurrentRevision().getCommitId(),8),truncate(lastChanges.getPreviousRevision().getCommitId(),8));
+            String resultMessage = String.format("Last changes from revision %s to %s published successfully!", truncate(lastChanges.getCurrentRevision().getCommitId(), 8), truncate(lastChanges.getPreviousRevision().getCommitId(), 8));
             listener.hyperlink("../" + build.getNumber() + "/" + LastChangesBaseAction.BASE_URL, resultMessage);
             listener.getLogger().println("");
 
@@ -201,11 +204,11 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     }
 
     private String truncate(String value, int length) {
-        if(value == null || value.length() <= length) {
+        if (value == null || value.length() <= length) {
             return value;
         }
 
-        return value.substring(0,length-1);
+        return value.substring(0, length - 1);
     }
 
     /**
@@ -216,9 +219,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         int recursionDepth = RECURSION_DEPTH;
         while ((gitDir = findGitDirInSubDirectories(workspace)) == null && recursionDepth > 0) {
             recursionDepth--;
-        }
-        if (gitDir == null) {
-            throw new RuntimeException("No .git directory found in workspace.");
         }
         return gitDir;
     }
@@ -253,7 +253,8 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         return BuildStepMonitor.NONE;
     }
 
-    @Extension @Symbol("lastChanges")
+    @Extension
+    @Symbol("lastChanges")
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
