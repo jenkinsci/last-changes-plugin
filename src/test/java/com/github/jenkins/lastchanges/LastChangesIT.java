@@ -272,7 +272,7 @@ public class LastChangesIT {
         FreeStyleBuild build = jenkins.assertBuildStatus(Result.FAILURE,project.scheduleBuild2(0).get());
 
         // then
-        jenkins.assertLogContains("Git or Svn must be configured on your job to publish Last Changes. Ignore this message and RERUN your job if you're running on a Jenkins pipeline workflow (See JENKINS-45720 for more details)." ,build);
+        jenkins.assertLogContains("Git or Svn must be configured as SCM on your job to publish Last Changes. Ignore this message and RERUN your job if you're using SVN on a Jenkins pipeline workflow for the first time. (See JENKINS-45720 for more details)." ,build);
     }
 
 }

@@ -122,7 +122,14 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         }
 
         if (!isGit && !isSvn) {
-            throw new RuntimeException("Git or Svn must be configured on your job to publish Last Changes. Ignore this message and RERUN your job if you're running on a Jenkins pipeline workflow (See JENKINS-45720 for more details).");
+            //if scm is not found try to find .git dir.
+            //Note that last changes does depend on a SCM only for Subversion, in git we can retrieve repository information from .git
+            if(workspace.child(GIT_DIR).exists() || findGitDir(workspace) != null ) {
+                isGit = true;
+            }
+            else {
+                throw new RuntimeException("Git or Svn must be configured as SCM on your job to publish Last Changes. Ignore this message and RERUN your job if you're using SVN on a Jenkins pipeline workflow for the first time. (See JENKINS-45720 for more details).");
+            }
         }
 
         FilePath workspaceTargetDir = getMasterWorkspaceDir(build);//always on master
@@ -206,9 +213,9 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
      */
     private FilePath findGitDir(FilePath workspace) throws IOException, InterruptedException {
         FilePath gitDir = null;
-        int recusursionDepth = RECURSION_DEPTH;
-        while ((gitDir = findGitDirInSubDirectories(workspace)) == null && recusursionDepth > 0) {
-            recusursionDepth--;
+        int recursionDepth = RECURSION_DEPTH;
+        while ((gitDir = findGitDirInSubDirectories(workspace)) == null && recursionDepth > 0) {
+            recursionDepth--;
         }
         if (gitDir == null) {
             throw new RuntimeException("No .git directory found in workspace.");
