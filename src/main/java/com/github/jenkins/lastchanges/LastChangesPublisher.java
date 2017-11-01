@@ -54,6 +54,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.tmatesoft.svn.core.io.SVNRepository;
+import org.tmatesoft.svn.core.wc.SVNRevision;
 
 import java.io.File;
 import java.io.IOException;
@@ -86,6 +87,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     private String matchingMaxComparisons;
 
     private static final String GIT_DIR = ".git";
+    private static final String SVN_DIR = ".svn";
 
     @DataBoundConstructor
     public LastChangesPublisher(FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold,
@@ -108,28 +110,16 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         boolean isGit = false;
         boolean isSvn = false;
 
-        Collection<? extends SCM> scms = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(projectAction.getProject()).getSCMs();
-        for (SCM scm : scms) {
-            if (scm instanceof GitSCM) {
-                isGit = true;
-                break;
-            }
-
-            if (scm instanceof SubversionSCM) {
-                isSvn = true;
-                break;
-            }
+         if (workspace.child(SVN_DIR).exists() || findVCSDir(workspace,SVN_DIR) != null) {
+            isSvn = true;
         }
 
-        if (!isGit && !isSvn) {
-            //if scm is not found try to find .git dir.
-            //Note that last changes does depend on a SCM only for Subversion, in git we can retrieve repository information from .git
-            if (workspace.child(GIT_DIR).exists() || findGitDir(workspace) != null) {
-                isGit = true;
-            } else {
-                throw new RuntimeException("Git or Svn must be configured as SCM on your job to publish Last Changes. Ignore this message and RERUN your job if you're using SVN on a Jenkins pipeline workflow for the first time. (See JENKINS-45720 for more details).");
-            }
+        if (workspace.child(GIT_DIR).exists() || findVCSDir(workspace,GIT_DIR) != null) {
+            isGit = true;
+        }
 
+        if(!isGit && !isSvn) {
+            throw new RuntimeException(String.format("Git or Svn directories not found in workspace %s.",workspace.toURI().toString()));
         }
 
         FilePath workspaceTargetDir = getMasterWorkspaceDir(build);//always on master
@@ -155,35 +145,41 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             LastChanges lastChanges = null;
             listener.getLogger().println("Publishing build last changes...");
             if (isGit) {
-                FilePath gitDir = workspace.child(GIT_DIR).exists() ? workspace.child(GIT_DIR) : findGitDir(workspace);
-                if(gitDir == null) {
+                FilePath gitDir = workspace.child(GIT_DIR).exists() ? workspace.child(GIT_DIR) : findVCSDir(workspace,GIT_DIR);
+                if (gitDir == null) {
                     throw new RuntimeException("No .git directory found in workspace.");
                 }
                 // workspace can be on slave so copy resources to master
                 // we are only copying when on git because in svn we are reading
                 // the current revision from remote repository
                 gitDir.copyRecursiveTo("**/*", new FilePath(new File(workspaceTargetDir.getRemote() + "/.git")));
+                Repository gitRepository = repository(workspaceTargetDir.getRemote() + "/.git");
                 if (hasPreviousRevision) {
                     //compares current repository revision with provided previousRevision
-                    Repository repository = repository(workspaceTargetDir.getRemote() + "/.git");
-                    lastChanges = GitLastChanges.getInstance().changesOf(repository, GitLastChanges.resolveCurrentRevision(repository), repository.resolve(previousRevisionExpanded));
+
+                    lastChanges = GitLastChanges.getInstance().changesOf(gitRepository, GitLastChanges.resolveCurrentRevision(gitRepository), gitRepository.resolve(previousRevisionExpanded));
                 } else {
                     //compares current repository revision with previous one
-                    lastChanges = GitLastChanges.getInstance().changesOf(repository(workspaceTargetDir.getRemote() + "/.git"));
+                    lastChanges = GitLastChanges.getInstance().changesOf(gitRepository);
                 }
             } else {
                 //svn repository
-                SubversionSCM scm = (SubversionSCM) SCMTriggerItem.SCMTriggerItems
-                        .asSCMTriggerItem(projectAction.getProject()).getSCMs().iterator().next();
-
+                FilePath svnDir = workspace.child(SVN_DIR).exists() ? workspace.child(SVN_DIR) : findVCSDir(workspace,SVN_DIR);
+                if (svnDir == null) {
+                    throw new RuntimeException("No .git directory found in workspace.");
+                }
+                // workspace can be on slave so copy resources to master
+                // we are only copying when on git because in svn we are reading
+                // the current revision from remote repository
+                svnDir.copyRecursiveTo("**/*", new FilePath(new File(workspaceTargetDir.getRemote() + "/.svn")));
+                File svnRepository = new File(workspaceTargetDir.getRemote());
                 if (hasPreviousRevision) {
                     //compares current repository revision with provided previousRevision
                     Long svnRevision = Long.parseLong(previousRevisionExpanded);
-                    SVNRepository repository = SvnLastChanges.repository(scm, projectAction.getProject(), env);
-                    lastChanges = SvnLastChanges.getInstance().changesOf(repository, repository.getLatestRevision(), svnRevision);
+                    lastChanges = SvnLastChanges.getInstance().changesOf(svnRepository, SVNRevision.HEAD, SVNRevision.create(svnRevision));
                 } else {
                     //compares current repository revision with previous one
-                    lastChanges = SvnLastChanges.getInstance().changesOf(SvnLastChanges.repository(scm, projectAction.getProject(), env));
+                    lastChanges = SvnLastChanges.getInstance().changesOf(svnRepository);
                 }
             }
 
@@ -214,21 +210,21 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     /**
      * .git directory can be on a workspace sub dir, see JENKINS-36971
      */
-    private FilePath findGitDir(FilePath workspace) throws IOException, InterruptedException {
+    private FilePath findVCSDir(FilePath workspace, String dir) throws IOException, InterruptedException {
         FilePath gitDir = null;
         int recursionDepth = RECURSION_DEPTH;
-        while ((gitDir = findGitDirInSubDirectories(workspace)) == null && recursionDepth > 0) {
+        while ((gitDir = findVCSDirInSubDirectories(workspace,dir)) == null && recursionDepth > 0) {
             recursionDepth--;
         }
         return gitDir;
     }
 
-    private FilePath findGitDirInSubDirectories(FilePath sourceDir) throws IOException, InterruptedException {
+    private FilePath findVCSDirInSubDirectories(FilePath sourceDir, String dir) throws IOException, InterruptedException {
         for (FilePath filePath : sourceDir.listDirectories()) {
-            if (filePath.getName().equalsIgnoreCase(GIT_DIR)) {
+            if (filePath.getName().equalsIgnoreCase(dir)) {
                 return filePath;
             } else {
-                return findGitDirInSubDirectories(filePath);
+                return findVCSDirInSubDirectories(filePath,dir);
             }
         }
         return null;

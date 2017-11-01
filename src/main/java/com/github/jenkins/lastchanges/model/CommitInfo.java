@@ -8,12 +8,15 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNLogEntry;
 import org.tmatesoft.svn.core.io.SVNRepository;
+import org.tmatesoft.svn.core.wc.SVNRevision;
+import org.tmatesoft.svn.core.wc2.SvnLog;
+import org.tmatesoft.svn.core.wc2.SvnOperationFactory;
+import org.tmatesoft.svn.core.wc2.SvnRevisionRange;
+import org.tmatesoft.svn.core.wc2.SvnTarget;
 
+import java.io.File;
 import java.text.DateFormat;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -68,12 +71,23 @@ public class CommitInfo {
 
     public static class Builder {
 
-        public static CommitInfo buildFromSvn(SVNRepository repository, long revision) throws SVNException {
+        public static CommitInfo buildFromSvn(File repository, SVNRevision revision) throws SVNException {
             CommitInfo commitInfo = new CommitInfo();
             try {
-                Collection<SVNLogEntry> entries = repository.log(new String[]{""}, null, revision, revision, true, true);
-                Iterator<SVNLogEntry> iterator = entries.iterator();
-                if(iterator.hasNext()) {
+                SvnOperationFactory operationFactory = new SvnOperationFactory();
+                SvnLog logOperation = operationFactory.createLog();
+                logOperation.setSingleTarget(
+                        SvnTarget.fromFile(repository)
+                );
+                logOperation.setRevisionRanges(Collections.singleton(
+                        SvnRevisionRange.create(
+                                revision,
+                                revision
+                        )
+                ));
+                Collection<SVNLogEntry> logEntries = logOperation.run( null );
+                Iterator<SVNLogEntry> iterator = logEntries.iterator();
+                if (iterator.hasNext()) {
                     SVNLogEntry logEntry = iterator.next();
                     TimeZone tz = TimeZone.getDefault();
                     dateFormat.setTimeZone(tz);
@@ -97,7 +111,7 @@ public class CommitInfo {
                 if (revWalk.parseAny(commitId) instanceof RevCommit) {
                     commit = revWalk.parseCommit(commitId);
                     committerIdent = commit.getCommitterIdent();
-                } else if(revWalk.parseAny(commitId) instanceof RevTree) {
+                } else if (revWalk.parseAny(commitId) instanceof RevTree) {
 
                     RevCommit rootCommit = revWalk.parseCommit(repository.resolve(Constants.HEAD));
                     revWalk.sort(RevSort.COMMIT_TIME_DESC);
@@ -105,7 +119,7 @@ public class CommitInfo {
                     //resolve commit from tree
                     RevTree tree = revWalk.parseTree(commitId);
                     for (RevCommit revCommit : revWalk) {
-                        if(revCommit.getTree().getId().equals(tree.getId())){
+                        if (revCommit.getTree().getId().equals(tree.getId())) {
                             commit = revCommit;
                             committerIdent = commit.getCommitterIdent();
                             break;
@@ -125,7 +139,7 @@ public class CommitInfo {
             } catch (Exception e) {
                 Logger.getLogger(CommitInfo.class.getName()).warning(String.format("Could not get commit info from revision %d due to following error " + e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""), commitId));
             } finally {
-                  revWalk.dispose();
+                revWalk.dispose();
             }
             return commitInfo;
         }
