@@ -11,4 +11,6 @@ public interface VCSChanges<REPOSITORY, REVISION> {
     LastChanges changesOf(REPOSITORY repository);
 
     LastChanges changesOf(REPOSITORY repository, REVISION currentRevision, REVISION previousRevision);
+
+    REVISION getLastTagRevision(REPOSITORY repository);
 }

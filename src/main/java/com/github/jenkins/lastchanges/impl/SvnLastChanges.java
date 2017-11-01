@@ -4,35 +4,18 @@
 package com.github.jenkins.lastchanges.impl;
 
 import com.github.jenkins.lastchanges.api.VCSChanges;
-import com.github.jenkins.lastchanges.exception.RepositoryNotFoundException;
 import com.github.jenkins.lastchanges.model.CommitInfo;
 import com.github.jenkins.lastchanges.model.LastChanges;
-import hudson.EnvVars;
-import hudson.model.AbstractProject;
-import hudson.model.Job;
-import hudson.scm.SubversionSCM;
-import org.tmatesoft.svn.core.SVNException;
-import org.tmatesoft.svn.core.SVNLogEntry;
-import org.tmatesoft.svn.core.SVNURL;
-import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
-import org.tmatesoft.svn.core.auth.ISVNAuthenticationProvider;
-import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory;
-import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl;
 import org.tmatesoft.svn.core.internal.wc2.ng.SvnDiffGenerator;
-import org.tmatesoft.svn.core.io.SVNRepository;
-import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
-import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNRevision;
-import org.tmatesoft.svn.core.wc.SVNStatus;
-import org.tmatesoft.svn.core.wc.SVNWCUtil;
-import org.tmatesoft.svn.core.wc2.*;
+import org.tmatesoft.svn.core.wc2.SvnDiff;
+import org.tmatesoft.svn.core.wc2.SvnOperationFactory;
+import org.tmatesoft.svn.core.wc2.SvnTarget;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Collection;
-import java.util.Collections;
 
 public class SvnLastChanges implements VCSChanges<File, SVNRevision> {
 
@@ -104,6 +87,12 @@ public class SvnLastChanges implements VCSChanges<File, SVNRevision> {
             }
 
         }
+    }
+
+    @Override
+    public SVNRevision getLastTagRevision(File file) {
+        //TODO
+        return null;
     }
 
 }

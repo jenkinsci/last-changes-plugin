@@ -4,15 +4,20 @@
 package com.github.jenkins.lastchanges.impl;
 
 import com.github.jenkins.lastchanges.api.VCSChanges;
-import com.github.jenkins.lastchanges.exception.*;
+import com.github.jenkins.lastchanges.exception.GitDiffException;
+import com.github.jenkins.lastchanges.exception.GitTreeNotFoundException;
+import com.github.jenkins.lastchanges.exception.GitTreeParseException;
+import com.github.jenkins.lastchanges.exception.RepositoryNotFoundException;
 import com.github.jenkins.lastchanges.model.CommitInfo;
 import com.github.jenkins.lastchanges.model.LastChanges;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -22,6 +27,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 
 public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
@@ -181,6 +189,53 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
             }
         }
 
+    }
+
+
+    @Override
+    public ObjectId getLastTagRevision(Repository repository) {
+        Git git = new Git(repository);
+        List<Ref> tags = null;
+        try {
+            tags = git.tagList().call();
+
+            final RevWalk walk = new RevWalk(repository);
+            Collections.sort(tags, new Comparator<Ref>() {
+                public int compare(Ref o1, Ref o2) {
+                    java.util.Date d1 = null;
+                    java.util.Date d2 = null;
+                    try {
+                        d1 = walk.parseTag(o1.getObjectId()).getTaggerIdent().getWhen();
+                        d2 = walk.parseTag(o2.getObjectId()).getTaggerIdent().getWhen();
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return d2.compareTo(d1);
+                }
+            });
+
+            if (tags != null && !tags.isEmpty()) {
+                Ref tag = tags.get(0);
+                Ref peeledRef = repository.peel(tag);
+                LogCommand log = git.log();
+                if (peeledRef.getPeeledObjectId() != null) {
+                    log.add(peeledRef.getPeeledObjectId());
+                } else {
+                    log.add(tag.getObjectId());
+                }
+                Iterable<RevCommit> logs = log.call();
+                if(logs != null) {
+                    return logs.iterator().next().getId();
+                }
+            }
+
+            return null;
+
+        } catch (Exception e) {
+            throw new GitDiffException("Could not get last tag of repository located at " + repository.getDirectory().getAbsolutePath(), e);
+
+        }
     }
 
 
