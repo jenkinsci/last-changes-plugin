@@ -1,31 +1,31 @@
 package com.github.jenkins.lastchanges;
 
+import com.github.jenkins.lastchanges.model.FormatType;
 import com.github.jenkins.lastchanges.model.LastChanges;
+import com.github.jenkins.lastchanges.model.MatchingType;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
-import hudson.plugins.git.*;
+import hudson.plugins.git.BranchSpec;
 import hudson.plugins.git.GitSCM;
+import hudson.plugins.git.SubmoduleConfig;
+import hudson.plugins.git.UserRemoteConfig;
 import hudson.plugins.git.extensions.GitSCMExtension;
 import hudson.plugins.git.extensions.impl.DisableRemotePoll;
-import hudson.scm.SubversionSCM;
 import hudson.scm.SubversionSCM.ModuleLocation;
 import hudson.slaves.DumbSlave;
 import org.assertj.core.api.Assertions;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.jvnet.hudson.test.JenkinsRule;
 
-import com.github.jenkins.lastchanges.model.FormatType;
-import com.github.jenkins.lastchanges.model.MatchingType;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Future;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
@@ -236,6 +236,7 @@ public class LastChangesIT {
     }
     
     @Test
+    @Ignore("Test classpath issue, it throws: Caused by: org.tmatesoft.svn.core.SVNException: svn: E200007: Runner for 'org.tmatesoft.svn.core.wc2.SvnDiff' command have not been found; probably not yet implement in this API. Although it works on a \"real\" Jenkins.")
     public void shouldGetLastChangesOfSvnRepository() throws Exception {
 
         // given

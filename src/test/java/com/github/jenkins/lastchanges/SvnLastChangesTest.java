@@ -6,7 +6,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.tmatesoft.svn.core.io.SVNRepository;
+import org.tmatesoft.svn.core.SVNException;
+import org.tmatesoft.svn.core.wc.SVNRevision;
 
 import java.io.File;
 import java.util.Locale;
@@ -22,30 +23,57 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(JUnit4.class)
 public class SvnLastChangesTest {
 
+    public static final String newLine = System.getProperty("line.separator");
+
+
 
     String svnRepoPath;
+    String svnWithTagsRepoPath;
 
-     @Before
+    @Before
     public void before() {
-        svnRepoPath = SvnLastChangesTest.class.getResource("/svn-sample-repo/").getFile();
-        Locale.setDefault(Locale.ENGLISH);
         TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
-        File file = new File(svnRepoPath+"/svn");
-        boolean renamed = file.renameTo(new File(svnRepoPath+"/.svn"));
+        Locale.setDefault(Locale.ENGLISH);
+        svnRepoPath = SvnLastChangesTest.class.getResource("/svn-sample-repo/").getFile();
+        File file = new File(svnRepoPath + "svn");
+        file.renameTo(new File(svnRepoPath + ".svn"));
+
+        svnWithTagsRepoPath = SvnLastChangesTest.class.getResource("/svn-with-tags-repo/").getFile();
+        file = new File(svnWithTagsRepoPath + "svn");
+        file.renameTo(new File(svnWithTagsRepoPath + ".svn"));
     }
 
     @Test
     public void shouldGetLastChanges() {
-            File repository = new File(svnRepoPath);
-            assertThat(repository).exists();
-            LastChanges lastChanges = SvnLastChanges.getInstance().changesOf(repository);
-            assertNotNull(lastChanges);
-            assertThat(lastChanges.getCurrentRevision()).isNotNull();
-            assertThat(lastChanges.getDiff()).isNotEmpty();
-            assertThat(lastChanges.getCurrentRevision().getCommitMessage()).isEqualTo("removes theme and css files");
-
+        File repository = new File(svnRepoPath);
+        assertThat(repository).exists();
+        LastChanges lastChanges = SvnLastChanges.getInstance().changesOf(repository);
+        assertNotNull(lastChanges);
+        assertThat(lastChanges.getCurrentRevision()).isNotNull();
+        assertThat(lastChanges.getDiff()).isNotEmpty();
+        assertThat(lastChanges.getCurrentRevision().getCommitMessage()).isEqualTo("removes theme and css files");
     }
 
+    @Test
+    public void shouldGetLastChangesFromLatestTag() throws SVNException {
+        File repository = new File(svnWithTagsRepoPath);
+        assertThat(repository).exists();
+        SVNRevision lastTagRevision = SvnLastChanges.getInstance().getLastTagRevision(repository);
+        LastChanges lastChanges = SvnLastChanges.getInstance().changesOf(repository, SVNRevision.HEAD,lastTagRevision);
+        assertNotNull(lastChanges);
+        assertThat(lastChanges.getCurrentRevision()).isNotNull();
+        assertThat(lastChanges.getDiff()).isNotEmpty().isEqualToIgnoringWhitespace("Index: target/test-classes/svn-with-tags-repo/README.adoc\n" +
+                "==================================================================="+newLine +
+                "--- target/test-classes/svn-with-tags-repo/README.adoc\t(revision 5)"+newLine +
+                "+++ target/test-classes/svn-with-tags-repo/README.adoc\t(revision 6)"+newLine +
+                "@@ -1,4 +1,4 @@"+newLine +
+                "-= Admin Persistence TEST SVN REPO"+newLine +
+                "+= Admin Persistence"+newLine +
+                " :page-layout: base"+newLine +
+                " :source-language: java"+newLine +
+                " :icons: font"+newLine);
+        assertThat(lastChanges.getCurrentRevision().getCommitMessage()).isEqualTo("perf");
+    }
 
 
 }

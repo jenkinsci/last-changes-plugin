@@ -1,0 +1,10 @@
+handlers = java.util.logging.ConsoleHandler
+
+
+java.util.logging.ConsoleHandler.formatter=java.util.logging.SimpleFormatter
+
+com.github.adminfaces.persistence.level=FINE
+
+org.hibernate.SQL=DEBUG
+org.hibernate.type=TRACE
+
