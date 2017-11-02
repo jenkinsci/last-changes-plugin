@@ -176,7 +176,7 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
                     formatter.format(change);
                 }
             } catch (Exception e) {
-                throw new GitDiffException("Could not get last changes of repository located at " + repositoryLocation, e);
+                throw new GitDiffException("Could not get last changes from repository located at " + repositoryLocation, e);
             }
 
             return new LastChanges(lastCommitInfo, oldCommitInfo, new String(diffStream.toByteArray(), Charset.forName("UTF-8")));
@@ -205,13 +205,13 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
                     java.util.Date d1 = null;
                     java.util.Date d2 = null;
                     try {
-                        d1 = walk.parseTag(o1.getObjectId()).getTaggerIdent().getWhen();
-                        d2 = walk.parseTag(o2.getObjectId()).getTaggerIdent().getWhen();
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                        d1 = walk.parseCommit(o1.getObjectId()).getCommitterIdent().getWhen();
+                        d2 = walk.parseCommit(o2.getObjectId()).getCommitterIdent().getWhen();
+                        return d2.compareTo(d1);
+                    } catch (Exception e) {
+                        System.out.println(e);
                     }
-                    return d2.compareTo(d1);
+                    return 0;
                 }
             });
 
@@ -233,7 +233,7 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
             return null;
 
         } catch (Exception e) {
-            throw new GitDiffException("Could not get last tag of repository located at " + repository.getDirectory().getAbsolutePath(), e);
+            throw new GitDiffException("Could not get last tag from repository located at " + repository.getDirectory().getAbsolutePath(), e);
 
         }
     }

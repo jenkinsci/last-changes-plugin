@@ -9,7 +9,7 @@ public class LastChanges {
 
     private CommitInfo currentRevision; //information aboud head commit
     private CommitInfo previousRevision;
-    private String diff; //diff between head and ´head -1'
+    private String diff;
 
     public LastChanges(CommitInfo current, CommitInfo previous, String diff) {
         this.currentRevision = current;

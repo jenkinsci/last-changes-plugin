@@ -99,6 +99,7 @@ public class SvnLastChanges implements VCSChanges<File, SVNRevision> {
         }
     }
 
+
     @Override
     public SVNRevision getLastTagRevision(File repository) {
         SvnOperationFactory operationFactory = new SvnOperationFactory();
