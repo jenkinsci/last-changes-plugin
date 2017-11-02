@@ -3,6 +3,7 @@
 :sectanchors:
 :sectlink:
 :numbered:
+:imagesdir: images
 :tip-caption: :bulb:
 :note-caption: :information_source:
 :important-caption: :heavy_exclamation_mark:
@@ -24,11 +25,11 @@ IMPORTANT: Only `Git` and `Svn` based projects are supported.
 
 The plugin uses https://diff2html.rtfpessoa.xyz/[diff2html^] to show last changes of a given build, example:
 
-image::https://github.com/jenkinsci/last-changes-plugin/blob/master/images/last-changes03.png?raw=true[]
+image::last-changes03.png[link=https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/last-changes03.png]
 
 Or using side-by-side configuration:
 
-image::https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/last-changes05.png[]
+image::last-changes05.png[link=https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/last-changes05.png]
 
 
 NOTE: Last changes means `compare current repository revision with an old revision`. By default the plugin will diff current and previous revision.
@@ -68,29 +69,29 @@ After installation just activate the post build action named *Publish Last Chang
 
 . Activate build action
 +
-image:images/last-changes-activation.png[]
+image:last-changes-activation.png[link=https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/last-changes-activation.png]
 . Last changes menu should be available
 +
-image:images/last-changes01.png[]
+image:last-changes01.png[link=https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/last-changes01.png]
 . Build changes history
 +
-image:images/last-changes02.png[]
+image:last-changes02.png[link=https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/last-changes02.png]
 . Last changes menu is available for builds that published changes
 +
-image:images/last-changes04.png[]
+image:last-changes04.png[link=https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/last-changes-config.png]
 
 
 == Configuration
 
 The setup is done via `build configuration`:
 
-image:images/last-changes-config.png[]
+image:last-changes-config.png[link=https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/last-changes-config.png]
 
 IMPORTANT: If *SpecificRevision* parameter is provided then *Since* configuration will be ignored and the diff will be done with provided revision id.
 
 Advanced configuration reflects https://github.com/rtfpessoa/diff2html#configuration[diff2html options^]:
 
-image:images/last-changes-config2.png[]
+image:images/last-changes-config2.png[link=https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/last-changes-config2.png]
 
 
 == Jenkins pipeline step
@@ -164,4 +165,4 @@ docker run -it -p 8080:8080 rmpestano/jenkins-last-changes
  
 Job output should look like:
 
-image:images/last-changes-docker.png[] 
+image:last-changes-docker.png[link=https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/last-changes-docker.png]
