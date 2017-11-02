@@ -46,16 +46,21 @@ And finally the plugin _shines_ in a https://en.wikipedia.org/wiki/Continuous_de
 
 == How it works?
 
-. This plugin expects `git` or `svn` based builds (a.k.a _Source Code Management_ configuration section).
+. This plugin expects `.git` or `.svn` folders present on your build workspace and will use it to retrieve repository information .
 . While your job runs the plugin reads your build workspace to retrieve the current VCS revision;
-. The diff between `actual` and `previous` revisions will be stored; Note that `previous` revision can be provided in plugin configuration using `previousRevision` field. If no revision is provided then previous repository revision will be used.
+. The diff between `actual` and a `previous` revision will be stored; Note that the `previous revision` can be:
 +
-TIP: You can use https://wiki.jenkins.io/display/JENKINS/Parameterized+Build[parameters] is previous revision. In case of git, expressions like `HEAD^{tree}` or `HEAD^^` can be used.
+* A provided revision id;
+* Revision of `Last successful build`;
+* Revision of `Last tag`;
++
+NOTE: By default previous revision is `current revision -1`.
++
+TIP: You can use https://wiki.jenkins.io/display/JENKINS/Parameterized+Build[parameters] in `specificRevision` parameter. In case of git, expressions like `HEAD^{tree}` or `HEAD^^` can be used.
 . The `diff` for each build can be viewed later in html format.
 
 IMPORTANT: To get most from this plugin use `periodically SCM pooling` to trigger your builds, http://www.nailedtothex.org/roller/kyle/entry/articles-jenkins-poll[more details here^].
 
-WARNING: The plugin *always* compare current revision with old one even no new commit has been made.
 
 == Usage
 
@@ -77,13 +82,18 @@ image:images/last-changes04.png[]
 
 == Configuration
 
-The setup is done via `build configuration` and basically reflects https://github.com/rtfpessoa/diff2html#configuration[diff2html options^]:
+The setup is done via `build configuration`:
 
 image:images/last-changes-config.png[]
 
-Only *previousRevision* and *sinceLastSuccessfulBuild* options are not related to diff2html. The first expects a revision id to create the diff and the second, when checked, will set previous revision to last successful build revision.
+IMPORTANT: If *SpecificRevision* parameter is provided then *Since* configuration will be ignored and the diff will be done with provided revision id.
 
-== Jenkins pipeline step (since version 1.0.7)
+Advanced configuration reflects https://github.com/rtfpessoa/diff2html#configuration[diff2html options^]:
+
+image:images/last-changes-config2.png[]
+
+
+== Jenkins pipeline step
 
 Following is an example of pipeline step using this plugin:
 
@@ -98,7 +108,6 @@ node {
 }
 ----
 
-NOTE: Empty *previousRevision* will set previousRevision to previous repository revision.
 
 === Pipeline script DSL
 
@@ -107,7 +116,7 @@ Since version `1.0.10` it is possible to use the _lastChanges()_ shortcut in pip
 ----
 node {
      git 'https://github.com/jenkinsci/last-changes-plugin.git'
-     lastChanges()
+     lastChanges() //will use defaults
 }
 ----
 
@@ -129,7 +138,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 git 'https://github.com/jenkinsci/last-changes-plugin.git'
-                lastChanges format:'SIDE',matching: 'LINE'
+                lastChanges since: 'LAST_SUCCESSFUL_BUILD', format:'SIDE',matching: 'LINE'
             }
         }
     }
@@ -139,7 +148,7 @@ pipeline {
 
 == Docker
 
-An easy way to test this plugin is using a docker container, here are the steps (assumming you have docker installed):
+An easy way to test this plugin is using a docker container, here are the steps (assuming you have docker installed):
 
 . Run the image:
 +
