@@ -91,7 +91,7 @@ IMPORTANT: If *SpecificRevision* parameter is provided then *Since* configuratio
 
 Advanced configuration reflects https://github.com/rtfpessoa/diff2html#configuration[diff2html options^]:
 
-image:images/last-changes-config2.png[link=https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/last-changes-config2.png]
+image:last-changes-config2.png[link=https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/last-changes-config2.png]
 
 
 == Jenkins pipeline step
