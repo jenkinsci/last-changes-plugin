@@ -157,7 +157,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         listener.getLogger().println("Publishing build last changes...");
 
         //only look at 'since' parameter when specific revision is NOT set
-        if (specificRevision == null || "".equals(specificRevision)) {
+        if (since != null && specificRevision == null || "".equals(specificRevision)) {
 
             switch (since) {
 
