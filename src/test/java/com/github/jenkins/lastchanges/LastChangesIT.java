@@ -3,6 +3,7 @@ package com.github.jenkins.lastchanges;
 import com.github.jenkins.lastchanges.model.FormatType;
 import com.github.jenkins.lastchanges.model.LastChanges;
 import com.github.jenkins.lastchanges.model.MatchingType;
+import com.github.jenkins.lastchanges.model.SinceType;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
@@ -52,7 +53,7 @@ public class LastChangesIT {
                 Collections.<GitSCMExtension>singletonList(new DisableRemotePoll()));
         FreeStyleProject project = jenkins.createFreeStyleProject("git-test");
         project.setScm(scm);
-        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null,null);
+        LastChangesPublisher publisher = new LastChangesPublisher(SinceType.PREVIOUS_REVISION, FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null);
         project.getPublishersList().add(publisher);
         project.save();
 
@@ -117,7 +118,7 @@ public class LastChangesIT {
                 Collections.<GitSCMExtension>singletonList(new DisableRemotePoll()));
         FreeStyleProject project = jenkins.createFreeStyleProject("git-test");
         project.setScm(scm);
-        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null,true);
+        LastChangesPublisher publisher = new LastChangesPublisher(SinceType.LAST_SUCCESSFUL_BUILD, FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null);
         project.getPublishersList().add(publisher);
         project.save();
 
@@ -185,7 +186,7 @@ public class LastChangesIT {
         FreeStyleProject project = jenkins.createFreeStyleProject("git-test-slave");
         project.setAssignedNode(slave);
         project.setScm(scm);
-        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.SIDE,MatchingType.WORD, true, false, null,null,null, null);
+        LastChangesPublisher publisher = new LastChangesPublisher(SinceType.PREVIOUS_REVISION, FormatType.SIDE,MatchingType.WORD, true, false, null,null,null);
         project.getPublishersList().add(publisher);
         project.save();
 
@@ -246,7 +247,7 @@ public class LastChangesIT {
         SvnSCM scm = new SvnSCM(".svn",sampleRepoDir,locations);//directory content is irrelevant cause LastChangesPublisher will look only into dir name (in case of svn)
         FreeStyleProject project = jenkins.createFreeStyleProject("svn-test");
         project.setScm(scm);
-        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null, null);
+        LastChangesPublisher publisher = new LastChangesPublisher(SinceType.PREVIOUS_REVISION,FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null);
         project.getPublishersList().add(publisher);
         project.save();
         
@@ -265,7 +266,7 @@ public class LastChangesIT {
     @Test
     public void shouldNotGetLastChangesOfNonExistingRepository() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject("non-existing-test");
-        LastChangesPublisher publisher = new LastChangesPublisher(FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null,null);
+        LastChangesPublisher publisher = new LastChangesPublisher(SinceType.PREVIOUS_REVISION,FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null);
         project.getPublishersList().add(publisher);
         project.save();
 
@@ -273,7 +274,7 @@ public class LastChangesIT {
         FreeStyleBuild build = jenkins.assertBuildStatus(Result.FAILURE,project.scheduleBuild2(0).get());
 
         // then
-        jenkins.assertLogContains("Git or Svn must be configured as SCM on your job to publish Last Changes. Ignore this message and RERUN your job if you're using SVN on a Jenkins pipeline workflow for the first time. (See JENKINS-45720 for more details)." ,build);
+        jenkins.assertLogContains(" Git or Svn directories not found in workspace" ,build);
     }
 
 }

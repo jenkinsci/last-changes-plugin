@@ -8,22 +8,22 @@ public class LastChangesConfig {
     private String matchingMaxComparisons = "1000";
     private Boolean showFiles = Boolean.TRUE;
     private Boolean synchronisedScroll = Boolean.TRUE;
-    private String previousRevision = "";//by default it is current revision -1
-    private Boolean sinceLastSuccessFulBuild = Boolean.FALSE;
+    private SinceType since = SinceType.PREVIOUS_REVISION;//by default it is current revision -1
+    private String specificRevision;//diff against a specific revision
 
 
     public LastChangesConfig() {
     }
 
-    public LastChangesConfig(String previousRevision, Boolean sinceLastSuccessFulBuild, FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold, String matchingMaxComparisons) {
+    public LastChangesConfig(SinceType since, String specificRevision, FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold, String matchingMaxComparisons) {
         super();
 
-        if (previousRevision != null) {
-            this.previousRevision = previousRevision;
+        if (since != null) {
+            this.since = since;
         }
 
-        if (sinceLastSuccessFulBuild != null) {
-            this.sinceLastSuccessFulBuild = sinceLastSuccessFulBuild;
+        if (specificRevision != null) {
+            this.specificRevision = specificRevision;
         }
 
         if (format != null) {
@@ -64,8 +64,8 @@ public class LastChangesConfig {
         return format;
     }
 
-    public String previousRevision() {
-        return previousRevision;
+    public SinceType since() {
+        return since;
     }
 
     public MatchingType matching() {
@@ -88,7 +88,8 @@ public class LastChangesConfig {
         return matchWordsThreshold;
     }
 
-    public Boolean sinceLastSuccessFulBuild() {
-         return sinceLastSuccessFulBuild;
+    public String specificRevision() {
+        return specificRevision;
     }
+
 }
