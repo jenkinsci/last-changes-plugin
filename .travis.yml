@@ -4,9 +4,8 @@ jdk: oraclejdk8
 cache:
   directories:
   - "$HOME/.m2/repository"
-
-
 script:
-- mvn clean package --settings settings.xml
-
-
+- mvn clean package -Dpass=${PASS} --settings settings.xml
+env:
+  global:
+    secure: k/FSrBbPVHDq0rQqlGB3vY/0+8X7vQ7vWMyqJC7XW5z7nLFRZHNxeWFhYopeTmZ4AJuBOJAE3868U7Tvj+aN7c5sJOJejPIWZGzy8mW2OXH0nWwOImMgoQY+DqSery+3vTE4ziTHVXEAgx8VAlmp2VvU0pD88Xblpketga405kXPV18ep7vSIy9OAmfNeSTHEYTyWNqVyT9eF1iVZ9Om1Z57OgVzi0Ycg17d9jlyXzkjyamRi/StuW472FGBeUmm/yDHJstbgytflyy1mYsER/fTn84nR3iGwSXFJPs3HcoRWtoOKr4tUkwJBSb2qi8+PvPpTX/Ai5efhlV1DFYvhyHoBgFLhHEKj+IXvVMhXhx89NAZTUXuJvbSTFBjNN/Lhg9Pcw0cH0qougy4Weg8G0A7dHmNJc3eqUw3Jm486i0yN6FNq56QikclJyo2vFXzhJG1Gy8dL204cGR0QQaq58p+gpW/Bt8BRZzoziBXu8euFD0SQ5fBjh/TDW4hIrm/mRgJ5yX5RkkdNOLSzAavXoK2hM65P9AyH0acCC4GMYM9fVL0fdPEFxj20fWg01eNkove03kabiQvflZ7qtGPNrzOPPRJDdZJES3IkErSSpVPJH/TLpfzc+KvnNBZ5+a7NylvyBeO7PC+xUITf6OPxXUXMAOFUoiI+LFe8yeKB7I=

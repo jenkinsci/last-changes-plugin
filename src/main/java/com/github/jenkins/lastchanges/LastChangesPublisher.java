@@ -51,6 +51,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.tmatesoft.svn.core.auth.ISVNAuthenticationProvider;
 import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 
@@ -110,7 +111,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         boolean isSvn = false;
         Repository gitRepository = null;
         File svnRepository = null;
-
+        ISVNAuthenticationProvider svnAuthProvider = null;
         FilePath workspaceTargetDir = getMasterWorkspaceDir(build);//always on master
 
 
@@ -126,11 +127,29 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             gitDir.copyRecursiveTo("**/*", new FilePath(new File(workspaceTargetDir.getRemote() + "/.git")));
             gitRepository = repository(workspaceTargetDir.getRemote() + "/.git");
         } else if (workspace.child(SVN_DIR).exists() || findVCSDir(workspace, SVN_DIR) != null) {
-            isSvn = true;
+
             FilePath svnDir = workspace.child(SVN_DIR).exists() ? workspace.child(SVN_DIR) : findVCSDir(workspace, SVN_DIR);
             if (svnDir == null) {
                 throw new RuntimeException("No .git directory found in workspace.");
             }
+
+            isSvn = true;
+            SubversionSCM scm = null;
+            try {
+                Collection<? extends SCM> scMs = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(projectAction.getProject()).getSCMs();
+                scm = (SubversionSCM) scMs.iterator().next();
+                svnAuthProvider = scm.createAuthenticationProvider(build.getParent(), scm.getLocations()[0]);
+
+            } catch (NoSuchMethodError e) {
+                if (scm != null) {
+                    svnAuthProvider = scm.getDescriptor().createAuthenticationProvider();
+                }
+
+            } catch (Exception ex) {
+
+            }
+
+
             // workspace can be on slave so copy resources to master
             // we are only copying when on git because in svn we are reading
             // the current revision from remote repository
@@ -141,6 +160,11 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
         if (!isGit && !isSvn) {
             throw new RuntimeException(String.format("Git or Svn directories not found in workspace %s.", workspace.toURI().toString()));
+        }
+        SvnLastChanges svnLastChanges = SvnLastChanges.getInstance();
+
+        if(svnAuthProvider != null) {
+            svnLastChanges = SvnLastChanges.getInstance(svnAuthProvider);
         }
 
         boolean hasTargetRevision = false;
@@ -181,7 +205,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                                 targetRevision = lastTagRevision.name();
                             }
                         } else {
-                            SVNRevision lastTagRevision = SvnLastChanges.getInstance().getLastTagRevision(svnRepository);
+                            SVNRevision lastTagRevision = svnLastChanges.getLastTagRevision(svnRepository);
                             if (lastTagRevision != null) {
                                 targetRevision = lastTagRevision.toString();
                             }
@@ -213,10 +237,10 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 if (hasTargetRevision) {
                     //compares current repository revision with provided revision
                     Long svnRevision = Long.parseLong(targetRevision);
-                    lastChanges = SvnLastChanges.getInstance().changesOf(svnRepository, SVNRevision.HEAD, SVNRevision.create(svnRevision));
+                    lastChanges = svnLastChanges.changesOf(svnRepository, SVNRevision.HEAD, SVNRevision.create(svnRevision));
                 } else {
                     //compares current repository revision with previous one
-                    lastChanges = SvnLastChanges.getInstance().changesOf(svnRepository);
+                    lastChanges = svnLastChanges.changesOf(svnRepository);
                 }
             }
 
@@ -324,7 +348,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         @Restricted(NoExternalUse.class) // Only for UI calls
         public ListBoxModel doFillSinceItems() {
             ListBoxModel items = new ListBoxModel();
-            for (SinceType sinceType : SinceType .values()) {
+            for (SinceType sinceType : SinceType.values()) {
                 items.add(sinceType.getName(), sinceType.name());
             }
             return items;

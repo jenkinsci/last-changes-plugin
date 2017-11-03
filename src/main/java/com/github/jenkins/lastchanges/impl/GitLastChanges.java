@@ -15,11 +15,10 @@ import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.ObjectReader;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevSort;
+import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 
@@ -27,9 +26,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+import java.util.logging.Logger;
 
 
 public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
@@ -142,8 +140,8 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
             formatter.setRepository(repository);
             ObjectReader reader = repository.newObjectReader();
 
-            lastCommitInfo = CommitInfo.Builder.buildFromGit(repository, currentRevision);
-            oldCommitInfo = CommitInfo.Builder.buildFromGit(repository, previousRevision);
+            lastCommitInfo = commitInfo(repository, currentRevision);
+            oldCommitInfo = commitInfo(repository, previousRevision);
 
             // Create the tree iterator for each commit
             CanonicalTreeParser oldTreeIter = new CanonicalTreeParser();
@@ -225,7 +223,7 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
                     log.add(tag.getObjectId());
                 }
                 Iterable<RevCommit> logs = log.call();
-                if(logs != null) {
+                if (logs != null) {
                     return logs.iterator().next().getId();
                 }
             }
@@ -236,6 +234,48 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
             throw new GitDiffException("Could not get last tag from repository located at " + repository.getDirectory().getAbsolutePath(), e);
 
         }
+    }
+
+    @Override
+    public CommitInfo commitInfo(Repository repository, ObjectId commitId) {
+        RevWalk revWalk = new RevWalk(repository);
+        CommitInfo commitInfo = new CommitInfo();
+        PersonIdent committerIdent = null;
+        RevCommit commit = null;
+        try {
+            if (revWalk.parseAny(commitId) instanceof RevCommit) {
+                commit = revWalk.parseCommit(commitId);
+                committerIdent = commit.getCommitterIdent();
+            } else if (revWalk.parseAny(commitId) instanceof RevTree) {
+
+                RevCommit rootCommit = revWalk.parseCommit(repository.resolve(Constants.HEAD));
+                revWalk.sort(RevSort.COMMIT_TIME_DESC);
+                revWalk.markStart(rootCommit);
+                //resolve commit from tree
+                RevTree tree = revWalk.parseTree(commitId);
+                for (RevCommit revCommit : revWalk) {
+                    if (revCommit.getTree().getId().equals(tree.getId())) {
+                        commit = revCommit;
+                        committerIdent = commit.getCommitterIdent();
+                        break;
+                    }
+                }
+
+            }
+
+            Date commitDate = committerIdent.getWhen();
+            commitInfo.setCommitId(commit.getName())
+                    .setCommitMessage(commit.getFullMessage())
+                    .setCommiterName(committerIdent.getName())
+                    .setCommiterEmail(committerIdent.getEmailAddress());
+            TimeZone tz = committerIdent.getTimeZone() != null ? committerIdent.getTimeZone() : TimeZone.getDefault();
+            commitInfo.setCommitDate(commitInfo.format(commitDate, tz) + " " + tz.getDisplayName());
+        } catch (Exception e) {
+            Logger.getLogger(CommitInfo.class.getName()).warning(String.format("Could not get commit info from revision %d due to following error " + e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""), commitId));
+        } finally {
+            revWalk.dispose();
+        }
+        return commitInfo;
     }
 
 

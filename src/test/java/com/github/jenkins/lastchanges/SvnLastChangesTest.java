@@ -2,12 +2,18 @@ package com.github.jenkins.lastchanges;
 
 import com.github.jenkins.lastchanges.impl.SvnLastChanges;
 import com.github.jenkins.lastchanges.model.LastChanges;
+import hudson.scm.CredentialsSVNAuthenticationProviderImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.tmatesoft.svn.core.SVNException;
+import org.tmatesoft.svn.core.auth.BasicAuthenticationManager;
+import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
+import org.tmatesoft.svn.core.auth.ISVNAuthenticationProvider;
+import org.tmatesoft.svn.core.internal.wc.DefaultSVNAuthenticationManager;
 import org.tmatesoft.svn.core.wc.SVNRevision;
+import org.tmatesoft.svn.core.wc.SVNWCUtil;
 
 import java.io.File;
 import java.util.Locale;
@@ -56,9 +62,15 @@ public class SvnLastChangesTest {
 
     @Test
     public void shouldGetLastChangesFromLatestTag() throws SVNException {
+        String pass = System.getProperty("PASS");
+        if(pass == null || "".equals(pass)) {
+            return;
+        }
         File repository = new File(svnWithTagsRepoPath);
         assertThat(repository).exists();
-        SVNRevision lastTagRevision = SvnLastChanges.getInstance().getLastTagRevision(repository);
+        BasicAuthenticationManager basicAuthenticationManager = new BasicAuthenticationManager("rmpestano@gmail.com",pass);
+
+        SVNRevision lastTagRevision = SvnLastChanges.getInstance().setSvnAuthManager(basicAuthenticationManager).getLastTagRevision(repository);
         LastChanges lastChanges = SvnLastChanges.getInstance().changesOf(repository, SVNRevision.HEAD,lastTagRevision);
         assertNotNull(lastChanges);
         assertThat(lastChanges.getCurrentRevision()).isNotNull();
