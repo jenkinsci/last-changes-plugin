@@ -125,10 +125,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             // the current revision from remote repository
             gitDir.copyRecursiveTo("**/*", new FilePath(new File(workspaceTargetDir.getRemote() + "/.git")));
             gitRepository = repository(workspaceTargetDir.getRemote() + "/.git");
-        }
-
-
-        if (workspace.child(SVN_DIR).exists() || findVCSDir(workspace, SVN_DIR) != null) {
+        } else if (workspace.child(SVN_DIR).exists() || findVCSDir(workspace, SVN_DIR) != null) {
             isSvn = true;
             FilePath svnDir = workspace.child(SVN_DIR).exists() ? workspace.child(SVN_DIR) : findVCSDir(workspace, SVN_DIR);
             if (svnDir == null) {
