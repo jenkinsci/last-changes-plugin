@@ -31,16 +31,20 @@ public class LastChangesProjectAction extends LastChangesBaseAction implements P
 
     @Override
     protected File dir() {
-        Run<?, ?> run = this.job.getLastCompletedBuild();
-        if (run != null) {
+        File dir = null;
+        if (job == null || this.job.getLastCompletedBuild() == null) {
+            dir = getProjectArchiveDir();
+        } else {
+            Run<?, ?> run = this.job.getLastCompletedBuild();
             File archiveDir = getBuildArchiveDir(run);
-
             if (archiveDir.exists()) {
-                return archiveDir;
+                dir = archiveDir;
+            } else {
+                dir = getProjectArchiveDir();
             }
         }
 
-        return getProjectArchiveDir();
+        return dir;
     }
 
     private File getProjectArchiveDir() {
