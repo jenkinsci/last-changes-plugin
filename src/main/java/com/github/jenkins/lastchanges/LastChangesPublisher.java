@@ -113,23 +113,23 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         File svnRepository = null;
         ISVNAuthenticationProvider svnAuthProvider = null;
         FilePath workspaceTargetDir = getMasterWorkspaceDir(build);//always on master
-
+        FilePath vcsDir = null;
+        FilePath vcsTargetDir = null;
 
         if (workspace.child(GIT_DIR).exists() || findVCSDir(workspace, GIT_DIR) != null) {
             isGit = true;
-            FilePath gitDir = workspace.child(GIT_DIR).exists() ? workspace.child(GIT_DIR) : findVCSDir(workspace, GIT_DIR);
-            if (gitDir == null) {
+            vcsDir = workspace.child(GIT_DIR).exists() ? workspace.child(GIT_DIR) : findVCSDir(workspace, GIT_DIR);
+            if (vcsDir == null) {
                 throw new RuntimeException("No .git directory found in workspace.");
             }
             // workspace can be on slave so copy resources to master
-            // we are only copying when on git because in svn we are reading
-            // the current revision from remote repository
-            gitDir.copyRecursiveTo("**/*", new FilePath(new File(workspaceTargetDir.getRemote() + "/.git")));
+            vcsTargetDir = new FilePath(new File(workspaceTargetDir.getRemote() + "/.git"));
+            vcsDir.copyRecursiveTo("**/*", vcsTargetDir);
             gitRepository = repository(workspaceTargetDir.getRemote() + "/.git");
         } else if (workspace.child(SVN_DIR).exists() || findVCSDir(workspace, SVN_DIR) != null) {
 
-            FilePath svnDir = workspace.child(SVN_DIR).exists() ? workspace.child(SVN_DIR) : findVCSDir(workspace, SVN_DIR);
-            if (svnDir == null) {
+            vcsDir = workspace.child(SVN_DIR).exists() ? workspace.child(SVN_DIR) : findVCSDir(workspace, SVN_DIR);
+            if (vcsDir == null) {
                 throw new RuntimeException("No .git directory found in workspace.");
             }
 
@@ -150,10 +150,8 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             }
 
 
-            // workspace can be on slave so copy resources to master
-            // we are only copying when on git because in svn we are reading
-            // the current revision from remote repository
-            svnDir.copyRecursiveTo("**/*", new FilePath(new File(workspaceTargetDir.getRemote() + "/.svn")));
+            vcsTargetDir = new FilePath(new File(workspaceTargetDir.getRemote() + "/.svn"));
+            vcsDir.copyRecursiveTo("**/*", vcsTargetDir);
             svnRepository = new File(workspaceTargetDir.getRemote());
         }
 
@@ -161,11 +159,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         if (!isGit && !isSvn) {
             throw new RuntimeException(String.format("Git or Svn directories not found in workspace %s.", workspace.toURI().toString()));
         }
-        SvnLastChanges svnLastChanges = SvnLastChanges.getInstance();
 
-        if(svnAuthProvider != null) {
-            svnLastChanges = SvnLastChanges.getInstance(svnAuthProvider);
-        }
 
         boolean hasTargetRevision = false;
         String targetRevision = null;
@@ -204,8 +198,8 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                             if (lastTagRevision != null) {
                                 targetRevision = lastTagRevision.name();
                             }
-                        } else {
-                            SVNRevision lastTagRevision = svnLastChanges.getLastTagRevision(svnRepository);
+                        } else if (isSvn){
+                            SVNRevision lastTagRevision = getSvnLastChanges(svnAuthProvider).getLastTagRevision(svnRepository);
                             if (lastTagRevision != null) {
                                 targetRevision = lastTagRevision.toString();
                             }
@@ -232,8 +226,8 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                     //compares current repository revision with previous one
                     lastChanges = GitLastChanges.getInstance().changesOf(gitRepository);
                 }
-            } else {
-                //svn repository
+            } else if(isSvn){
+                SvnLastChanges svnLastChanges = getSvnLastChanges(svnAuthProvider);
                 if (hasTargetRevision) {
                     //compares current repository revision with provided revision
                     Long svnRevision = Long.parseLong(targetRevision);
@@ -253,11 +247,19 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         } catch (Exception e) {
             listener.error("Last Changes NOT published due to the following error: " + (e.getMessage() == null ? e.toString() : e.getMessage()) + (e.getCause() != null ? " - " + e.getCause() : ""));
             e.printStackTrace();
+        } finally {
+          if(vcsTargetDir != null) {
+              vcsDir.deleteRecursive();
+          }
         }
         // always success (only warn when no diff was generated)
 
         build.setResult(Result.SUCCESS);
 
+    }
+
+    private SvnLastChanges getSvnLastChanges(ISVNAuthenticationProvider svnAuthProvider) {
+        return svnAuthProvider != null ? SvnLastChanges.getInstance(svnAuthProvider) : SvnLastChanges.getInstance();
     }
 
     private String truncate(String value, int length) {
