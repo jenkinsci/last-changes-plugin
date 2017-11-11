@@ -30,13 +30,10 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.AbstractProject;
-import hudson.model.Result;
-import hudson.model.Run;
-import hudson.model.TaskListener;
-import hudson.plugins.git.GitSCM;
+import hudson.model.*;
 import hudson.scm.SCM;
 import hudson.scm.SubversionSCM;
+import hudson.slaves.SlaveComputer;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
@@ -52,7 +49,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationProvider;
-import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 
 import java.io.File;
@@ -60,7 +56,6 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Collection;
 
-import static com.github.jenkins.lastchanges.impl.GitLastChanges.getInstance;
 import static com.github.jenkins.lastchanges.impl.GitLastChanges.repository;
 
 /**
@@ -248,14 +243,18 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             listener.error("Last Changes NOT published due to the following error: " + (e.getMessage() == null ? e.toString() : e.getMessage()) + (e.getCause() != null ? " - " + e.getCause() : ""));
             e.printStackTrace();
         } finally {
-          if(vcsTargetDir != null) {
-              vcsDir.deleteRecursive();
+          if(vcsTargetDir != null && vcsTargetDir.exists() && isSlave()) {
+               vcsDir.deleteRecursive();//delete copied dir on master
           }
         }
         // always success (only warn when no diff was generated)
 
         build.setResult(Result.SUCCESS);
 
+    }
+
+    private boolean isSlave() {
+        return Computer.currentComputer() instanceof SlaveComputer;
     }
 
     private SvnLastChanges getSvnLastChanges(ISVNAuthenticationProvider svnAuthProvider) {
