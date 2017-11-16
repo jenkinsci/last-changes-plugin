@@ -166,16 +166,23 @@ public class SvnLastChanges implements VCSChanges<File, SVNRevision> {
             if (svnAuthProvider != null) {
                 svnAuthManager.setAuthenticationProvider(svnAuthProvider);
             }
+
+            SvnGetInfo getInfo = operationFactory.createGetInfo();
+            getInfo.setSingleTarget( SvnTarget.fromFile(repository));
+            getInfo.setRevision(revision);
+            SvnInfo run = getInfo.run();
+
+            long lastChangedRevision = run.getLastChangedRevision();
+
             SvnLog logOperation = operationFactory.createLog();
-            logOperation.setSingleTarget(
-                    SvnTarget.fromFile(repository)
-            );
+            logOperation.setSingleTarget( SvnTarget.fromFile(repository));
             logOperation.setRevisionRanges(Collections.singleton(
                     SvnRevisionRange.create(
-                            revision,
-                            revision
+                            SVNRevision.create(lastChangedRevision),
+                            SVNRevision.create(lastChangedRevision)
                     )
             ));
+
             Collection<SVNLogEntry> logEntries = logOperation.run(null);
             Iterator<SVNLogEntry> iterator = logEntries.iterator();
             if (iterator.hasNext()) {
