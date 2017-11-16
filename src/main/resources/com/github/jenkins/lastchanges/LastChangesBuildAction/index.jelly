@@ -76,7 +76,7 @@
                <b>Date:</b> ${it.buildChanges.previousRevision.commitDate}
                <br/>
                <j:if test="${not empty it.buildChanges.previousRevision.commitMessage}">
-                  <b>E-Message:</b> ${it.buildChanges.previousRevision.commitMessage}
+                  <b>Message:</b> ${it.buildChanges.previousRevision.commitMessage}
                   <br/>
                </j:if>
             </div>
