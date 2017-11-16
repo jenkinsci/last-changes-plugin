@@ -130,7 +130,7 @@ node {
 }
 ----
 
-Or using https://jenkins.io/doc/book/pipeline/syntax/[declarative pipeline^]
+Or using https://jenkins.io/doc/book/pipeline/syntax/[declarative pipeline^]:
 
 ----
 pipeline {
@@ -145,6 +145,24 @@ pipeline {
     }
 }
 ----
+
+Or using build params for `specificRevision`:
+
+----
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/jenkinsci/last-changes-plugin.git'
+                lastChanges format:'SIDE',matching: 'WORD', specificRevision: "${REV}"
+            }
+        }
+    }
+}
+----
+
+TIP: Refer to https://wiki.jenkins.io/display/JENKINS/Parameterized+Build[parameterized builds^] to use parameters.
 
 
 == Docker
