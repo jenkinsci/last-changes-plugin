@@ -184,7 +184,7 @@ git clone http://github.com/jenkinsci/last-changes-plugin
 +
 image:last-changes-debug.png[link=https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/last-changes-debug.png]
 
-. Access `http://localhost:8080
+. Access `http://localhost:8080/jenkins`
 
 Now create jobs using last-changes and debug them.
 
