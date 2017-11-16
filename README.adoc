@@ -166,3 +166,28 @@ docker run -it -p 8080:8080 rmpestano/jenkins-last-changes
 Job output should look like:
 
 image:last-changes-docker.png[link=https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/last-changes-docker.png]
+
+
+== Running it locally
+
+Following are the steps to `run, debug and test` this plugin on your machine:
+
+. Clone this repository
++
+----
+
+git clone http://github.com/jenkinsci/last-changes-plugin
+----
+. Import it on your IDE
+. Run the command *mvnDebug hpi:run -DskipTests*
+. Configure the remote debugging on your IDE to use port 8000, as in image below:
++
+image:last-changes-debug.png[]
+
+. Access `http://localhost:8080
+
+Now create jobs using last-changes and debug them.
+
+For testing run any class on `src/test/java` folder as JUnit test.
+
+NOTE: Tests with `IT` sulfix will start a Jenkins instance before the test.

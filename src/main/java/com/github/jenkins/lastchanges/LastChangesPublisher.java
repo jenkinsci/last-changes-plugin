@@ -243,8 +243,8 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             listener.error("Last Changes NOT published due to the following error: " + (e.getMessage() == null ? e.toString() : e.getMessage()) + (e.getCause() != null ? " - " + e.getCause() : ""));
             e.printStackTrace();
         } finally {
-          if(vcsTargetDir != null && vcsTargetDir.exists() && isSlave()) {
-               vcsDir.deleteRecursive();//delete copied dir on master
+          if(vcsTargetDir != null && vcsTargetDir.exists()) {
+               vcsTargetDir.deleteRecursive();//delete copied dir on master
           }
         }
         // always success (only warn when no diff was generated)
