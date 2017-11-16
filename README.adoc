@@ -182,7 +182,7 @@ git clone http://github.com/jenkinsci/last-changes-plugin
 . Run the command *mvnDebug hpi:run -DskipTests*
 . Configure the remote debugging on your IDE to use port 8000, as in image below:
 +
-image:last-changes-debug.png[]
+image:last-changes-debug.png[link=https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/last-changes-debug.png]
 
 . Access `http://localhost:8080
 
