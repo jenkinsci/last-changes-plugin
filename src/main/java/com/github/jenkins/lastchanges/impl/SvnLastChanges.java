@@ -56,7 +56,7 @@ public class SvnLastChanges implements VCSChanges<File, SVNRevision> {
     @Override
     public LastChanges changesOf(File repository) {
         try {
-            return changesOf(repository, SVNRevision.HEAD, SVNRevision.PREVIOUS);
+            return changesOf(repository, SVNRevision.COMMITTED, SVNRevision.PREVIOUS);
         } catch (Exception e) {
             throw new RuntimeException("Could not retrieve last changes of svn repository located at " + repository + " due to following error: " + (e.getMessage() == null ? e.toString() : e.getMessage()) + (e.getCause() != null ? " - " + e.getCause() : ""), e);
         }
