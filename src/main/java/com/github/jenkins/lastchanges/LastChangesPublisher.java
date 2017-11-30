@@ -216,7 +216,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             if (isGit) {
                 if (hasTargetRevision) {
                     //compares current repository revision with provided revision
-                    lastChanges = GitLastChanges.getInstance().changesOf(gitRepository, GitLastChanges.resolveCurrentRevision(gitRepository), gitRepository.resolve(targetRevision));
+                    lastChanges = GitLastChanges.getInstance().changesOf(gitRepository, GitLastChanges.getInstance().resolveCurrentRevision(gitRepository), gitRepository.resolve(targetRevision));
                 } else {
                     //compares current repository revision with previous one
                     lastChanges = GitLastChanges.getInstance().changesOf(gitRepository);

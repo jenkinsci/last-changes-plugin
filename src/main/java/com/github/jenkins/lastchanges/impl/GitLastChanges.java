@@ -112,7 +112,7 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
 
     }
 
-    public static ObjectId resolveCurrentRevision(Repository repository) {
+    public ObjectId resolveCurrentRevision(Repository repository) {
         String repositoryLocation = repository.getDirectory().getAbsolutePath();
         try {
             return repository.resolve("HEAD^{tree}");

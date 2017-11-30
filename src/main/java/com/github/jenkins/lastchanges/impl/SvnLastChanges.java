@@ -158,6 +158,27 @@ public class SvnLastChanges implements VCSChanges<File, SVNRevision> {
     }
 
     @Override
+    public SVNRevision resolveCurrentRevision(File svnRepository) {
+        SvnOperationFactory operationFactory = new SvnOperationFactory();
+        ISVNAuthenticationManager defaultAuthenticationManager = SVNWCUtil.createDefaultAuthenticationManager();
+        if(svnAuthProvider != null) {
+            defaultAuthenticationManager.setAuthenticationProvider(svnAuthProvider);
+        }
+        SvnGetInfo getInfo = operationFactory.createGetInfo();
+        getInfo.setSingleTarget(SvnTarget.fromFile(svnRepository));
+        getInfo.setRevision(SVNRevision.COMMITTED);
+        SvnInfo run = null;
+        try {
+            run = getInfo.run();
+        } catch (SVNException e) {
+            e.printStackTrace();
+        }
+
+        long lastChangedRevision = run.getLastChangedRevision();
+        return SVNRevision.create(lastChangedRevision);
+    }
+
+    @Override
     public CommitInfo commitInfo(File repository, SVNRevision revision) {
         CommitInfo commitInfo = new CommitInfo();
         try {
@@ -168,14 +189,14 @@ public class SvnLastChanges implements VCSChanges<File, SVNRevision> {
             }
 
             SvnGetInfo getInfo = operationFactory.createGetInfo();
-            getInfo.setSingleTarget( SvnTarget.fromFile(repository));
+            getInfo.setSingleTarget(SvnTarget.fromFile(repository));
             getInfo.setRevision(revision);
             SvnInfo run = getInfo.run();
 
             long lastChangedRevision = run.getLastChangedRevision();
 
             SvnLog logOperation = operationFactory.createLog();
-            logOperation.setSingleTarget( SvnTarget.fromFile(repository));
+            logOperation.setSingleTarget(SvnTarget.fromFile(repository));
             logOperation.setRevisionRanges(Collections.singleton(
                     SvnRevisionRange.create(
                             SVNRevision.create(lastChangedRevision),

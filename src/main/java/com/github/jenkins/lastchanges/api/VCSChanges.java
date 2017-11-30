@@ -16,5 +16,7 @@ public interface VCSChanges<REPOSITORY, REVISION> {
 
     REVISION getLastTagRevision(REPOSITORY repository) throws SVNException;
 
+    REVISION resolveCurrentRevision(REPOSITORY repository);
+
     CommitInfo commitInfo(REPOSITORY repository, REVISION revision);
 }
