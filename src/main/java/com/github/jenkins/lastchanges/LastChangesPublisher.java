@@ -73,6 +73,8 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     private MatchingType matching;
 
+    private String vcsDir;//directory relative to workspace to start searching for the VCS directory (.git or .svn)
+
     private Boolean showFiles;
 
     private Boolean synchronisedScroll;
@@ -84,9 +86,11 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     private static final String GIT_DIR = ".git";
     private static final String SVN_DIR = ".svn";
 
+    private FilePath vcsDirFound = null; //vcs directory (.git or .svn)
+
     @DataBoundConstructor
     public LastChangesPublisher(SinceType since, FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold,
-                                String matchingMaxComparisons, String specificRevision) {
+            String matchingMaxComparisons, String specificRevision, String vcsDir) {
         this.specificRevision = specificRevision;
         this.format = format;
         this.since = since;
@@ -95,8 +99,8 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         this.synchronisedScroll = synchronisedScroll;
         this.matchWordsThreshold = matchWordsThreshold;
         this.matchingMaxComparisons = matchingMaxComparisons;
+        this.vcsDir = vcsDir;
     }
-
 
     @Override
     public void perform(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
@@ -108,27 +112,29 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         File svnRepository = null;
         ISVNAuthenticationProvider svnAuthProvider = null;
         FilePath workspaceTargetDir = getMasterWorkspaceDir(build);//always on master
-        FilePath vcsDir = null;
-        FilePath vcsTargetDir = null;
+        FilePath vcsDirParam = null; //folder tu be used as param on vcs directory search
+        FilePath vcsTargetDir = null; //directory on master workspace containing a copy of vcsDir (.git or .svn)
 
-        if (workspace.child(GIT_DIR).exists() || findVCSDir(workspace, GIT_DIR) != null) {
+        if (this.vcsDir != null && "".equals(vcsDir)) {
+            vcsDirParam = new FilePath(workspace, this.vcsDir);
+        } else {
+            vcsDirParam = workspace;
+        }
+
+        if (findVCSDir(vcsDirParam, GIT_DIR)) {
             isGit = true;
-            vcsDir = workspace.child(GIT_DIR).exists() ? workspace.child(GIT_DIR) : findVCSDir(workspace, GIT_DIR);
-            if (vcsDir == null) {
+            if (vcsDirFound == null) {
                 throw new RuntimeException("No .git directory found in workspace.");
             }
             // workspace can be on slave so copy resources to master
             vcsTargetDir = new FilePath(new File(workspaceTargetDir.getRemote() + "/.git"));
-            vcsDir.copyRecursiveTo("**/*", vcsTargetDir);
+            vcsDirFound.copyRecursiveTo("**/*", vcsTargetDir);
             gitRepository = repository(workspaceTargetDir.getRemote() + "/.git");
-        } else if (workspace.child(SVN_DIR).exists() || findVCSDir(workspace, SVN_DIR) != null) {
-
-            vcsDir = workspace.child(SVN_DIR).exists() ? workspace.child(SVN_DIR) : findVCSDir(workspace, SVN_DIR);
-            if (vcsDir == null) {
-                throw new RuntimeException("No .git directory found in workspace.");
-            }
-
+        } else if (findVCSDir(vcsDirParam, SVN_DIR)) {
             isSvn = true;
+            if (vcsDirFound == null) {
+                throw new RuntimeException("No .svn directory found in workspace.");
+            }
             SubversionSCM scm = null;
             try {
                 Collection<? extends SCM> scMs = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(projectAction.getProject()).getSCMs();
@@ -144,17 +150,14 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
             }
 
-
             vcsTargetDir = new FilePath(new File(workspaceTargetDir.getRemote() + "/.svn"));
-            vcsDir.copyRecursiveTo("**/*", vcsTargetDir);
+            vcsDirFound.copyRecursiveTo("**/*", vcsTargetDir);
             svnRepository = new File(workspaceTargetDir.getRemote());
         }
-
 
         if (!isGit && !isSvn) {
             throw new RuntimeException(String.format("Git or Svn directories not found in workspace %s.", workspace.toURI().toString()));
         }
-
 
         boolean hasTargetRevision = false;
         String targetRevision = null;
@@ -193,7 +196,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                             if (lastTagRevision != null) {
                                 targetRevision = lastTagRevision.name();
                             }
-                        } else if (isSvn){
+                        } else if (isSvn) {
                             SVNRevision lastTagRevision = getSvnLastChanges(svnAuthProvider).getLastTagRevision(svnRepository);
                             if (lastTagRevision != null) {
                                 targetRevision = lastTagRevision.toString();
@@ -208,7 +211,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
         }
 
-
         hasTargetRevision = targetRevision != null && !"".equals(targetRevision);
 
         try {
@@ -221,7 +223,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                     //compares current repository revision with previous one
                     lastChanges = GitLastChanges.getInstance().changesOf(gitRepository);
                 }
-            } else if(isSvn){
+            } else if (isSvn) {
                 SvnLastChanges svnLastChanges = getSvnLastChanges(svnAuthProvider);
                 if (hasTargetRevision) {
                     //compares current repository revision with provided revision
@@ -243,9 +245,9 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             listener.error("Last Changes NOT published due to the following error: " + (e.getMessage() == null ? e.toString() : e.getMessage()) + (e.getCause() != null ? " - " + e.getCause() : ""));
             e.printStackTrace();
         } finally {
-          if(vcsTargetDir != null && vcsTargetDir.exists()) {
-               vcsTargetDir.deleteRecursive();//delete copied dir on master
-          }
+            if (vcsTargetDir != null && vcsTargetDir.exists()) {
+                vcsTargetDir.deleteRecursive();//delete copied dir on master
+            }
         }
         // always success (only warn when no diff was generated)
 
@@ -271,14 +273,25 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     /**
      * .git directory can be on a workspace sub dir, see JENKINS-36971
+     *
+     * @return boolean indicating weather the vcs directory was found or not
      */
-    private FilePath findVCSDir(FilePath workspace, String dir) throws IOException, InterruptedException {
-        FilePath gitDir = null;
+    private boolean findVCSDir(FilePath workspace, String dir) throws IOException, InterruptedException {
+        FilePath vcsDir = null;
+        if(workspace.child(dir).exists()) {
+            vcsDir = workspace.child(dir);
+            return true;
+        }
         int recursionDepth = RECURSION_DEPTH;
-        while ((gitDir = findVCSDirInSubDirectories(workspace, dir)) == null && recursionDepth > 0) {
+        while ((vcsDir = findVCSDirInSubDirectories(workspace, dir)) == null && recursionDepth > 0) {
             recursionDepth--;
         }
-        return gitDir;
+        if (vcsDir == null) {
+            return false;
+        } else {
+            vcsDirFound = vcsDir; //vcs directory  gitDir;
+            return true;
+        }
     }
 
     private FilePath findVCSDirInSubDirectories(FilePath sourceDir, String dir) throws IOException, InterruptedException {
@@ -357,7 +370,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     }
 
-
     public SinceType getSince() {
         return since;
     }
@@ -390,6 +402,11 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         return synchronisedScroll;
     }
 
+    public String getVcsDir() {
+        return vcsDir;
+    }
+    
+    
 
     @DataBoundSetter
     public void setSince(SinceType since) {
@@ -430,4 +447,11 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     public void setSynchronisedScroll(Boolean synchronisedScroll) {
         this.synchronisedScroll = synchronisedScroll;
     }
+
+    @DataBoundSetter
+    public void setVcsDir(String vcsDir) {
+        this.vcsDir = vcsDir;
+    }
+    
+    
 }

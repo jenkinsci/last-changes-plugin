@@ -33,6 +33,9 @@
                 <f:entry title="Matching max comparisons" description="Perform at most this much comparisons for line matching a block of changes." >
                    <f:textbox value="${instance.matchingMaxComparisons}" field="matchingMaxComparisons" default="1000" />
                 </f:entry>
+                <f:entry title="VCS directory" description="Directory relative to workspace to start searching for the VCS directory (.git or .svn). Default is workspace root directory" >
+                   <f:textbox value="${instance.vcsDir}" field="vcsDir"  />
+                </f:entry>
             </f:advanced>
         </f:section>
   </f:section>

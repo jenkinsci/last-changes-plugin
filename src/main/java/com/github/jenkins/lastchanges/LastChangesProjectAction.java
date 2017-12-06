@@ -29,28 +29,7 @@ public class LastChangesProjectAction extends LastChangesBaseAction implements P
         return job;
     }
 
-    @Override
-    protected File dir() {
-        File dir = null;
-        if (job == null || this.job.getLastCompletedBuild() == null) {
-            dir = getProjectArchiveDir();
-        } else {
-            Run<?, ?> run = this.job.getLastCompletedBuild();
-            File archiveDir = getBuildArchiveDir(run);
-            if (archiveDir.exists()) {
-                dir = archiveDir;
-            } else {
-                dir = getProjectArchiveDir();
-            }
-        }
-
-        return dir;
-    }
-
-    private File getProjectArchiveDir() {
-        return new File(job.getRootDir(), LastChangesBaseAction.BASE_URL);
-    }
-
+ 
     /**
      * Gets the directory where the HTML report is stored for the given build.
      */
