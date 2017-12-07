@@ -90,7 +90,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     @DataBoundConstructor
     public LastChangesPublisher(SinceType since, FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold,
-            String matchingMaxComparisons, String specificRevision, String vcsDir) {
+                                String matchingMaxComparisons, String specificRevision, String vcsDir) {
         this.specificRevision = specificRevision;
         this.format = format;
         this.since = since;
@@ -123,18 +123,13 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
         if (findVCSDir(vcsDirParam, GIT_DIR)) {
             isGit = true;
-            if (vcsDirFound == null) {
-                throw new RuntimeException("No .git directory found in workspace.");
-            }
             // workspace can be on slave so copy resources to master
             vcsTargetDir = new FilePath(new File(workspaceTargetDir.getRemote() + "/.git"));
             vcsDirFound.copyRecursiveTo("**/*", vcsTargetDir);
             gitRepository = repository(workspaceTargetDir.getRemote() + "/.git");
         } else if (findVCSDir(vcsDirParam, SVN_DIR)) {
             isSvn = true;
-            if (vcsDirFound == null) {
-                throw new RuntimeException("No .svn directory found in workspace.");
-            }
+
             SubversionSCM scm = null;
             try {
                 Collection<? extends SCM> scMs = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(projectAction.getProject()).getSCMs();
@@ -147,7 +142,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 }
 
             } catch (Exception ex) {
-
             }
 
             vcsTargetDir = new FilePath(new File(workspaceTargetDir.getRemote() + "/.svn"));
@@ -278,7 +272,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
      */
     private boolean findVCSDir(FilePath workspace, String dir) throws IOException, InterruptedException {
         FilePath vcsDir = null;
-        if(workspace.child(dir).exists()) {
+        if (workspace.child(dir).exists()) {
             vcsDirFound = workspace.child(dir);
             return true;
         }
@@ -405,8 +399,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     public String getVcsDir() {
         return vcsDir;
     }
-    
-    
+
 
     @DataBoundSetter
     public void setSince(SinceType since) {
@@ -452,6 +445,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     public void setVcsDir(String vcsDir) {
         this.vcsDir = vcsDir;
     }
-    
-    
+
+
 }
