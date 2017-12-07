@@ -115,7 +115,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         FilePath vcsDirParam = null; //folder tu be used as param on vcs directory search
         FilePath vcsTargetDir = null; //directory on master workspace containing a copy of vcsDir (.git or .svn)
 
-        if (this.vcsDir != null && "".equals(vcsDir)) {
+        if (this.vcsDir != null && !"".equals(vcsDir)) {
             vcsDirParam = new FilePath(workspace, this.vcsDir);
         } else {
             vcsDirParam = workspace;
