@@ -86,7 +86,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     private static final String GIT_DIR = ".git";
     private static final String SVN_DIR = ".svn";
 
-    private FilePath vcsDirFound = null; //vcs directory (.git or .svn)
+    private transient FilePath vcsDirFound = null; //vcs directory (.git or .svn)
 
     @DataBoundConstructor
     public LastChangesPublisher(SinceType since, FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold,
@@ -279,7 +279,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     private boolean findVCSDir(FilePath workspace, String dir) throws IOException, InterruptedException {
         FilePath vcsDir = null;
         if(workspace.child(dir).exists()) {
-            vcsDir = workspace.child(dir);
+            vcsDirFound = workspace.child(dir);
             return true;
         }
         int recursionDepth = RECURSION_DEPTH;
