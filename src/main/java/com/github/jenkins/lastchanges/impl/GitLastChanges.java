@@ -4,17 +4,21 @@
 package com.github.jenkins.lastchanges.impl;
 
 import com.github.jenkins.lastchanges.api.VCSChanges;
-import com.github.jenkins.lastchanges.exception.*;
+import com.github.jenkins.lastchanges.exception.GitDiffException;
+import com.github.jenkins.lastchanges.exception.GitTreeNotFoundException;
+import com.github.jenkins.lastchanges.exception.GitTreeParseException;
+import com.github.jenkins.lastchanges.exception.RepositoryNotFoundException;
 import com.github.jenkins.lastchanges.model.CommitInfo;
 import com.github.jenkins.lastchanges.model.LastChanges;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.ObjectReader;
-import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevSort;
+import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 
@@ -22,6 +26,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.*;
+import java.util.logging.Logger;
 
 
 public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
@@ -106,7 +112,7 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
 
     }
 
-    public static ObjectId resolveCurrentRevision(Repository repository) {
+    public ObjectId resolveCurrentRevision(Repository repository) {
         String repositoryLocation = repository.getDirectory().getAbsolutePath();
         try {
             return repository.resolve("HEAD^{tree}");
@@ -134,8 +140,8 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
             formatter.setRepository(repository);
             ObjectReader reader = repository.newObjectReader();
 
-            lastCommitInfo = CommitInfo.Builder.buildFromGit(repository, currentRevision);
-            oldCommitInfo = CommitInfo.Builder.buildFromGit(repository, previousRevision);
+            lastCommitInfo = commitInfo(repository, currentRevision);
+            oldCommitInfo = commitInfo(repository, previousRevision);
 
             // Create the tree iterator for each commit
             CanonicalTreeParser oldTreeIter = new CanonicalTreeParser();
@@ -168,7 +174,7 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
                     formatter.format(change);
                 }
             } catch (Exception e) {
-                throw new GitDiffException("Could not get last changes of repository located at " + repositoryLocation, e);
+                throw new GitDiffException("Could not get last changes from repository located at " + repositoryLocation, e);
             }
 
             return new LastChanges(lastCommitInfo, oldCommitInfo, new String(diffStream.toByteArray(), Charset.forName("UTF-8")));
@@ -181,6 +187,95 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
             }
         }
 
+    }
+
+
+    @Override
+    public ObjectId getLastTagRevision(Repository repository) {
+        Git git = new Git(repository);
+        List<Ref> tags = null;
+        try {
+            tags = git.tagList().call();
+
+            final RevWalk walk = new RevWalk(repository);
+            Collections.sort(tags, new Comparator<Ref>() {
+                public int compare(Ref o1, Ref o2) {
+                    java.util.Date d1 = null;
+                    java.util.Date d2 = null;
+                    try {
+                        d1 = walk.parseCommit(o1.getObjectId()).getCommitterIdent().getWhen();
+                        d2 = walk.parseCommit(o2.getObjectId()).getCommitterIdent().getWhen();
+                        return d2.compareTo(d1);
+                    } catch (Exception e) {
+                        System.out.println(e);
+                    }
+                    return 0;
+                }
+            });
+
+            if (tags != null && !tags.isEmpty()) {
+                Ref tag = tags.get(0);
+                Ref peeledRef = repository.peel(tag);
+                LogCommand log = git.log();
+                if (peeledRef.getPeeledObjectId() != null) {
+                    log.add(peeledRef.getPeeledObjectId());
+                } else {
+                    log.add(tag.getObjectId());
+                }
+                Iterable<RevCommit> logs = log.call();
+                if (logs != null) {
+                    return logs.iterator().next().getId();
+                }
+            }
+
+            return null;
+
+        } catch (Exception e) {
+            throw new GitDiffException("Could not get last tag from repository located at " + repository.getDirectory().getAbsolutePath(), e);
+
+        }
+    }
+
+    @Override
+    public CommitInfo commitInfo(Repository repository, ObjectId commitId) {
+        RevWalk revWalk = new RevWalk(repository);
+        CommitInfo commitInfo = new CommitInfo();
+        PersonIdent committerIdent = null;
+        RevCommit commit = null;
+        try {
+            if (revWalk.parseAny(commitId) instanceof RevCommit) {
+                commit = revWalk.parseCommit(commitId);
+                committerIdent = commit.getCommitterIdent();
+            } else if (revWalk.parseAny(commitId) instanceof RevTree) {
+
+                RevCommit rootCommit = revWalk.parseCommit(repository.resolve(Constants.HEAD));
+                revWalk.sort(RevSort.COMMIT_TIME_DESC);
+                revWalk.markStart(rootCommit);
+                //resolve commit from tree
+                RevTree tree = revWalk.parseTree(commitId);
+                for (RevCommit revCommit : revWalk) {
+                    if (revCommit.getTree().getId().equals(tree.getId())) {
+                        commit = revCommit;
+                        committerIdent = commit.getCommitterIdent();
+                        break;
+                    }
+                }
+
+            }
+
+            Date commitDate = committerIdent.getWhen();
+            commitInfo.setCommitId(commit.getName())
+                    .setCommitMessage(commit.getFullMessage())
+                    .setCommiterName(committerIdent.getName())
+                    .setCommiterEmail(committerIdent.getEmailAddress());
+            TimeZone tz = committerIdent.getTimeZone() != null ? committerIdent.getTimeZone() : TimeZone.getDefault();
+            commitInfo.setCommitDate(commitInfo.format(commitDate, tz) + " " + tz.getDisplayName());
+        } catch (Exception e) {
+            Logger.getLogger(CommitInfo.class.getName()).warning(String.format("Could not get commit info from revision %d due to following error " + e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""), commitId));
+        } finally {
+            revWalk.dispose();
+        }
+        return commitInfo;
     }
 
 

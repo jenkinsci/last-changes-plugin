@@ -36,11 +36,6 @@ public class LastChangesBuildAction extends LastChangesBaseAction implements Sim
         return "Last Changes of Build #" + this.build.getNumber();
     }
 
-    @Override
-    protected File dir() {
-        return new File(build.getRootDir(), BASE_URL);
-    }
-
     public LastChanges getBuildChanges() {
         return buildChanges;
     }

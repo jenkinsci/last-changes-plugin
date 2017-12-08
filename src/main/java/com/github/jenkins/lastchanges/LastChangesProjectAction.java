@@ -3,7 +3,6 @@ package com.github.jenkins.lastchanges;
 import hudson.model.Job;
 import hudson.model.ProminentProjectAction;
 import hudson.model.Run;
-import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -30,24 +29,7 @@ public class LastChangesProjectAction extends LastChangesBaseAction implements P
         return job;
     }
 
-    @Override
-    protected File dir() {
-        Run<?, ?> run = this.job.getLastCompletedBuild();
-        if (run != null) {
-            File archiveDir = getBuildArchiveDir(run);
-
-            if (archiveDir.exists()) {
-                return archiveDir;
-            }
-        }
-
-        return getProjectArchiveDir();
-    }
-
-    private File getProjectArchiveDir() {
-        return new File(job.getRootDir(), LastChangesBaseAction.BASE_URL);
-    }
-
+ 
     /**
      * Gets the directory where the HTML report is stored for the given build.
      */
@@ -73,7 +55,4 @@ public class LastChangesProjectAction extends LastChangesBaseAction implements P
         return builds;
     }
 
-    public boolean isRunningInPipelineWorkflow() {
-        return getProject() != null && getProject() instanceof WorkflowJob;
-    }
 }
