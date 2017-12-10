@@ -38,7 +38,9 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
+import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
+import hudson.util.RunList;
 import jenkins.tasks.SimpleBuildStep;
 import jenkins.triggers.SCMTriggerItem;
 import org.eclipse.jgit.lib.ObjectId;
@@ -46,8 +48,10 @@ import org.eclipse.jgit.lib.Repository;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationProvider;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 
@@ -55,6 +59,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.List;
 
 import static com.github.jenkins.lastchanges.impl.GitLastChanges.repository;
 
@@ -65,7 +70,9 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     private static final short RECURSION_DEPTH = 50;
 
-    private String specificRevision;
+    private String specificRevision; //revision id to crete the diff
+
+    private String specificBuild; // create the diff with the revision of an specific build
 
     private SinceType since;//since when you want the get last changes
 
@@ -86,11 +93,11 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     private static final String GIT_DIR = ".git";
     private static final String SVN_DIR = ".svn";
 
-    private transient FilePath vcsDirFound = null; //vcs directory (.git or .svn)
+    private transient FilePath vcsDirFound = null; //location of vcs directory (.git or .svn) in job workspace (is here for caching purposes)
 
     @DataBoundConstructor
     public LastChangesPublisher(SinceType since, FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold,
-                                String matchingMaxComparisons, String specificRevision, String vcsDir) {
+                                String matchingMaxComparisons, String specificRevision, String vcsDir, String specificBuild) {
         this.specificRevision = specificRevision;
         this.format = format;
         this.since = since;
@@ -100,6 +107,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         this.matchWordsThreshold = matchWordsThreshold;
         this.matchingMaxComparisons = matchingMaxComparisons;
         this.vcsDir = vcsDir;
+        this.specificBuild = specificBuild;
     }
 
     @Override
@@ -112,10 +120,10 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         File svnRepository = null;
         ISVNAuthenticationProvider svnAuthProvider = null;
         FilePath workspaceTargetDir = getMasterWorkspaceDir(build);//always on master
-        FilePath vcsDirParam = null; //folder tu be used as param on vcs directory search
+        FilePath vcsDirParam = null; //folder to be used as param on vcs directory search
         FilePath vcsTargetDir = null; //directory on master workspace containing a copy of vcsDir (.git or .svn)
 
-        if (this.vcsDir != null && !"".equals(vcsDir)) {
+        if (this.vcsDir != null && !"".equals(vcsDir.trim())) {
             vcsDirParam = new FilePath(workspace, this.vcsDir);
         } else {
             vcsDirParam = workspace;
@@ -136,6 +144,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 scm = (SubversionSCM) scMs.iterator().next();
                 svnAuthProvider = scm.createAuthenticationProvider(build.getParent(), scm.getLocations()[0]);
 
+
             } catch (NoSuchMethodError e) {
                 if (scm != null) {
                     svnAuthProvider = scm.getDescriptor().createAuthenticationProvider();
@@ -147,24 +156,35 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             vcsTargetDir = new FilePath(new File(workspaceTargetDir.getRemote() + "/.svn"));
             vcsDirFound.copyRecursiveTo("**/*", vcsTargetDir);
             svnRepository = new File(workspaceTargetDir.getRemote());
+
         }
 
         if (!isGit && !isSvn) {
-            throw new RuntimeException(String.format("Git or Svn directories not found in workspace %s.", workspace.toURI().toString()));
+            throw new RuntimeException(String.format("Git or Svn directories not found in workspace %s.", vcsDirParam.toURI().toString()));
         }
+
 
         boolean hasTargetRevision = false;
         String targetRevision = null;
+        String targetBuild = null;
 
         final EnvVars env = build.getEnvironment(listener);
         if (specificRevision != null && !"".equals(specificRevision)) {
             targetRevision = env.expand(specificRevision);
         }
 
+        if (specificBuild != null && !"".equals(specificBuild)) {
+            targetBuild = env.expand(specificBuild);
+            targetRevision = findBuildRevision(targetBuild, projectAction.getProject().getBuilds());
+        }
+
+        boolean hasSpecificRevision = targetRevision != null && !"".equals(targetRevision.trim());
+        boolean hasSpecificBuild = targetBuild != null && !"".equals(targetBuild.trim());
+
         listener.getLogger().println("Publishing build last changes...");
 
         //only look at 'since' parameter when specific revision is NOT set
-        if (since != null && specificRevision == null || "".equals(specificRevision)) {
+        if (since != null && (!hasSpecificRevision && !hasSpecificBuild)) {
 
             switch (since) {
 
@@ -249,6 +269,38 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     }
 
+    private static String findBuildRevision(String targetBuild, RunList<?> builds) {
+
+        if (builds == null || builds.isEmpty()) {
+            return null;
+        }
+
+        Integer buildParam = null;
+        try {
+            buildParam = Integer.parseInt(targetBuild);
+        } catch (NumberFormatException ne) {
+
+        }
+        if (buildParam == null) {
+            throw new RuntimeException(String.format("%s is an invalid build number for 'specificBuild' param. It must resolve to an integer.", targetBuild));
+        }
+        LastChangesBuildAction actionFound = null;
+        for (Run build : builds) {
+            if (build.getNumber() == buildParam) {
+                actionFound = build.getAction(LastChangesBuildAction.class);
+                break;
+            }
+        }
+
+        if (actionFound == null) {
+            throw new RuntimeException(String.format("No build found with number %s. Maybe the build was discarded or not has published LastChanges.", buildParam));
+        }
+
+        return actionFound.getBuildChanges().getCurrentRevision().getCommitId();
+
+
+    }
+
     private boolean isSlave() {
         return Computer.currentComputer() instanceof SlaveComputer;
     }
@@ -318,9 +370,12 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         return BuildStepMonitor.NONE;
     }
 
+
     @Extension
     @Symbol("lastChanges")
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+
+        private List<Run<?, ?>> builds;
 
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
             // Indicates that this builder can be used with all kinds of project
@@ -362,6 +417,32 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             return items;
         }
 
+        public FormValidation doCheckSpecificBuild(@QueryParameter String specificBuild, @AncestorInPath AbstractProject project) {
+            if (specificBuild == null || "".equals(specificBuild.trim())) {
+                return FormValidation.ok();
+            }
+            boolean isOk = false;
+            try {
+                if(project.isParameterized() && specificBuild.contains("$")) {
+                    return FormValidation.ok();//skip validation for parametrized build number as we don't have the parameter value
+                }
+                Integer.parseInt(specificBuild);
+                findBuildRevision(specificBuild, project.getBuilds());
+                isOk = true;
+            } catch (NumberFormatException e) {
+                return FormValidation.error("Build number is invalid, it must resolve to an Integer.");
+            } catch (Exception e) {
+
+            }
+
+            if (isOk) {
+                return FormValidation.ok();
+            } else {
+                return FormValidation.error(String.format("Build #%s is invalid or does not exists anymore or not has published LastChanges.",specificBuild));
+            }
+        }
+
+
     }
 
     public SinceType getSince() {
@@ -400,6 +481,9 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         return vcsDir;
     }
 
+    public String getSpecificBuild() {
+        return specificBuild;
+    }
 
     @DataBoundSetter
     public void setSince(SinceType since) {
@@ -444,6 +528,11 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     @DataBoundSetter
     public void setVcsDir(String vcsDir) {
         this.vcsDir = vcsDir;
+    }
+
+    @DataBoundSetter
+    public void setSpecificBuild(String buildNumber) {
+        this.specificBuild = buildNumber;
     }
 
 
