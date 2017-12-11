@@ -10,6 +10,9 @@
        <f:entry title="Specific revision" description="Revision id to create the diff with the current repository revision." >
              <f:textbox value="${instance.specificRevision}" field="specificRevision"  />
        </f:entry>
+       <f:entry title="Specific build" description="Compare current repository revision with the revision of a specific build." >
+             <f:textbox value="${instance.specificBuild}" field="specificBuild"  />
+       </f:entry>
        <f:section title="Advanced Options">
              <f:advanced>
               <f:entry title="Format" field="format" description="Diff format: libe-by-line (default) or side-by-side.">
