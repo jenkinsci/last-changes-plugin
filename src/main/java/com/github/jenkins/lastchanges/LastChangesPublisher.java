@@ -144,7 +144,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 scm = (SubversionSCM) scMs.iterator().next();
                 svnAuthProvider = scm.createAuthenticationProvider(build.getParent(), scm.getLocations()[0]);
 
-
             } catch (NoSuchMethodError e) {
                 if (scm != null) {
                     svnAuthProvider = scm.getDescriptor().createAuthenticationProvider();
@@ -165,7 +164,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
 
         boolean hasTargetRevision = false;
-        String targetRevision = null;
+        String targetRevision = null;""
         String targetBuild = null;
 
         final EnvVars env = build.getEnvironment(listener);
@@ -173,18 +172,19 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             targetRevision = env.expand(specificRevision);
         }
 
-        if (specificBuild != null && !"".equals(specificBuild)) {
+        boolean hasSpecificRevision = targetRevision != null && !"".equals(targetRevision.trim());
+        //only look into builds revision if no specific revision is provided (specificRevision has higher priority over build revision)
+        if (!hasSpecificRevision && (specificBuild != null && !"".equals(specificBuild))) {
             targetBuild = env.expand(specificBuild);
             targetRevision = findBuildRevision(targetBuild, projectAction.getProject().getBuilds());
+            hasSpecificRevision = targetRevision != null && !"".equals(targetRevision.trim());
         }
 
-        boolean hasSpecificRevision = targetRevision != null && !"".equals(targetRevision.trim());
-        boolean hasSpecificBuild = targetBuild != null && !"".equals(targetBuild.trim());
 
         listener.getLogger().println("Publishing build last changes...");
 
         //only look at 'since' parameter when specific revision is NOT set
-        if (since != null && (!hasSpecificRevision && !hasSpecificBuild)) {
+        if (since != null && !hasSpecificRevision) {
 
             switch (since) {
 
@@ -205,7 +205,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
                     try {
                         if (isGit) {
-
                             ObjectId lastTagRevision = GitLastChanges.getInstance().getLastTagRevision(gitRepository);
                             if (lastTagRevision != null) {
                                 targetRevision = lastTagRevision.name();
@@ -341,6 +340,11 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     }
 
     private FilePath findVCSDirInSubDirectories(FilePath sourceDir, String dir) throws IOException, InterruptedException {
+        List<FilePath> filePaths = sourceDir.listDirectories();
+        if(filePaths == null || filePaths.isEmpty()) {
+            return null;
+        }
+
         for (FilePath filePath : sourceDir.listDirectories()) {
             if (filePath.getName().equalsIgnoreCase(dir)) {
                 return filePath;
@@ -423,7 +427,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             }
             boolean isOk = false;
             try {
-                if(project.isParameterized() && specificBuild.contains("$")) {
+                if (project.isParameterized() && specificBuild.contains("$")) {
                     return FormValidation.ok();//skip validation for parametrized build number as we don't have the parameter value
                 }
                 Integer.parseInt(specificBuild);
@@ -438,7 +442,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             if (isOk) {
                 return FormValidation.ok();
             } else {
-                return FormValidation.error(String.format("Build #%s is invalid or does not exists anymore or not has published LastChanges.",specificBuild));
+                return FormValidation.error(String.format("Build #%s is invalid or does not exists anymore or not has published LastChanges.", specificBuild));
             }
         }
 

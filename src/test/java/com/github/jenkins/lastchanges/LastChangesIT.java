@@ -105,12 +105,13 @@ public class LastChangesIT {
 
     }
 
+    @Ignore("Can't test it because when cloning git plugin will reate just a .git and it is done at execution time, so there is nothing we can do but test manually")
     @Test
     public void shouldGetLastChangesUsingVcsDir() throws Exception {
 
         // given
         List<UserRemoteConfig> remoteConfigs = new ArrayList<UserRemoteConfig>();
-        remoteConfigs.add(new UserRemoteConfig(sampleRepoDir.getAbsolutePath(), "origin", "", null));
+        remoteConfigs.add(new UserRemoteConfig(sampleRepoDir.getParentFile().getAbsolutePath(), "origin", "", null));
         List<BranchSpec> branches = new ArrayList<>();
         branches.add(new BranchSpec("master"));
         GitSCM scm = new GitSCM(remoteConfigs, branches, false,
@@ -118,7 +119,7 @@ public class LastChangesIT {
                 Collections.<GitSCMExtension>singletonList(new DisableRemotePoll()));
         FreeStyleProject project = jenkins.createFreeStyleProject("git-test");
         project.setScm(scm);
-        LastChangesPublisher publisher = new LastChangesPublisher(SinceType.PREVIOUS_REVISION, FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null,sampleRepoDir.getAbsolutePath(), null);
+        LastChangesPublisher publisher = new LastChangesPublisher(SinceType.PREVIOUS_REVISION, FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null,"git-sample-repo", null);
         project.getPublishersList().add(publisher);
         project.save();
 

@@ -30,13 +30,6 @@ public class LastChangesProjectAction extends LastChangesBaseAction implements P
     }
 
  
-    /**
-     * Gets the directory where the HTML report is stored for the given build.
-     */
-    private File getBuildArchiveDir(Run<?, ?> run) {
-        return new File(run.getRootDir(), LastChangesBaseAction.BASE_URL);
-    }
-
     @Override
     protected String getTitle() {
         return this.job.getDisplayName();

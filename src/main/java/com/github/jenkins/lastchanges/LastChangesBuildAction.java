@@ -1,16 +1,14 @@
 package com.github.jenkins.lastchanges;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import com.github.jenkins.lastchanges.model.LastChanges;
 import com.github.jenkins.lastchanges.model.LastChangesConfig;
-
 import hudson.model.Action;
 import hudson.model.Run;
 import jenkins.tasks.SimpleBuildStep;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class LastChangesBuildAction extends LastChangesBaseAction implements SimpleBuildStep.LastBuildAction {
 
