@@ -164,7 +164,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
 
         boolean hasTargetRevision = false;
-        String targetRevision = null;""
+        String targetRevision = null;
         String targetBuild = null;
 
         final EnvVars env = build.getEnvironment(listener);
