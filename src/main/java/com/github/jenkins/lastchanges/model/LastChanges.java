@@ -25,7 +25,6 @@ public class LastChanges {
     private CommitInfo previousRevision;
     private String diff;
     private List<CommitChanges> commits ;//commits between current and previous revisions along with their changes related to its previous commit
-    private String lastCommitId; //id of last commit (note that current revisions points to tree in git)
 
     public LastChanges(CommitInfo current, CommitInfo previous, String diff) {
         this.currentRevision = current;
@@ -55,24 +54,21 @@ public class LastChanges {
     }
 
     public void addCommits(List<CommitChanges> commitChanges) {
-        commits.addAll(commitChanges);
+        if(commitChanges != null) {
+            commits.addAll(commitChanges);
+        }
     }
 
     public void addCommit(CommitChanges commitchange) {
-        commits.add(commitchange);
+        if(commitchange != null) {
+            commits.add(commitchange);
+        }
     }
 
     public List<CommitChanges> getCommits() {
         return commits;
     }
 
-    public String getLastCommitId() {
-        return lastCommitId;
-    }
-
-    public void setLastCommitId(String lastCommit) {
-        this.lastCommitId = lastCommit;
-    }
 
     public Integer getNumCommits() {
         return commits == null ? 0 : commits.size();

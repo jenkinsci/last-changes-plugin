@@ -246,7 +246,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 if (hasTargetRevision) {
                     //compares current repository revision with provided revision
                     lastChanges = GitLastChanges.getInstance().changesOf(gitRepository, GitLastChanges.getInstance().resolveCurrentRevision(gitRepository), gitRepository.resolve(targetRevision));
-                    List<CommitInfo> commitInfoList = getCommitsBetweenRevisions(lastChanges.getLastCommitId(), targetRevision, null);
+                    List<CommitInfo> commitInfoList = getCommitsBetweenRevisions(lastChanges.getCurrentRevision().getCommitId(), targetRevision, null);
                     lastChanges.addCommits(commitChanges(commitInfoList, lastChanges.getPreviousRevision().getCommitId(),null));
                 } else {
                     //compares current repository revision with previous one
@@ -261,7 +261,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                     //compares current repository revision with provided revision
                     Long svnRevision = Long.parseLong(targetRevision);
                     lastChanges = svnLastChanges.changesOf(svnRepository, SVNRevision.HEAD, SVNRevision.create(svnRevision));
-                    List<CommitInfo> commitInfoList = getCommitsBetweenRevisions(lastChanges.getLastCommitId(), targetRevision, svnAuthProvider);
+                    List<CommitInfo> commitInfoList = getCommitsBetweenRevisions(lastChanges.getCurrentRevision().getCommitId(), targetRevision, svnAuthProvider);
                     lastChanges.addCommits(commitChanges(commitInfoList, lastChanges.getPreviousRevision().getCommitId(),svnAuthProvider));
                 } else {
                     //compares current repository revision with previous one
@@ -385,7 +385,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             throw new RuntimeException(String.format("No build found with number %s. Maybe the build was discarded or not has published LastChanges.", buildParam));
         }
 
-        return actionFound.getBuildChanges().getLastCommitId();
+        return actionFound.getBuildChanges().getCurrentRevision().getCommitId();
 
 
     }

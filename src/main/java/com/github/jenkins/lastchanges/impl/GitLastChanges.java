@@ -284,7 +284,7 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
 
         List<CommitInfo> commits = new ArrayList<>();
         try {
-            Iterable<RevCommit> revCommits = new Git(gitRepository).log().addRange(currentRevision, previousRevision).call();
+            Iterable<RevCommit> revCommits = new Git(gitRepository).log().addRange(previousRevision, currentRevision).call();
 
             for (RevCommit commit : revCommits) {
                 if (commit != null) {

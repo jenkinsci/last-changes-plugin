@@ -4,7 +4,7 @@
 
   <f:section title="Last Changes Configuration" >
 
-       <f:entry title="Since" description="Since when changes from current revision will be 'diffed'. Default is 'previous revision'. Note that this field will be ignored if 'SpecificRevision' is provided." >
+       <f:entry title="Since" description="Since when changes from current revision will be 'diffed'. Default is 'previous revision'. Note that this field will be ignored if 'SpecificRevision' or 'SpecificBuild' is provided." >
                 <f:select value="${instance.since}" field="since" default="PREVIOUS_REVISION" />
        </f:entry>
        <f:entry title="Specific revision" description="Revision id to create the diff with the current repository revision." >
