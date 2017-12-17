@@ -1,7 +1,7 @@
 <?jelly escape-by-default='false'?>
 <j:jelly trim="false" xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
    xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:fmt="jelly:fmt">
-   <l:layout title="Details of commit ${commit.commitInfo.commitId}">
+   <l:layout title="Changes of commit ${commit.commitInfo.commitId}">
       <l:header>
       <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/github-9.5.0.min.css"/>
       <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/diff2html-2.3.1.min.css"/>
@@ -16,7 +16,7 @@
 
          <l:main-panel style="container-fluid;width:100%">
 
-         <h2 style="text-align:center">Commit details</h2>
+         <h2 style="text-align:center">Commit changes</h2>
 
          <style>
              .row {
