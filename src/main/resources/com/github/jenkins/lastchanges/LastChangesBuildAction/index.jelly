@@ -27,6 +27,15 @@
                  margin-left: 10px !important;
              }
 
+             body .d2h-file-side-diff, body .d2h-file-diff, html {
+                  overflow:auto!important;
+             }
+
+             html body {
+                 overflow:hidden!important;
+             }
+
+
          </style>
          <script>
              jQueryJenkins(document).ready(function () {
@@ -119,7 +128,7 @@
                        <j:forEach items="${it.buildChanges.commits}" var="c">
                         <li class="d2h-file-list-line">
                             <span class="d2h-file-name-wrapper">
-                              <a href="commit/${c.commitInfo.commitId}" class="d2h-file-name" target="_blank">${c.commitInfo.commitMessage} (${c.commitInfo.commiterName} <j:if test="${not empty c.commitInfo.commitDate}"> - ${c.commitInfo.commitDate} </j:if>)</a>
+                              <a href="commit/${c.commitInfo.commitId}" style="overflow:auto" class="d2h-file-name" target="_blank">${c.commitInfo.formatedCommitId}: ${c.commitInfo.commitMessage} (${c.commitInfo.commiterName} <j:if test="${not empty c.commitInfo.commitDate}"> - ${c.commitInfo.commitDate} </j:if>)</a>
                             </span>
                          </li>
                        </j:forEach>

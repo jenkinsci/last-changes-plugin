@@ -71,6 +71,23 @@ public class CommitInfo implements Serializable {
         return this;
     }
 
+    public String getFormatedCommitId() {
+        try {
+            Long.parseLong(commitId);
+            return commitId;//if its numeric (SVN) dont truncate
+        }catch (NumberFormatException nfe) {
+            //alphanumeric (GIT) then truncate
+            return truncate(commitId,8);
+        }
+    }
+
+    private String truncate(String value, int length) {
+        if (value == null || value.length() <= length) {
+            return value;
+        }
+        return value.substring(0, length - 1);
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder().
