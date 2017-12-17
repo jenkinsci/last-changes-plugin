@@ -10,7 +10,6 @@ import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNDirEntry;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNLogEntry;
-import org.tmatesoft.svn.core.auth.BasicAuthenticationManager;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationProvider;
 import org.tmatesoft.svn.core.internal.wc2.ng.SvnDiffGenerator;
@@ -245,7 +244,7 @@ public class SvnLastChanges implements VCSChanges<File, SVNRevision> {
             TimeZone tz = TimeZone.getDefault();
             while (iterator.hasNext()) {
                 SVNLogEntry logEntry = iterator.next();
-                if ((logEntry.getRevision() + "").equals(previousRevision)) {
+                if ((logEntry.getRevision() + "").equals(previousRevision.toString())) {//do not include previous revision commit
                     continue;
                 }
                 CommitInfo commitInfo = new CommitInfo();
