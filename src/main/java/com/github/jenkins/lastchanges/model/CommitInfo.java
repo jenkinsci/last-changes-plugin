@@ -1,5 +1,6 @@
 package com.github.jenkins.lastchanges.model;
 
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -7,7 +8,7 @@ import java.util.TimeZone;
 /**
  * Created by rmpestano on 6/26/16.
  */
-public class CommitInfo {
+public class CommitInfo implements Serializable {
 
     public static final String newLine = System.getProperty("line.separator");
 
@@ -83,4 +84,18 @@ public class CommitInfo {
     }
 
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        CommitInfo that = (CommitInfo) o;
+
+        return commitId != null ? commitId.equals(that.commitId) : that.commitId == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return commiterName != null ? commiterName.hashCode() : 0;
+    }
 }
