@@ -161,7 +161,7 @@ public class SvnLastChanges implements VCSChanges<File, SVNRevision> {
     public SVNRevision resolveCurrentRevision(File svnRepository) {
         SvnOperationFactory operationFactory = new SvnOperationFactory();
         ISVNAuthenticationManager defaultAuthenticationManager = SVNWCUtil.createDefaultAuthenticationManager();
-        if(svnAuthProvider != null) {
+        if (svnAuthProvider != null) {
             defaultAuthenticationManager.setAuthenticationProvider(svnAuthProvider);
         }
         SvnGetInfo getInfo = operationFactory.createGetInfo();
@@ -215,9 +215,53 @@ public class SvnLastChanges implements VCSChanges<File, SVNRevision> {
                         .setCommitMessage(logEntry.getMessage());
             }
         } catch (Exception e) {
-            Logger.getLogger(CommitInfo.class.getName()).warning(String.format("Could not get commit info from revision %d due to following error " + e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""), revision));
+            Logger.getLogger(SvnLastChanges.class.getName()).warning(String.format("Could not get commit info from revision %d due to following error " + e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""), revision));
         }
         return commitInfo;
+    }
+
+    @Override
+    public List<CommitInfo> getCommitsBetweenRevisions(File svnRepository, SVNRevision currentRevision, SVNRevision previousRevision) {
+        List<CommitInfo> commits = new ArrayList<>();
+        try {
+            SvnOperationFactory operationFactory = new SvnOperationFactory();
+            ISVNAuthenticationManager defaultAuthenticationManager = SVNWCUtil.createDefaultAuthenticationManager();
+            operationFactory.setAuthenticationManager(defaultAuthenticationManager);
+            if (svnAuthProvider != null) {
+                defaultAuthenticationManager.setAuthenticationProvider(svnAuthProvider);
+            }
+            SvnLog logOperation = operationFactory.createLog();
+            logOperation.setSingleTarget(SvnTarget.fromFile(svnRepository));
+            logOperation.setRevisionRanges(Collections.singleton(
+                    SvnRevisionRange.create(
+                            previousRevision,
+                            currentRevision
+                    )
+            ));
+
+            Collection<SVNLogEntry> logEntries = logOperation.run(null);
+            Iterator<SVNLogEntry> iterator = logEntries.iterator();
+
+            TimeZone tz = TimeZone.getDefault();
+            while (iterator.hasNext()) {
+                SVNLogEntry logEntry = iterator.next();
+                if ((logEntry.getRevision() + "").equals(previousRevision)) {
+                    continue;
+                }
+                CommitInfo commitInfo = new CommitInfo();
+                commitInfo.setCommitDate(commitInfo.format(logEntry.getDate(), tz) + " " + tz.getDisplayName())
+                        .setCommiterName(logEntry.getAuthor())
+                        .setCommitId(logEntry.getRevision() + "")
+                        .setCommitMessage(logEntry.getMessage());
+                commits.add(commitInfo);
+            }
+
+        } catch (Exception e) {
+            Logger.getLogger(SvnLastChanges.class.getName()).log(Level.WARNING, String.format("Could not get commits between current revision % and previous revision %s.", currentRevision, previousRevision), e);
+        }
+
+        return commits;
+
     }
 
     private SVNDirEntry findLastTag(SVNDirEntry tagsDir) throws SVNException {

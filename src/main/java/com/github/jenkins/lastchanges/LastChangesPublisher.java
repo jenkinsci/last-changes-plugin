@@ -43,6 +43,7 @@ import hudson.util.ListBoxModel;
 import hudson.util.RunList;
 import jenkins.tasks.SimpleBuildStep;
 import jenkins.triggers.SCMTriggerItem;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.jenkinsci.Symbol;
@@ -58,8 +59,11 @@ import org.tmatesoft.svn.core.wc.SVNRevision;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.List;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.github.jenkins.lastchanges.impl.GitLastChanges.repository;
 
@@ -68,7 +72,15 @@ import static com.github.jenkins.lastchanges.impl.GitLastChanges.repository;
  */
 public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
+    private static Logger LOG = Logger.getLogger(LastChangesPublisher.class.getName());
+
+    private static final String GIT_DIR = ".git";
+
+    private static final String SVN_DIR = ".svn";
+
     private static final short RECURSION_DEPTH = 50;
+
+    private static final DateFormat DATE_FORMAT = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT);
 
     private String specificRevision; //revision id to crete the diff
 
@@ -90,8 +102,13 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     private String matchingMaxComparisons;
 
-    private static final String GIT_DIR = ".git";
-    private static final String SVN_DIR = ".svn";
+
+    private Repository gitRepository = null;
+
+    private File svnRepository = null;
+
+    private boolean isGit = false;
+    private boolean isSvn = false;
 
     private transient FilePath vcsDirFound = null; //location of vcs directory (.git or .svn) in job workspace (is here for caching purposes)
 
@@ -114,10 +131,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     public void perform(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
 
         LastChangesProjectAction projectAction = new LastChangesProjectAction(build.getParent());
-        boolean isGit = false;
-        boolean isSvn = false;
-        Repository gitRepository = null;
-        File svnRepository = null;
         ISVNAuthenticationProvider svnAuthProvider = null;
         FilePath workspaceTargetDir = getMasterWorkspaceDir(build);//always on master
         FilePath vcsDirParam = null; //folder to be used as param on vcs directory search
@@ -216,6 +229,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                             }
                         }
                     } catch (Exception e) {
+                        LOG.log(Level.WARNING, "Could not resolve last tag revision, last changes will use previous revision.",e);
                         listener.error("Could not resolve last tag revision, last changes will use previous revision.");
                     }
                 }
@@ -232,20 +246,31 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 if (hasTargetRevision) {
                     //compares current repository revision with provided revision
                     lastChanges = GitLastChanges.getInstance().changesOf(gitRepository, GitLastChanges.getInstance().resolveCurrentRevision(gitRepository), gitRepository.resolve(targetRevision));
+                    List<CommitInfo> commitInfoList = getCommitsBetweenRevisions(lastChanges.getLastCommitId(), targetRevision, null);
+                    lastChanges.addCommits(commitChanges(commitInfoList, lastChanges.getPreviousRevision().getCommitId(),null));
                 } else {
                     //compares current repository revision with previous one
                     lastChanges = GitLastChanges.getInstance().changesOf(gitRepository);
+                    lastChanges.addCommit(new CommitChanges(lastChanges.getCurrentRevision(),lastChanges.getDiff()));
                 }
+
+                lastChanges.setLastCommitId(gitRepository.resolve(Constants.HEAD).getName()); //testar se realmente precisa (testar com build
             } else if (isSvn) {
                 SvnLastChanges svnLastChanges = getSvnLastChanges(svnAuthProvider);
                 if (hasTargetRevision) {
                     //compares current repository revision with provided revision
                     Long svnRevision = Long.parseLong(targetRevision);
                     lastChanges = svnLastChanges.changesOf(svnRepository, SVNRevision.HEAD, SVNRevision.create(svnRevision));
+                    List<CommitInfo> commitInfoList = getCommitsBetweenRevisions(lastChanges.getLastCommitId(), targetRevision, svnAuthProvider);
+                    lastChanges.addCommits(commitChanges(commitInfoList, lastChanges.getPreviousRevision().getCommitId(),svnAuthProvider));
                 } else {
                     //compares current repository revision with previous one
                     lastChanges = svnLastChanges.changesOf(svnRepository);
+                    //in this case there will be only one commit
+                    lastChanges.addCommit(new CommitChanges(lastChanges.getCurrentRevision(),lastChanges.getDiff()));
                 }
+
+                lastChanges.setLastCommitId(lastChanges.getCurrentRevision().toString());//testar se realmente precisa (testar com build
             }
 
             String resultMessage = String.format("Last changes from revision %s to %s published successfully!", truncate(lastChanges.getCurrentRevision().getCommitId(), 8), truncate(lastChanges.getPreviousRevision().getCommitId(), 8));
@@ -256,7 +281,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                     new LastChangesConfig(since, specificRevision, format, matching, showFiles, synchronisedScroll, matchWordsThreshold, matchingMaxComparisons)));
         } catch (Exception e) {
             listener.error("Last Changes NOT published due to the following error: " + (e.getMessage() == null ? e.toString() : e.getMessage()) + (e.getCause() != null ? " - " + e.getCause() : ""));
-            e.printStackTrace();
+            LOG.log(Level.SEVERE, "Could not publish LastChanges.",e);
         } finally {
             if (vcsTargetDir != null && vcsTargetDir.exists()) {
                 vcsTargetDir.deleteRecursive();//delete copied dir on master
@@ -266,6 +291,71 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
         build.setResult(Result.SUCCESS);
 
+    }
+
+    /**
+     *
+     * Gets the commit changes of each commitInfo
+     * First we sort commits by date and then call lastChanges of each commit with previous one
+     *
+     * @param commitInfoList list of commits between current and previous revision
+     *
+     * @param oldestCommit is the first commit from previous tree (in git)/revision(in svn) see {@link LastChanges}
+     * @param svnAuthProvider
+     * @return
+     */
+    private List<CommitChanges> commitChanges(List<CommitInfo> commitInfoList, String oldestCommit, ISVNAuthenticationProvider svnAuthProvider) {
+        if(commitInfoList == null || commitInfoList.isEmpty()) {
+            return null;
+        }
+
+        List<CommitChanges> commitChanges = new ArrayList<>();
+
+        try {
+
+            Collections.sort(commitInfoList, new Comparator<CommitInfo>() {
+                @Override
+                public int compare(CommitInfo c1, CommitInfo c2) {
+                    try {
+                        return DATE_FORMAT.parse(c1.getCommitDate()).compareTo(DATE_FORMAT.parse(c2.getCommitDate()));
+                    } catch (ParseException e) {
+                        LOG.severe(String.format("Could not parse commit dates %s and %s ", c1.getCommitDate(), c2.getCommitDate()));
+                        return 0;
+                    }
+                }
+            });
+
+            for (int i = commitInfoList.size() - 1; i >= 0; i--) {
+                LastChanges lastChanges = null;
+                if (i == 0) { //here we can't compare with (i -1) so we compare with first commit of previous tree
+                    //here we have the older commit from current tree (see LastChanges.java) which diff must be compared with oldestCommit which is currentRevision from previous tree
+                    lastChanges = retrieveCommitChanges(commitInfoList.get(i).getCommitId(), oldestCommit, svnAuthProvider);
+                } else { //get changes comparing current commit (i) with previous one (i -1)
+                    lastChanges = retrieveCommitChanges(commitInfoList.get(i).getCommitId(), commitInfoList.get(i - 1).getCommitId(), svnAuthProvider);
+                }
+                String diff = lastChanges != null ? lastChanges.getDiff() : "";
+                commitChanges.add(new CommitChanges(commitInfoList.get(i), diff));
+            }
+
+        }catch (Exception e) {
+            LOG.log(Level.SEVERE,"Could not get commit changes.",e);
+        }
+
+        return commitChanges;
+    }
+
+    private LastChanges retrieveCommitChanges(String currentRevision, String previousRevision, ISVNAuthenticationProvider svnAuthProvider) throws IOException {
+
+        LastChanges changes = null;
+        if (isGit) {
+            changes = GitLastChanges.getInstance().
+                    changesOf(gitRepository, gitRepository.resolve(currentRevision), gitRepository.resolve(previousRevision));
+        } else if (isSvn) {
+            changes = SvnLastChanges.getInstance(svnAuthProvider)
+                    .changesOf(svnRepository, SVNRevision.parse(currentRevision), SVNRevision.parse(previousRevision));
+        }
+
+        return changes;
     }
 
     private static String findBuildRevision(String targetBuild, RunList<?> builds) {
@@ -295,10 +385,30 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             throw new RuntimeException(String.format("No build found with number %s. Maybe the build was discarded or not has published LastChanges.", buildParam));
         }
 
-        return actionFound.getBuildChanges().getCurrentRevision().getCommitId();
+        return actionFound.getBuildChanges().getLastCommitId();
 
 
     }
+
+    /**
+     * Retrieve commits between two revisions
+     *
+     * @param currentRevision
+     * @param previousRevision
+     */
+    private List<CommitInfo> getCommitsBetweenRevisions(String currentRevision, String previousRevision, ISVNAuthenticationProvider svnAuthProvider) throws IOException {
+        List<CommitInfo> commits = new ArrayList<>();
+        if (isGit) {
+            commits = GitLastChanges.getInstance().getCommitsBetweenRevisions(gitRepository, gitRepository.resolve(currentRevision),
+                    gitRepository.resolve(previousRevision));
+        } else if (isSvn) {
+            commits = SvnLastChanges.getInstance(svnAuthProvider).getCommitsBetweenRevisions(svnRepository, SVNRevision.create(Long.parseLong(currentRevision)),
+                    SVNRevision.create(Long.parseLong(previousRevision)));
+        }
+
+        return commits;
+    }
+
 
     private boolean isSlave() {
         return Computer.currentComputer() instanceof SlaveComputer;
@@ -341,7 +451,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     private FilePath findVCSDirInSubDirectories(FilePath sourceDir, String dir) throws IOException, InterruptedException {
         List<FilePath> filePaths = sourceDir.listDirectories();
-        if(filePaths == null || filePaths.isEmpty()) {
+        if (filePaths == null || filePaths.isEmpty()) {
             return null;
         }
 
