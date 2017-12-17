@@ -254,7 +254,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                     lastChanges.addCommit(new CommitChanges(lastChanges.getCurrentRevision(),lastChanges.getDiff()));
                 }
 
-                lastChanges.setLastCommitId(gitRepository.resolve(Constants.HEAD).getName()); //testar se realmente precisa (testar com build
             } else if (isSvn) {
                 SvnLastChanges svnLastChanges = getSvnLastChanges(svnAuthProvider);
                 if (hasTargetRevision) {
@@ -270,7 +269,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                     lastChanges.addCommit(new CommitChanges(lastChanges.getCurrentRevision(),lastChanges.getDiff()));
                 }
 
-                lastChanges.setLastCommitId(lastChanges.getCurrentRevision().toString());//testar se realmente precisa (testar com build
             }
 
             String resultMessage = String.format("Last changes from revision %s to %s published successfully!", truncate(lastChanges.getCurrentRevision().getCommitId(), 8), truncate(lastChanges.getPreviousRevision().getCommitId(), 8));
