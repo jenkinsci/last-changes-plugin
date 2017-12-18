@@ -1,0 +1,92 @@
+<?jelly escape-by-default='false'?>
+<j:jelly trim="false" xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+   xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:fmt="jelly:fmt">
+   <l:layout title="Changes of commit ${commit.commitInfo.commitId}">
+      <l:header>
+      <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/github-9.5.0.min.css"/>
+      <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/diff2html-2.3.1.min.css"/>
+      <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/jquery.min.js"/>
+         <script type="text/javascript">window.jQueryJenkins = jQuery.noConflict();
+      </script>
+      <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/highlightjs-9.12.0.min.js"/>
+         <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-2.3.2.min.js"/>
+         <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-ui-2.3.1.min.js"/>
+         <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/scala-9.5.0.min.js"/>
+         </l:header>
+
+         <l:main-panel style="container-fluid;width:100%">
+
+         <h2 style="text-align:center">Commit changes</h2>
+
+         <style>
+             .row {
+                 text-align: center !important;
+             }
+
+             #main-panel {
+                 margin-left: 10px !important;
+             }
+
+             body .d2h-file-side-diff, html {
+                  overflow:auto!important;
+             }
+
+             html body {
+                  overflow:hidden!important;
+             }
+
+         </style>
+         <script>
+         jQueryJenkins(document).ready(function () {
+            if (jQueryJenkins('#main-panel').length) {
+                 jQueryJenkins('#main-panel').attr('class','col-sm-24 col-md-24 col-lg-24 col-xlg-24');
+            }
+
+         var commitChanges = "${commit.escapedDiff}";
+         var sidePanelTD = document.getElementById('side-panel');
+         if (sidePanelTD) {
+             sidePanelTD.parentNode.removeChild(sidePanelTD);
+         }
+
+         var diff2htmlUi = new Diff2HtmlUI({diff: commitChanges});
+
+         diff2htmlUi.draw('#side-by-side', {
+                 inputFormat: 'json',
+                 outputFormat: 'side-by-side',
+                 showFiles: true,
+                 synchronisedScroll: true,
+                 matchWordsThreshold: '0.25',
+                 matchingMaxComparisons: '1500',
+                 matching: 'lines'
+             }
+         );
+         diff2htmlUi.fileListCloseable('#side-by-side', false);
+         diff2htmlUi.highlightCode('#side-by-side');
+
+             }); //end documentReady
+
+      </script>
+           <div class="col-sm-24 col-md-24" style="font-family: 'Source Sans Pro',sans-serif;">
+               <div style="text-align:center;margin: 0 auto;">
+                  <b>Revision:</b> ${commit.commitInfo.commitId}
+                  <br/>
+                   <b>Author:</b> ${commit.commitInfo.commiterName}
+                   <br/>
+                   <j:if test="${not empty commit.commitInfo.commiterEmail}">
+                       <b>E-mail:</b> ${commit.commitInfo.commiterEmail}
+                       <br/>
+                   </j:if>
+                   <b>Date:</b> ${commit.commitInfo.commitDate}
+                   <br/>
+                   <j:if test="${not empty commit.commitInfo.commitMessage}">
+                       <b>Message:</b> ${commit.commitInfo.commitMessage}
+                       <br/>
+                   </j:if>
+                </div>
+
+                <div id="side-by-side" style="margin: 0 auto;">
+                </div>
+           </div>
+      </l:main-panel>
+   </l:layout>
+</j:jelly>

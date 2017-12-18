@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -271,11 +272,30 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
             TimeZone tz = committerIdent.getTimeZone() != null ? committerIdent.getTimeZone() : TimeZone.getDefault();
             commitInfo.setCommitDate(commitInfo.format(commitDate, tz) + " " + tz.getDisplayName());
         } catch (Exception e) {
-            Logger.getLogger(CommitInfo.class.getName()).warning(String.format("Could not get commit info from revision %d due to following error " + e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""), commitId));
+            Logger.getLogger(GitLastChanges.class.getName()).warning(String.format("Could not get commit info from revision %d due to following error " + e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""), commitId));
         } finally {
             revWalk.dispose();
         }
         return commitInfo;
+    }
+
+    @Override
+    public List<CommitInfo> getCommitsBetweenRevisions(Repository gitRepository, ObjectId currentRevision, ObjectId previousRevision) {
+
+        List<CommitInfo> commits = new ArrayList<>();
+        try {
+            Iterable<RevCommit> revCommits = new Git(gitRepository).log().addRange(previousRevision, currentRevision).call();
+
+            for (RevCommit commit : revCommits) {
+                if (commit != null) {
+                    commits.add(GitLastChanges.getInstance().commitInfo(gitRepository, commit.getId()));
+                }
+            }
+        }catch (Exception e) {
+            Logger.getLogger(GitLastChanges.class.getName()).log(Level.WARNING, String.format("Could not get commits between current revision % and previous revision %s.", currentRevision, previousRevision), e);
+        }
+
+        return commits;
     }
 
 

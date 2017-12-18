@@ -1,9 +1,6 @@
 package com.github.jenkins.lastchanges;
 
-import com.github.jenkins.lastchanges.model.FormatType;
-import com.github.jenkins.lastchanges.model.LastChanges;
-import com.github.jenkins.lastchanges.model.MatchingType;
-import com.github.jenkins.lastchanges.model.SinceType;
+import com.github.jenkins.lastchanges.model.*;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
@@ -69,7 +66,8 @@ public class LastChangesIT {
         assertThat(lastChanges.getCurrentRevision()).isNotNull();
         assertThat(lastChanges.getCurrentRevision().getCommitMessage()).isEqualTo("Added javadoc\n");
         assertThat(lastChanges.getCurrentRevision().getCommitId()).isEqualTo("27ad83a8fbee4b551670a03fc035bf87f7a3bcfb");
-        Assertions.assertThat(lastChanges.getDiff()).isEqualToIgnoringWhitespace(("diff --git a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + GitLastChangesTest.newLine +
+
+        final String diff = ("diff --git a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + GitLastChangesTest.newLine +
                 "index 6d28c9b..bcc2ac0 100644" + GitLastChangesTest.newLine +
                 "--- a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + GitLastChangesTest.newLine +
                 "+++ b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + GitLastChangesTest.newLine +
@@ -98,19 +96,31 @@ public class LastChangesIT {
                 "+" + GitLastChangesTest.newLine +
                 " /**" + GitLastChangesTest.newLine +
                 "  * Walks over this component and all descendants of this component, breadth-first." + GitLastChangesTest.newLine +
-                "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", ""));
+                "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", "");
+
+        Assertions.assertThat(lastChanges.getDiff()).isEqualToIgnoringWhitespace(diff);
         
+
+        assertThat(lastChanges.getCommits()).isNotNull()
+                .hasSize(1);
+        assertThat(lastChanges.getCommits().get(0))
+                .isEqualTo(new CommitChanges(new CommitInfo().setCommitId("27ad83a8fbee4b551670a03fc035bf87f7a3bcfb"),null));
+
+        assertThat(lastChanges.getCommits().get(0)
+                .getChanges()).isEqualToIgnoringWhitespace(diff);
+
 
         jenkins.assertLogContains("Last changes from revision 27ad83a to a511a43 published successfully!", build);
 
     }
 
+    @Ignore("Can't test it because when cloning git plugin will create just a .git and it is done at execution time, so there is nothing we can do but test manually")
     @Test
     public void shouldGetLastChangesUsingVcsDir() throws Exception {
 
         // given
         List<UserRemoteConfig> remoteConfigs = new ArrayList<UserRemoteConfig>();
-        remoteConfigs.add(new UserRemoteConfig(sampleRepoDir.getAbsolutePath(), "origin", "", null));
+        remoteConfigs.add(new UserRemoteConfig(sampleRepoDir.getParentFile().getAbsolutePath(), "origin", "", null));
         List<BranchSpec> branches = new ArrayList<>();
         branches.add(new BranchSpec("master"));
         GitSCM scm = new GitSCM(remoteConfigs, branches, false,
@@ -118,7 +128,7 @@ public class LastChangesIT {
                 Collections.<GitSCMExtension>singletonList(new DisableRemotePoll()));
         FreeStyleProject project = jenkins.createFreeStyleProject("git-test");
         project.setScm(scm);
-        LastChangesPublisher publisher = new LastChangesPublisher(SinceType.PREVIOUS_REVISION, FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null,sampleRepoDir.getAbsolutePath(), null);
+        LastChangesPublisher publisher = new LastChangesPublisher(SinceType.PREVIOUS_REVISION, FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null,"git-sample-repo", null);
         project.getPublishersList().add(publisher);
         project.save();
 

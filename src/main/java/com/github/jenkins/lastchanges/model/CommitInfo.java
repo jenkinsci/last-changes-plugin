@@ -1,5 +1,6 @@
 package com.github.jenkins.lastchanges.model;
 
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -7,7 +8,7 @@ import java.util.TimeZone;
 /**
  * Created by rmpestano on 6/26/16.
  */
-public class CommitInfo {
+public class CommitInfo implements Serializable {
 
     public static final String newLine = System.getProperty("line.separator");
 
@@ -70,6 +71,23 @@ public class CommitInfo {
         return this;
     }
 
+    public String getFormatedCommitId() {
+        try {
+            Long.parseLong(commitId);
+            return commitId;//if its numeric (SVN) dont truncate
+        }catch (NumberFormatException nfe) {
+            //alphanumeric (GIT) then truncate
+            return truncate(commitId,8);
+        }
+    }
+
+    private String truncate(String value, int length) {
+        if (value == null || value.length() <= length) {
+            return value;
+        }
+        return value.substring(0, length - 1);
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder().
@@ -83,4 +101,18 @@ public class CommitInfo {
     }
 
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        CommitInfo that = (CommitInfo) o;
+
+        return commitId != null ? commitId.equals(that.commitId) : that.commitId == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return commiterName != null ? commiterName.hashCode() : 0;
+    }
 }

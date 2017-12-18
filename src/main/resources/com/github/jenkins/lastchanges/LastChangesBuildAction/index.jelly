@@ -27,6 +27,15 @@
                  margin-left: 10px !important;
              }
 
+             body .d2h-file-side-diff, body .d2h-file-diff, html {
+                  overflow:auto!important;
+             }
+
+             html body {
+                 overflow:hidden!important;
+             }
+
+
          </style>
          <script>
              jQueryJenkins(document).ready(function () {
@@ -56,11 +65,20 @@
                      diff2htmlUi.highlightCode('#${it.config.format().getFormat()}');
                  } else {
                      jQueryJenkins('#line-by-line').append('<p style="margin-top:150px;text-align:center;font-size:14px;">No changes between revision <span style="font-weight:600;text-decoration:underline">${it.buildChanges.currentRevision.commitId}</span> and <span style="font-weight:600;text-decoration:underline">${it.buildChanges.previousRevision.commitId}</span> </p>')
+                     jQueryJenkins('#changes-info, .d2h-show2').hide();
                  }
 
              }); //end documentReady
 
+            function showCommits() {
+                    jQueryJenkins('.d2h-show2').hide();
+                    jQueryJenkins('.d2h-hide2, #commits').show();
+                   }
 
+            function hideCommits() {
+                    jQueryJenkins('.d2h-show2').show();
+                    jQueryJenkins('.d2h-hide2, #commits').hide();
+                 }
       </script>
       <div class="col-sm-24 col-md-24" style="width:100%; font-family: 'Source Sans Pro',sans-serif;">
          <div style="text-align:center;margin: 0 auto;">
@@ -98,7 +116,26 @@
                </j:if>
             </div>
          </div>
-         <br/>
+         <j:if test="${not empty it.buildChanges.escapedDiff}">
+               <div id="changes-info">
+                 <div class="d2h-file-list-wrapper">
+                    <div class="d2h-file-list-header">
+                         <span class="d2h-file-list-title">Commits (${it.buildChanges.numCommits})</span>
+                         <a class="d2h-file-switch d2h-hide2" style="display: none;" onclick="hideCommits()"> hide</a>
+                         <a class="d2h-file-switch d2h-show2" style="display: inline;" onclick="showCommits()"> show</a>
+                    </div>
+                    <ol id="commits" class="d2h-file-list" style="display: none;" >
+                       <j:forEach items="${it.buildChanges.commits}" var="c">
+                        <li class="d2h-file-list-line">
+                            <span class="d2h-file-name-wrapper">
+                              <a href="commit/${c.commitInfo.commitId}" style="overflow:auto" class="d2h-file-name" target="_blank">${c.commitInfo.formatedCommitId}: ${c.commitInfo.commitMessage} (${c.commitInfo.commiterName} <j:if test="${not empty c.commitInfo.commitDate}"> - ${c.commitInfo.commitDate} </j:if>)</a>
+                            </span>
+                         </li>
+                       </j:forEach>
+                    </ol>
+                 </div>
+               </div>
+         </j:if>
          <div id="line-by-line" style="margin: 0 auto;">
          </div>
          <div id="side-by-side" style="margin: 0 auto;">

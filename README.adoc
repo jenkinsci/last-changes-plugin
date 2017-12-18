@@ -51,6 +51,7 @@ And finally the plugin _shines_ in a https://en.wikipedia.org/wiki/Continuous_de
 +
 * A provided revision id;
 * Revision of `Last successful build`;
+* Revision of an specific build;
 * Revision of `Last tag`;
 +
 NOTE: By default previous revision is `current revision -1`.
@@ -78,6 +79,18 @@ image:last-changes02.png[link=https://raw.githubusercontent.com/jenkinsci/last-c
 +
 image:last-changes04.png[link=https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/last-changes-config.png]
 
+
+[TIP]
+====
+Since version `2.3` the *commits between revisions* are listed as below:
+
+image:commits.png[link=https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/commits.png]
+
+You can also see what has changed on a specific commit by clicking on it:
+
+image:commit-changes.png[link=https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/commit-changes.png]
+
+====
 
 == Configuration
 

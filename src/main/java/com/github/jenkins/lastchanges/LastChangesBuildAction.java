@@ -1,16 +1,16 @@
 package com.github.jenkins.lastchanges;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
+import com.github.jenkins.lastchanges.model.CommitChanges;
+import com.github.jenkins.lastchanges.model.CommitInfo;
 import com.github.jenkins.lastchanges.model.LastChanges;
 import com.github.jenkins.lastchanges.model.LastChangesConfig;
-
 import hudson.model.Action;
 import hudson.model.Run;
 import jenkins.tasks.SimpleBuildStep;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class LastChangesBuildAction extends LastChangesBaseAction implements SimpleBuildStep.LastBuildAction {
 
@@ -46,6 +46,19 @@ public class LastChangesBuildAction extends LastChangesBaseAction implements Sim
 
     public LastChangesConfig getConfig() {
         return config;
+    }
+
+    public CommitRenderer getCommit(String commitId) {
+
+        CommitChanges commit = null;
+        for (CommitChanges commitChanges : buildChanges.getCommits()) {
+            if(commitId.equals(commitChanges.getCommitInfo().getCommitId())) {
+                commit = commitChanges;
+                break;
+            }
+        }
+
+        return new CommitRenderer(this, commit);
     }
 
 
