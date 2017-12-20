@@ -72,8 +72,8 @@ public class SvnLastChanges implements VCSChanges<File, SVNRevision> {
         ByteArrayOutputStream diffStream = null;
         try {
             SvnOperationFactory operationFactory = new SvnOperationFactory();
-            operationFactory.setAuthenticationManager(svnAuthManager);
             if (svnAuthProvider != null) {
+            	operationFactory.setAuthenticationManager(svnAuthManager);
                 svnAuthManager.setAuthenticationProvider(svnAuthProvider);
             }
             SvnDiff diff = operationFactory.createDiff();
@@ -119,8 +119,8 @@ public class SvnLastChanges implements VCSChanges<File, SVNRevision> {
     @Override
     public SVNRevision getLastTagRevision(File repository) {
         SvnOperationFactory operationFactory = new SvnOperationFactory();
-        operationFactory.setAuthenticationManager(svnAuthManager);
         if (svnAuthProvider != null) {
+        	operationFactory.setAuthenticationManager(svnAuthManager);
             svnAuthManager.setAuthenticationProvider(svnAuthProvider);
         }
         SvnList listOperation = operationFactory.createList();
@@ -182,8 +182,8 @@ public class SvnLastChanges implements VCSChanges<File, SVNRevision> {
         CommitInfo commitInfo = new CommitInfo();
         try {
             SvnOperationFactory operationFactory = new SvnOperationFactory();
-            operationFactory.setAuthenticationManager(svnAuthManager);
             if (svnAuthProvider != null) {
+            	operationFactory.setAuthenticationManager(svnAuthManager);
                 svnAuthManager.setAuthenticationProvider(svnAuthProvider);
             }
 
@@ -225,8 +225,8 @@ public class SvnLastChanges implements VCSChanges<File, SVNRevision> {
         try {
             SvnOperationFactory operationFactory = new SvnOperationFactory();
             ISVNAuthenticationManager defaultAuthenticationManager = SVNWCUtil.createDefaultAuthenticationManager();
-            operationFactory.setAuthenticationManager(defaultAuthenticationManager);
             if (svnAuthProvider != null) {
+            	operationFactory.setAuthenticationManager(defaultAuthenticationManager);
                 defaultAuthenticationManager.setAuthenticationProvider(svnAuthProvider);
             }
             SvnLog logOperation = operationFactory.createLog();
@@ -265,8 +265,8 @@ public class SvnLastChanges implements VCSChanges<File, SVNRevision> {
 
     private SVNDirEntry findLastTag(SVNDirEntry tagsDir) throws SVNException {
         SvnOperationFactory operationFactory = new SvnOperationFactory();
-        operationFactory.setAuthenticationManager(svnAuthManager);
         if (svnAuthProvider != null) {
+        	operationFactory.setAuthenticationManager(svnAuthManager);
             svnAuthManager.setAuthenticationProvider(svnAuthProvider);
         }
         SvnList listOperation = operationFactory.createList();
