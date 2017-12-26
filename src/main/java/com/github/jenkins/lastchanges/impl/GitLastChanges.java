@@ -288,6 +288,15 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
 
             for (RevCommit commit : revCommits) {
                 if (commit != null) {
+                    PersonIdent committerIdent = commit.getCommitterIdent();
+                    CommitInfo commitInfo = new CommitInfo();
+                    Date commitDate = committerIdent.getWhen();
+                    commitInfo.setCommitId(commit.getName())
+                            .setCommitMessage(commit.getFullMessage())
+                            .setCommiterName(committerIdent.getName())
+                            .setCommiterEmail(committerIdent.getEmailAddress());
+                    TimeZone tz = committerIdent.getTimeZone() != null ? committerIdent.getTimeZone() : TimeZone.getDefault();
+                    commitInfo.setCommitDate(commitInfo.format(commitDate, tz) + " " + tz.getDisplayName());
                     commits.add(GitLastChanges.getInstance().commitInfo(gitRepository, commit.getId()));
                 }
             }

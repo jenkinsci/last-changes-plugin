@@ -310,7 +310,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         List<CommitChanges> commitChanges = new ArrayList<>();
 
         try {
-
             Collections.sort(commitInfoList, new Comparator<CommitInfo>() {
                 @Override
                 public int compare(CommitInfo c1, CommitInfo c2) {
@@ -325,11 +324,19 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
             for (int i = commitInfoList.size() - 1; i >= 0; i--) {
                 LastChanges lastChanges = null;
-                if (i == 0) { //here we can't compare with (i -1) so we compare with first commit of previous tree
-                    //here we have the older commit from current tree (see LastChanges.java) which diff must be compared with oldestCommit which is currentRevision from previous tree
-                    lastChanges = retrieveCommitChanges(commitInfoList.get(i).getCommitId(), oldestCommit, svnAuthProvider);
-                } else { //get changes comparing current commit (i) with previous one (i -1)
-                    lastChanges = retrieveCommitChanges(commitInfoList.get(i).getCommitId(), commitInfoList.get(i - 1).getCommitId(), svnAuthProvider);
+                if(isGit) {
+                    ObjectId previousCommit = gitRepository.resolve(commitInfoList.get(i).getCommitId()+"^1");
+                    lastChanges = GitLastChanges.getInstance().
+                            changesOf(gitRepository, gitRepository.resolve(commitInfoList.get(i).getCommitId()), previousCommit);
+                } else {
+                    if (i == 0) { //here we can't compare with (i -1) so we compare with first commit of oldest commit (retrieved in main diff)
+                        //here we have the older commit from current tree (see LastChanges.java) which diff must be compared with oldestCommit which is currentRevision from previous tree
+                        lastChanges =   SvnLastChanges.getInstance(svnAuthProvider)
+                                .changesOf(svnRepository, SVNRevision.parse(commitInfoList.get(i).getCommitId()), SVNRevision.parse(oldestCommit));
+                    } else { //get changes comparing current commit (i) with previous one (i -1)
+                        lastChanges = SvnLastChanges.getInstance(svnAuthProvider)
+                                .changesOf(svnRepository, SVNRevision.parse(commitInfoList.get(i).getCommitId()), SVNRevision.parse(commitInfoList.get(i-1).getCommitId()));
+                    }
                 }
                 String diff = lastChanges != null ? lastChanges.getDiff() : "";
                 commitChanges.add(new CommitChanges(commitInfoList.get(i), diff));
@@ -340,20 +347,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         }
 
         return commitChanges;
-    }
-
-    private LastChanges retrieveCommitChanges(String currentRevision, String previousRevision, ISVNAuthenticationProvider svnAuthProvider) throws IOException {
-
-        LastChanges changes = null;
-        if (isGit) {
-            changes = GitLastChanges.getInstance().
-                    changesOf(gitRepository, gitRepository.resolve(currentRevision), gitRepository.resolve(previousRevision));
-        } else if (isSvn) {
-            changes = SvnLastChanges.getInstance(svnAuthProvider)
-                    .changesOf(svnRepository, SVNRevision.parse(currentRevision), SVNRevision.parse(previousRevision));
-        }
-
-        return changes;
     }
 
     private static String findBuildRevision(String targetBuild, RunList<?> builds) {
