@@ -297,7 +297,7 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
                             .setCommiterEmail(committerIdent.getEmailAddress());
                     TimeZone tz = committerIdent.getTimeZone() != null ? committerIdent.getTimeZone() : TimeZone.getDefault();
                     commitInfo.setCommitDate(commitInfo.format(commitDate, tz) + " " + tz.getDisplayName());
-                    commits.add(GitLastChanges.getInstance().commitInfo(gitRepository, commit.getId()));
+                    commits.add(commitInfo);
                 }
             }
         }catch (Exception e) {
