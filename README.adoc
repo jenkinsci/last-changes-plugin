@@ -222,3 +222,14 @@ Now create jobs using last-changes and debug them.
 For testing run any class on `src/test/java` folder as JUnit test.
 
 NOTE: Tests with `IT` sulfix will start a Jenkins instance before the test.
+
+[TIP]
+====
+To generate the binary of the plugin run:
+
+----
+mvn clean package -DskipTests
+----
+
+It will generate `last-changes.hpi` in target folder. You can install it on jenkins via upload in `jenkins/pluginManager`.
+====
