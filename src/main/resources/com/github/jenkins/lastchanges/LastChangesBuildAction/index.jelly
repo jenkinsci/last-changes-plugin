@@ -85,10 +85,10 @@
             <div class="col-sm-24 col-md-24 col-lg-12 col-xlg-12">
                <b><span style="text-decoration:underline;font-weight:bolder">Previous</span> revision:</b> ${it.buildChanges.previousRevision.commitId}
                <br/>
-               <b>Author:</b> ${it.buildChanges.previousRevision.commiterName}
+               <b>Author:</b> ${it.buildChanges.previousRevision.committerName}
                <br/>
-               <j:if test="${not empty it.buildChanges.previousRevision.commiterEmail}">
-                  <b>E-mail:</b> ${it.buildChanges.previousRevision.commiterEmail}
+               <j:if test="${not empty it.buildChanges.previousRevision.committerEmail}">
+                  <b>E-mail:</b> ${it.buildChanges.previousRevision.committerEmail}
                   <br/>
                </j:if>
                <b>Date:</b> ${it.buildChanges.previousRevision.commitDate}
@@ -102,10 +102,10 @@
             <div class="col-sm-24 col-md-24 col-lg-12 col-xlg-12">
                <b><span style="text-decoration:underline;font-weight:bolder">Current</span> revision:</b> ${it.buildChanges.currentRevision.commitId}
                <br/>
-               <b>Author:</b> ${it.buildChanges.currentRevision.commiterName}
+               <b>Author:</b> ${it.buildChanges.currentRevision.committerName}
                <br/>
-               <j:if test="${not empty it.buildChanges.currentRevision.commiterEmail}">
-                  <b>E-mail:</b> ${it.buildChanges.currentRevision.commiterEmail}
+               <j:if test="${not empty it.buildChanges.currentRevision.committerEmail}">
+                  <b>E-mail:</b> ${it.buildChanges.currentRevision.committerEmail}
                   <br/>
                </j:if>
                <b>Date:</b> ${it.buildChanges.currentRevision.commitDate}
@@ -128,7 +128,7 @@
                        <j:forEach items="${it.buildChanges.commits}" var="c">
                         <li class="d2h-file-list-line">
                             <span class="d2h-file-name-wrapper">
-                              <a href="commit/${c.commitInfo.commitId}" style="overflow:auto" class="d2h-file-name" target="_blank">${c.commitInfo.formatedCommitId}: ${c.commitInfo.commitMessage} (${c.commitInfo.commiterName} <j:if test="${not empty c.commitInfo.commitDate}"> - ${c.commitInfo.commitDate} </j:if>)</a>
+                              <a href="commit/${c.commitInfo.commitId}" style="overflow:auto" class="d2h-file-name" target="_blank">${c.commitInfo.formatedCommitId}: ${c.commitInfo.commitMessage} (${c.commitInfo.committerName} <j:if test="${not empty c.commitInfo.commitDate}"> - ${c.commitInfo.commitDate} </j:if>)</a>
                             </span>
                          </li>
                        </j:forEach>

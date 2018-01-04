@@ -14,14 +14,22 @@ public class CommitInfo implements Serializable {
 
     private String commitId;
     private String commitMessage;
-    private String commiterName;
-    private String commiterEmail;
+    private String committerName;
+    private String committerEmail;
     private String commitDate;
     private DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT);
 
+    public String getCommitterName() {
+        return committerName;
+    }
 
+    /**
+     * @deprecated
+     * Use getCommitterName
+     */
+    @Deprecated
     public String getCommiterName() {
-        return commiterName;
+        return getCommitterName();
     }
 
     public String getCommitDate() {
@@ -32,8 +40,17 @@ public class CommitInfo implements Serializable {
         return commitId;
     }
 
+    public String getCommitterEmail() {
+        return committerEmail;
+    }
+
+    /**
+     * @deprecated
+     * Use getCommitterEmail
+     */
+    @Deprecated
     public String getCommiterEmail() {
-        return commiterEmail;
+        return getCommitterEmail();
     }
 
     public String getCommitMessage() {
@@ -61,14 +78,32 @@ public class CommitInfo implements Serializable {
         return this;
     }
 
-    public CommitInfo setCommiterName(String commiterName) {
-        this.commiterName = commiterName;
+    public CommitInfo setCommitterName(String committerName) {
+        this.committerName = committerName;
         return this;
     }
 
-    public CommitInfo setCommiterEmail(String commiterEmail) {
-        this.commiterEmail = commiterEmail;
+    /**
+     * @deprecated
+     * Use setCommitterName
+     */
+    @Deprecated
+    public CommitInfo setCommiterName(String committerName) {
+        return setCommitterName(committerName);
+    }
+
+    public CommitInfo setCommitterEmail(String committerEmail) {
+        this.committerEmail = committerEmail;
         return this;
+    }
+
+    /**
+     * @deprecated
+     * Use getCommitterEmail
+     */
+    @Deprecated
+    public CommitInfo setCommiterEmail(String committerEmail) {
+        return setCommitterEmail(committerEmail);
     }
 
     public String getFormatedCommitId() {
@@ -92,8 +127,8 @@ public class CommitInfo implements Serializable {
     public String toString() {
         StringBuilder sb = new StringBuilder().
                 append("Commit: ").append(commitId).append(newLine).
-                append("Author: " + commiterName).append(newLine).
-                append("E-mail: ").append(commiterEmail).append(newLine).
+                append("Author: " + committerName).append(newLine).
+                append("E-mail: ").append(committerEmail).append(newLine).
                 append("Date: ").append(commitDate).append(newLine).
                 append("Message: ").append(commitMessage).append(newLine).append(newLine);
 
@@ -113,6 +148,6 @@ public class CommitInfo implements Serializable {
 
     @Override
     public int hashCode() {
-        return commiterName != null ? commiterName.hashCode() : 0;
+        return committerName != null ? committerName.hashCode() : 0;
     }
 }

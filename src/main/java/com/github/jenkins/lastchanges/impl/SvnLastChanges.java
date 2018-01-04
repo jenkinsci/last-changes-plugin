@@ -209,7 +209,7 @@ public class SvnLastChanges implements VCSChanges<File, SVNRevision> {
                 SVNLogEntry logEntry = iterator.next();
                 TimeZone tz = TimeZone.getDefault();
                 commitInfo.setCommitDate(commitInfo.format(logEntry.getDate(), tz) + " " + tz.getDisplayName())
-                        .setCommiterName(logEntry.getAuthor())
+                        .setCommitterName(logEntry.getAuthor())
                         .setCommitId(logEntry.getRevision() + "")
                         .setCommitMessage(logEntry.getMessage());
             }
@@ -249,7 +249,7 @@ public class SvnLastChanges implements VCSChanges<File, SVNRevision> {
                 }
                 CommitInfo commitInfo = new CommitInfo();
                 commitInfo.setCommitDate(commitInfo.format(logEntry.getDate(), tz) + " " + tz.getDisplayName())
-                        .setCommiterName(logEntry.getAuthor())
+                        .setCommitterName(logEntry.getAuthor())
                         .setCommitId(logEntry.getRevision() + "")
                         .setCommitMessage(logEntry.getMessage());
                 commits.add(commitInfo);

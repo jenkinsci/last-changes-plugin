@@ -188,7 +188,7 @@ An easy way to test this plugin is using a docker container, here are the steps 
 docker run -it -p 8080:8080 rmpestano/jenkins-last-changes
 ----
 +
-. Access localhot:8080/ and create a job
+. Access localhost:8080/ and create a job
 . Configure this svn repository: https://subversion.assembla.com/svn/cucumber-json-files/trunk/ 
 . Add the *Publish last changes* _post build action_;
 . Just run the job
@@ -221,7 +221,7 @@ Now create jobs using last-changes and debug them.
 
 For testing run any class on `src/test/java` folder as JUnit test.
 
-NOTE: Tests with `IT` sulfix will start a Jenkins instance before the test.
+NOTE: Tests with `IT` suffix will start a Jenkins instance before the test.
 
 [TIP]
 ====

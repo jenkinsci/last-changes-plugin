@@ -70,10 +70,10 @@
                <div style="text-align:center;margin: 0 auto;">
                   <b>Revision:</b> ${commit.commitInfo.commitId}
                   <br/>
-                   <b>Author:</b> ${commit.commitInfo.commiterName}
+                   <b>Author:</b> ${commit.commitInfo.committerName}
                    <br/>
-                   <j:if test="${not empty commit.commitInfo.commiterEmail}">
-                       <b>E-mail:</b> ${commit.commitInfo.commiterEmail}
+                   <j:if test="${not empty commit.commitInfo.committerEmail}">
+                       <b>E-mail:</b> ${commit.commitInfo.committerEmail}
                        <br/>
                    </j:if>
                    <b>Date:</b> ${commit.commitInfo.commitDate}

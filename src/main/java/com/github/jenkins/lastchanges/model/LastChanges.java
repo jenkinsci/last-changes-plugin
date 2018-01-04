@@ -14,7 +14,7 @@ import java.util.List;
  *
  * diff is the differences between those trees (in git) or revisions (in svn)
  *
- * commits is the list of commits between those revisions/trees. Each commit has the commit information (as in current/previsions revisions)
+ * commits is the list of commits between those revisions/trees. Each commit has the commit information (as in current/previous revisions)
  * as well as the diff compared to it's previous revision.
  *
  * Created by rmpestano on 7/3/16.
