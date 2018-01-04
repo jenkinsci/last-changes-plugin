@@ -433,7 +433,7 @@ public class LastChangesIT {
         LastChangesBuildAction action = build.getAction(LastChangesBuildAction.class);
         assertThat(action).isNotNull();
         assertThat(action.getBuildChanges()).isNotNull();
-        assertThat(action.getBuildChanges().getCurrentRevision().getCommiterName()).isEqualTo("rmpestano");
+        assertThat(action.getBuildChanges().getCurrentRevision().getCommitterName()).isEqualTo("rmpestano");
         jenkins.assertLogContains("published successfully!",build);
     }
 

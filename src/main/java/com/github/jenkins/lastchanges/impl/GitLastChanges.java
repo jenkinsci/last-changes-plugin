@@ -267,8 +267,8 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
             Date commitDate = committerIdent.getWhen();
             commitInfo.setCommitId(commit.getName())
                     .setCommitMessage(commit.getFullMessage())
-                    .setCommiterName(committerIdent.getName())
-                    .setCommiterEmail(committerIdent.getEmailAddress());
+                    .setCommitterName(committerIdent.getName())
+                    .setCommitterEmail(committerIdent.getEmailAddress());
             TimeZone tz = committerIdent.getTimeZone() != null ? committerIdent.getTimeZone() : TimeZone.getDefault();
             commitInfo.setCommitDate(commitInfo.format(commitDate, tz) + " " + tz.getDisplayName());
         } catch (Exception e) {
@@ -293,8 +293,8 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
                     Date commitDate = committerIdent.getWhen();
                     commitInfo.setCommitId(commit.getName())
                             .setCommitMessage(commit.getFullMessage())
-                            .setCommiterName(committerIdent.getName())
-                            .setCommiterEmail(committerIdent.getEmailAddress());
+                            .setCommitterName(committerIdent.getName())
+                            .setCommitterEmail(committerIdent.getEmailAddress());
                     TimeZone tz = committerIdent.getTimeZone() != null ? committerIdent.getTimeZone() : TimeZone.getDefault();
                     commitInfo.setCommitDate(commitInfo.format(commitDate, tz) + " " + tz.getDisplayName());
                     commits.add(commitInfo);
