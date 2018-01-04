@@ -221,7 +221,7 @@ Now create jobs using last-changes and debug them.
 
 For testing run any class on `src/test/java` folder as JUnit test.
 
-NOTE: Tests with `IT` sulfix will start a Jenkins instance before the test.
+NOTE: Tests with `IT` suffix will start a Jenkins instance before the test.
 
 [TIP]
 ====
