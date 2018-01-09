@@ -110,6 +110,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     private boolean isGit = false;
     private boolean isSvn = false;
 
+    private transient LastChanges lastChanges = null;
     private transient FilePath vcsDirFound = null; //location of vcs directory (.git or .svn) in job workspace (is here for caching purposes)
 
     @DataBoundConstructor
@@ -241,7 +242,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         hasTargetRevision = targetRevision != null && !"".equals(targetRevision);
 
         try {
-            LastChanges lastChanges = null;
             if (isGit) {
                 if (hasTargetRevision) {
                     //compares current repository revision with provided revision
@@ -289,6 +289,13 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
         build.setResult(Result.SUCCESS);
 
+    }
+
+    /**
+     * @return gets the LastChanges from current publisher
+     */
+    public LastChanges getLastChanges() {
+        return lastChanges;
     }
 
     /**

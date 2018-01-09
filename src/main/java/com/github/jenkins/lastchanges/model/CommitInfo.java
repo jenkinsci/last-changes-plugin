@@ -1,5 +1,7 @@
 package com.github.jenkins.lastchanges.model;
 
+import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
+
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.util.Date;
@@ -19,6 +21,7 @@ public class CommitInfo implements Serializable {
     private String commitDate;
     private DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT);
 
+    @Whitelisted
     public String getCommitterName() {
         return committerName;
     }
@@ -32,14 +35,17 @@ public class CommitInfo implements Serializable {
         return getCommitterName();
     }
 
+    @Whitelisted
     public String getCommitDate() {
         return commitDate;
     }
 
+    @Whitelisted
     public String getCommitId() {
         return commitId;
     }
 
+    @Whitelisted
     public String getCommitterEmail() {
         return committerEmail;
     }
@@ -53,6 +59,7 @@ public class CommitInfo implements Serializable {
         return getCommitterEmail();
     }
 
+    @Whitelisted
     public String getCommitMessage() {
         return commitMessage;
     }

@@ -1,6 +1,7 @@
 package com.github.jenkins.lastchanges.model;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +34,7 @@ public class LastChanges {
         commits = new ArrayList<>();
     }
 
+
     public CommitInfo getCurrentRevision() {
         return currentRevision;
     }
@@ -41,6 +43,7 @@ public class LastChanges {
         return previousRevision;
     }
 
+    @Whitelisted
     public String getDiff() {
         return diff;
     }
@@ -65,6 +68,7 @@ public class LastChanges {
         }
     }
 
+    @Whitelisted
     public List<CommitChanges> getCommits() {
         return commits;
     }
