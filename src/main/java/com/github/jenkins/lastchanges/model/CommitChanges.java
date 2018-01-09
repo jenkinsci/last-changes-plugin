@@ -1,6 +1,7 @@
 package com.github.jenkins.lastchanges.model;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 
 import java.io.Serializable;
 
@@ -18,6 +19,7 @@ public class CommitChanges implements Serializable {
         this.changes = changes;
     }
 
+    @Whitelisted
     public CommitInfo getCommitInfo() {
         return commitInfo;
     }
