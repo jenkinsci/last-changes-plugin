@@ -301,7 +301,7 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
                 }
             }
         }catch (Exception e) {
-            Logger.getLogger(GitLastChanges.class.getName()).log(Level.WARNING, String.format("Could not get commits between current revision % and previous revision %s.", currentRevision, previousRevision), e);
+            Logger.getLogger(GitLastChanges.class.getName()).log(Level.WARNING, String.format("Could not get commits between current revision %s and previous revision %s.", currentRevision, previousRevision), e);
         }
 
         return commits;
