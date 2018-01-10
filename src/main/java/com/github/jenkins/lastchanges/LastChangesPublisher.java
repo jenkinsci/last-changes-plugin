@@ -102,15 +102,16 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     private String matchingMaxComparisons;
 
-
     private Repository gitRepository = null;
 
     private File svnRepository = null;
 
     private boolean isGit = false;
+
     private boolean isSvn = false;
 
     private transient LastChanges lastChanges = null;
+
     private transient FilePath vcsDirFound = null; //location of vcs directory (.git or .svn) in job workspace (is here for caching purposes)
 
     @DataBoundConstructor

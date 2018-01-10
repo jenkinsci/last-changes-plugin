@@ -85,7 +85,7 @@ public class GetLastChangesPublisherStep extends AbstractStepImpl {
 
         @Override
         public String getDisplayName() {
-            return "Get Last Changes Publisher from config";
+            return "Get Last Changes Publisher";
         }
 
     }
