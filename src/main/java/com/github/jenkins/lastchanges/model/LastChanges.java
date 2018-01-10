@@ -35,10 +35,12 @@ public class LastChanges {
     }
 
 
+    @Whitelisted
     public CommitInfo getCurrentRevision() {
         return currentRevision;
     }
 
+    @Whitelisted
     public CommitInfo getPreviousRevision() {
         return previousRevision;
     }
@@ -48,6 +50,7 @@ public class LastChanges {
         return diff;
     }
 
+    @Whitelisted
     public String getEscapedDiff() {
         if (diff != null) {
             return StringEscapeUtils.escapeEcmaScript(diff);

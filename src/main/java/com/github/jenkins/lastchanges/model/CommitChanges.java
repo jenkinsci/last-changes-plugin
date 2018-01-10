@@ -24,6 +24,7 @@ public class CommitChanges implements Serializable {
         return commitInfo;
     }
 
+    @Whitelisted	
     public String getChanges() {
         return changes;
     }
