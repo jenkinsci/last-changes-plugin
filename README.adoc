@@ -123,7 +123,7 @@ node {
 ----
 
 
-=== Pipeline script DSL
+=== Pipeline DSL
 
 Since version `1.0.10` it is possible to use the _lastChanges()_ shortcut in pipeline DSL:
 
@@ -176,6 +176,37 @@ pipeline {
 ----
 
 TIP: Refer to https://wiki.jenkins.io/display/JENKINS/Parameterized+Build[parameterized builds^] to use parameters.
+
+=== Pipeline scripting
+
+Since https://github.com/jenkinsci/last-changes-plugin/releases/tag/2.5[v2.5^] is possible to invoke LastChanges inside groovy script, instead of just declaring it <<Pipeline DSL, as we saw above>>. See example below:
+
+```
+node {
+      stage("checkout") {
+        git url: 'https://github.com/jenkinsci/last-changes-plugin.git'    
+      }
+
+      stage("last-changes") {
+        def publisher = LastChanges.getLastChangesPublisher "PREVIOUS_REVISION", "SIDE", "LINE", true, true, "", "", "", "", ""
+              publisher.publishLastChanges()
+              def changes = publisher.getLastChanges()
+              println(changes.getEscapedDiff())
+              for (commit in changes.getCommits()) {
+                  println(commit)
+                  def commitInfo = commit.getCommitInfo()
+                  println(commitInfo)
+                  println(commitInfo.getCommitMessage())
+                  println(commit.getChanges())
+              } 
+      }  
+
+}
+```
+
+NOTE: See https://github.com/jenkinsci/last-changes-plugin/blob/master/src/main/java/com/github/jenkins/lastchanges/model[model classes^] to know what can be accessed in pipeline script. Note that only attributes https://github.com/jenkinsci/last-changes-plugin/blob/master/src/main/java/com/github/jenkins/lastchanges/model/LastChanges.java#L48[annotated with @Whitelisted^] are visible to be accessed in pipeline script.
+
+TIP: If you use declarative pipeline you can use https://jenkins.io/doc/book/pipeline/syntax/#script[script section^]. 
 
 
 == Docker
