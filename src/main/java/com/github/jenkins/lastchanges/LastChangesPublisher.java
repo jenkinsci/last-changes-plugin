@@ -80,8 +80,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     private static final short RECURSION_DEPTH = 50;
 
-    private static final DateFormat DATE_FORMAT = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT);
-
     private String specificRevision; //revision id to crete the diff
 
     private String specificBuild; // create the diff with the revision of an specific build
@@ -322,7 +320,8 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 @Override
                 public int compare(CommitInfo c1, CommitInfo c2) {
                     try {
-                        return DATE_FORMAT.parse(c1.getCommitDate()).compareTo(DATE_FORMAT.parse(c2.getCommitDate()));
+                        DateFormat format = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT);
+                        return format.parse(c1.getCommitDate()).compareTo(format.parse(c2.getCommitDate()));
                     } catch (ParseException e) {
                         LOG.severe(String.format("Could not parse commit dates %s and %s ", c1.getCommitDate(), c2.getCommitDate()));
                         return 0;
