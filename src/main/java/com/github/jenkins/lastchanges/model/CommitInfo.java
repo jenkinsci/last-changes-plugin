@@ -19,7 +19,6 @@ public class CommitInfo implements Serializable {
     private String committerName;
     private String committerEmail;
     private String commitDate;
-    private DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT);
 
     @Whitelisted
     public String getCommitterName() {
@@ -66,6 +65,7 @@ public class CommitInfo implements Serializable {
 
 
     public String format(Date date, TimeZone tz) {
+        DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT);
         dateFormat.setTimeZone(tz);
         return dateFormat.format(date);
     }
