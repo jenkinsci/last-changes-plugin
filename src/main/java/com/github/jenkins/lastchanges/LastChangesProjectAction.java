@@ -10,7 +10,7 @@ import java.util.List;
 
 public class LastChangesProjectAction extends LastChangesBaseAction implements ProminentProjectAction {
 
-    private final Job<?, ?> job;
+    private transient Job<?, ?> job;
 
     private String jobName;
 
