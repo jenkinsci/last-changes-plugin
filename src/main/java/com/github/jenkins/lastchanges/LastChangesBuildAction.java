@@ -6,15 +6,17 @@ import com.github.jenkins.lastchanges.model.LastChanges;
 import com.github.jenkins.lastchanges.model.LastChangesConfig;
 import hudson.model.Action;
 import hudson.model.Run;
+import jenkins.model.RunAction2;
 import jenkins.tasks.SimpleBuildStep;
+import org.kohsuke.stapler.StaplerProxy;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class LastChangesBuildAction extends LastChangesBaseAction implements SimpleBuildStep.LastBuildAction {
+public class LastChangesBuildAction extends LastChangesBaseAction implements SimpleBuildStep.LastBuildAction, RunAction2 {
 
-    private final Run<?, ?> build;
+    private transient Run<?, ?> build;
     private LastChanges buildChanges;
     private LastChangesConfig config;
     private List<LastChangesProjectAction> projectActions;
@@ -65,5 +67,15 @@ public class LastChangesBuildAction extends LastChangesBaseAction implements Sim
     @Override
     public Collection<? extends Action> getProjectActions() {
         return this.projectActions;
+    }
+
+    @Override
+    public void onAttached(Run<?, ?> run) {
+        build = run;
+    }
+
+    @Override
+    public void onLoad(Run<?, ?> run) {
+        onAttached(run);
     }
 }
