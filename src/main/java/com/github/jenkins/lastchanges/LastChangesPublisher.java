@@ -66,6 +66,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.github.jenkins.lastchanges.impl.GitLastChanges.repository;
+import java.nio.file.Files;
 
 /**
  * @author rmpestano
@@ -114,7 +115,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     @DataBoundConstructor
     public LastChangesPublisher(SinceType since, FormatType format, MatchingType matching, Boolean showFiles, Boolean synchronisedScroll, String matchWordsThreshold,
-                                String matchingMaxComparisons, String specificRevision, String vcsDir, String specificBuild) {
+            String matchingMaxComparisons, String specificRevision, String vcsDir, String specificBuild) {
         this.specificRevision = specificRevision;
         this.format = format;
         this.since = since;
@@ -146,7 +147,11 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             isGit = true;
             // workspace can be on slave so copy resources to master
             vcsTargetDir = new FilePath(new File(workspaceTargetDir.getRemote() + "/.git"));
-            vcsDirFound.copyRecursiveTo("**/*", vcsTargetDir);
+            File remoteGitDir = new File(workspaceTargetDir.getRemote() + "/.git");
+            //copy only if directory doesn't exists
+            if (!remoteGitDir.exists() || !Files.newDirectoryStream(remoteGitDir.toPath()).iterator().hasNext()) {
+                vcsDirFound.copyRecursiveTo("**/*", vcsTargetDir);
+            }
             gitRepository = repository(workspaceTargetDir.getRemote() + "/.git");
         } else if (findVCSDir(vcsDirParam, SVN_DIR)) {
             isSvn = true;
@@ -156,17 +161,22 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 Collection<? extends SCM> scMs = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(projectAction.getProject()).getSCMs();
                 scm = (SubversionSCM) scMs.iterator().next();
                 svnAuthProvider = scm.createAuthenticationProvider(build.getParent(), scm.getLocations()[0]);
-
             } catch (NoSuchMethodError e) {
                 if (scm != null) {
                     svnAuthProvider = scm.getDescriptor().createAuthenticationProvider();
                 }
 
             } catch (Exception ex) {
+                LOG.log(Level.WARNING,"Problem creating svn auth provider",ex);
             }
 
             vcsTargetDir = new FilePath(new File(workspaceTargetDir.getRemote() + "/.svn"));
-            vcsDirFound.copyRecursiveTo("**/*", vcsTargetDir);
+            File remoteSvnDir = new File(workspaceTargetDir.getRemote() + "/.svn");
+            //copy only if directory doesn't exists
+            if (!remoteSvnDir.exists() || !Files.newDirectoryStream(remoteSvnDir.toPath()).iterator().hasNext()) {
+                vcsDirFound.copyRecursiveTo("**/*", vcsTargetDir);
+            }
+            
             svnRepository = new File(workspaceTargetDir.getRemote());
 
         }
@@ -174,7 +184,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         if (!isGit && !isSvn) {
             throw new RuntimeException(String.format("Git or Svn directories not found in workspace %s.", vcsDirParam.toURI().toString()));
         }
-
 
         boolean hasTargetRevision = false;
         String targetRevision = null;
@@ -192,7 +201,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             targetRevision = findBuildRevision(targetBuild, projectAction.getProject().getBuilds());
             hasSpecificRevision = targetRevision != null && !"".equals(targetRevision.trim());
         }
-
 
         listener.getLogger().println("Publishing build last changes...");
 
@@ -229,7 +237,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                             }
                         }
                     } catch (Exception e) {
-                        LOG.log(Level.WARNING, "Could not resolve last tag revision, last changes will use previous revision.",e);
+                        LOG.log(Level.WARNING, "Could not resolve last tag revision, last changes will use previous revision.", e);
                         listener.error("Could not resolve last tag revision, last changes will use previous revision.");
                     }
                 }
@@ -246,11 +254,11 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                     //compares current repository revision with provided revision
                     lastChanges = GitLastChanges.getInstance().changesOf(gitRepository, GitLastChanges.getInstance().resolveCurrentRevision(gitRepository), gitRepository.resolve(targetRevision));
                     List<CommitInfo> commitInfoList = getCommitsBetweenRevisions(lastChanges.getCurrentRevision().getCommitId(), targetRevision, null);
-                    lastChanges.addCommits(commitChanges(commitInfoList, lastChanges.getPreviousRevision().getCommitId(),null));
+                    lastChanges.addCommits(commitChanges(commitInfoList, lastChanges.getPreviousRevision().getCommitId(), null));
                 } else {
                     //compares current repository revision with previous one
                     lastChanges = GitLastChanges.getInstance().changesOf(gitRepository);
-                    lastChanges.addCommit(new CommitChanges(lastChanges.getCurrentRevision(),lastChanges.getDiff()));
+                    lastChanges.addCommit(new CommitChanges(lastChanges.getCurrentRevision(), lastChanges.getDiff()));
                 }
 
             } else if (isSvn) {
@@ -260,12 +268,12 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                     Long svnRevision = Long.parseLong(targetRevision);
                     lastChanges = svnLastChanges.changesOf(svnRepository, SVNRevision.HEAD, SVNRevision.create(svnRevision));
                     List<CommitInfo> commitInfoList = getCommitsBetweenRevisions(lastChanges.getCurrentRevision().getCommitId(), targetRevision, svnAuthProvider);
-                    lastChanges.addCommits(commitChanges(commitInfoList, lastChanges.getPreviousRevision().getCommitId(),svnAuthProvider));
+                    lastChanges.addCommits(commitChanges(commitInfoList, lastChanges.getPreviousRevision().getCommitId(), svnAuthProvider));
                 } else {
                     //compares current repository revision with previous one
                     lastChanges = svnLastChanges.changesOf(svnRepository);
                     //in this case there will be only one commit
-                    lastChanges.addCommit(new CommitChanges(lastChanges.getCurrentRevision(),lastChanges.getDiff()));
+                    lastChanges.addCommit(new CommitChanges(lastChanges.getCurrentRevision(), lastChanges.getDiff()));
                 }
 
             }
@@ -278,7 +286,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                     new LastChangesConfig(since, specificRevision, format, matching, showFiles, synchronisedScroll, matchWordsThreshold, matchingMaxComparisons)));
         } catch (Exception e) {
             listener.error("Last Changes NOT published due to the following error: " + (e.getMessage() == null ? e.toString() : e.getMessage()) + (e.getCause() != null ? " - " + e.getCause() : ""));
-            LOG.log(Level.SEVERE, "Could not publish LastChanges.",e);
+            LOG.log(Level.SEVERE, "Could not publish LastChanges.", e);
         } finally {
             if (vcsTargetDir != null && vcsTargetDir.exists()) {
                 vcsTargetDir.deleteRecursive();//delete copied dir on master
@@ -299,17 +307,19 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     /**
      *
-     * Gets the commit changes of each commitInfo
-     * First we sort commits by date and then call lastChanges of each commit with previous one
+     * Gets the commit changes of each commitInfo First we sort commits by date
+     * and then call lastChanges of each commit with previous one
      *
-     * @param commitInfoList list of commits between current and previous revision
+     * @param commitInfoList list of commits between current and previous
+     * revision
      *
-     * @param oldestCommit is the first commit from previous tree (in git)/revision(in svn) see {@link LastChanges}
+     * @param oldestCommit is the first commit from previous tree (in
+     * git)/revision(in svn) see {@link LastChanges}
      * @param svnAuthProvider
      * @return
      */
     private List<CommitChanges> commitChanges(List<CommitInfo> commitInfoList, String oldestCommit, ISVNAuthenticationProvider svnAuthProvider) {
-        if(commitInfoList == null || commitInfoList.isEmpty()) {
+        if (commitInfoList == null || commitInfoList.isEmpty()) {
             return null;
         }
 
@@ -331,26 +341,26 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
             for (int i = commitInfoList.size() - 1; i >= 0; i--) {
                 LastChanges lastChanges = null;
-                if(isGit) {
-                    ObjectId previousCommit = gitRepository.resolve(commitInfoList.get(i).getCommitId()+"^1");
+                if (isGit) {
+                    ObjectId previousCommit = gitRepository.resolve(commitInfoList.get(i).getCommitId() + "^1");
                     lastChanges = GitLastChanges.getInstance().
                             changesOf(gitRepository, gitRepository.resolve(commitInfoList.get(i).getCommitId()), previousCommit);
                 } else {
                     if (i == 0) { //here we can't compare with (i -1) so we compare with first commit of oldest commit (retrieved in main diff)
                         //here we have the older commit from current tree (see LastChanges.java) which diff must be compared with oldestCommit which is currentRevision from previous tree
-                        lastChanges =   SvnLastChanges.getInstance(svnAuthProvider)
+                        lastChanges = SvnLastChanges.getInstance(svnAuthProvider)
                                 .changesOf(svnRepository, SVNRevision.parse(commitInfoList.get(i).getCommitId()), SVNRevision.parse(oldestCommit));
                     } else { //get changes comparing current commit (i) with previous one (i -1)
                         lastChanges = SvnLastChanges.getInstance(svnAuthProvider)
-                                .changesOf(svnRepository, SVNRevision.parse(commitInfoList.get(i).getCommitId()), SVNRevision.parse(commitInfoList.get(i-1).getCommitId()));
+                                .changesOf(svnRepository, SVNRevision.parse(commitInfoList.get(i).getCommitId()), SVNRevision.parse(commitInfoList.get(i - 1).getCommitId()));
                     }
                 }
                 String diff = lastChanges != null ? lastChanges.getDiff() : "";
                 commitChanges.add(new CommitChanges(commitInfoList.get(i), diff));
             }
 
-        }catch (Exception e) {
-            LOG.log(Level.SEVERE,"Could not get commit changes.",e);
+        } catch (Exception e) {
+            LOG.log(Level.SEVERE, "Could not get commit changes.", e);
         }
 
         return commitChanges;
@@ -385,7 +395,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
         return actionFound.getBuildChanges().getCurrentRevision().getCommitId();
 
-
     }
 
     /**
@@ -406,7 +415,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
         return commits;
     }
-
 
     private boolean isSlave() {
         return Computer.currentComputer() instanceof SlaveComputer;
@@ -482,7 +490,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         return BuildStepMonitor.NONE;
     }
 
-
     @Extension
     @Symbol("lastChanges")
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
@@ -553,7 +560,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
                 return FormValidation.error(String.format("Build #%s is invalid or does not exists anymore or not has published LastChanges.", specificBuild));
             }
         }
-
 
     }
 
@@ -646,6 +652,5 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     public void setSpecificBuild(String buildNumber) {
         this.specificBuild = buildNumber;
     }
-
 
 }

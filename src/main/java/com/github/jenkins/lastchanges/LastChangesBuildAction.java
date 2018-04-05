@@ -1,14 +1,12 @@
 package com.github.jenkins.lastchanges;
 
 import com.github.jenkins.lastchanges.model.CommitChanges;
-import com.github.jenkins.lastchanges.model.CommitInfo;
 import com.github.jenkins.lastchanges.model.LastChanges;
 import com.github.jenkins.lastchanges.model.LastChangesConfig;
 import hudson.model.Action;
 import hudson.model.Run;
 import jenkins.model.RunAction2;
 import jenkins.tasks.SimpleBuildStep;
-import org.kohsuke.stapler.StaplerProxy;
 
 import java.util.ArrayList;
 import java.util.Collection;
