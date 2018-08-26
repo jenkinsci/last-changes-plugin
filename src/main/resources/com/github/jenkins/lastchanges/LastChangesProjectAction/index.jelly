@@ -1,4 +1,4 @@
-<?jelly escape-by-default='false'?>
+<?jelly escape-by-default='true'?>
 <j:jelly trim="false" xmlns:j="jelly:core" xmlns:fmt="jelly:fmt" xmlns:l="/lib/layout">
     <l:layout title="Last Changes of ${it.project.name}">
 
