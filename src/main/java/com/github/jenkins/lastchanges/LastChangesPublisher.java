@@ -131,7 +131,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
     @Override
     public void perform(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
 
-        LastChangesProjectAction projectAction = new LastChangesProjectAction(build.getParent());
         ISVNAuthenticationProvider svnAuthProvider = null;
         FilePath workspaceTargetDir = getMasterWorkspaceDir(build);//always on master
         FilePath vcsDirParam = null; //folder to be used as param on vcs directory search
@@ -158,7 +157,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
             SubversionSCM scm = null;
             try {
-                Collection<? extends SCM> scMs = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(projectAction.getProject()).getSCMs();
+                Collection<? extends SCM> scMs = SCMTriggerItem.SCMTriggerItems.asSCMTriggerItem(build.getParent()).getSCMs();
                 scm = (SubversionSCM) scMs.iterator().next();
                 svnAuthProvider = scm.createAuthenticationProvider(build.getParent(), scm.getLocations()[0]);
             } catch (NoSuchMethodError e) {
@@ -198,7 +197,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
         //only look into builds revision if no specific revision is provided (specificRevision has higher priority over build revision)
         if (!hasSpecificRevision && (specificBuild != null && !"".equals(specificBuild))) {
             targetBuild = env.expand(specificBuild);
-            targetRevision = findBuildRevision(targetBuild, projectAction.getProject().getBuilds());
+            targetRevision = findBuildRevision(targetBuild, build.getParent().getBuilds());
             hasSpecificRevision = targetRevision != null && !"".equals(targetRevision.trim());
         }
 
@@ -210,9 +209,9 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             switch (since) {
 
                 case LAST_SUCCESSFUL_BUILD: {
-                    boolean hasSuccessfulBuild = projectAction.getProject().getLastSuccessfulBuild() != null;
+                    boolean hasSuccessfulBuild = build.getParent().getLastSuccessfulBuild() != null;
                     if (hasSuccessfulBuild) {
-                        LastChangesBuildAction action = projectAction.getProject().getLastSuccessfulBuild().getAction(LastChangesBuildAction.class);
+                        LastChangesBuildAction action = build.getParent().getLastSuccessfulBuild().getAction(LastChangesBuildAction.class);
                         if (action != null && action.getBuildChanges().getCurrentRevision() != null) {
                             targetRevision = action.getBuildChanges().getCurrentRevision().getCommitId();
                         }
@@ -281,7 +280,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
             String resultMessage = String.format("Last changes from revision %s to %s published successfully!", truncate(lastChanges.getCurrentRevision().getCommitId(), 8), truncate(lastChanges.getPreviousRevision().getCommitId(), 8));
             listener.hyperlink("../" + build.getNumber() + "/" + LastChangesBaseAction.BASE_URL, resultMessage);
             listener.getLogger().println("");
-
             build.addAction(new LastChangesBuildAction(build, lastChanges,
                     new LastChangesConfig(since, specificRevision, format, matching, showFiles, synchronisedScroll, matchWordsThreshold, matchingMaxComparisons)));
         } catch (Exception e) {

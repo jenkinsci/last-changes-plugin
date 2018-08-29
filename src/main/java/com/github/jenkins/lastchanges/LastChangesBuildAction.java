@@ -15,9 +15,9 @@ import java.util.List;
 public class LastChangesBuildAction extends LastChangesBaseAction implements SimpleBuildStep.LastBuildAction, RunAction2 {
 
     private transient Run<?, ?> build;
-    private LastChanges buildChanges;
-    private LastChangesConfig config;
-    private List<LastChangesProjectAction> projectActions;
+    private final LastChanges buildChanges;
+    private final LastChangesConfig config;
+    private final List<LastChangesProjectAction> projectActions;
 
     public LastChangesBuildAction(Run<?, ?> build, LastChanges lastChanges, LastChangesConfig config) {
         this.build = build;
@@ -26,9 +26,8 @@ public class LastChangesBuildAction extends LastChangesBaseAction implements Sim
             config = new LastChangesConfig();
         }
         this.config = config;
-        List<LastChangesProjectAction> projectActions = new ArrayList<>();
-        projectActions.add(new LastChangesProjectAction(build.getParent()));
-        this.projectActions = projectActions;
+        projectActions = new ArrayList<>();
+        projectActions.add(new LastChangesProjectAction(build.getParent(), null));
     }
 
     @Override
