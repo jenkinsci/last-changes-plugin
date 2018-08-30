@@ -13,8 +13,8 @@ import java.io.Serializable;
 
 public class CommitRenderer implements Serializable {
 
-  private Action action;
-  private CommitChanges commit;
+  private final Action action;
+  private final CommitChanges commit;
 
   public CommitRenderer(Action lastChangesBuildAction, CommitChanges commit) {
     action = lastChangesBuildAction;

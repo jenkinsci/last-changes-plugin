@@ -22,10 +22,10 @@ import java.util.List;
  */
 public class LastChanges {
 
-    private CommitInfo currentRevision; //information about head commit
-    private CommitInfo previousRevision;
-    private String diff;
-    private List<CommitChanges> commits ;//commits between current and previous revisions along with their changes related to its previous commit
+    private final CommitInfo currentRevision; //information about head commit
+    private final CommitInfo previousRevision;
+    private final String diff;
+    private final List<CommitChanges> commits ;//commits between current and previous revisions along with their changes related to its previous commit
 
     public LastChanges(CommitInfo current, CommitInfo previous, String diff) {
         this.currentRevision = current;

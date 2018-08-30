@@ -1,5 +1,6 @@
 package com.github.jenkins.lastchanges;
 
+import com.github.jenkins.lastchanges.model.LastChangesBuild;
 import hudson.Extension;
 import hudson.model.Action;
 import hudson.model.Job;
@@ -15,10 +16,10 @@ import jenkins.model.TransientActionFactory;
 public class LastChangesProjectAction extends LastChangesBaseAction implements ProminentProjectAction {
 
     private final transient Job<?, ?> job;
-    private final List<Run<?, ?>> lastChangesBuilds;
+    private final List<LastChangesBuild> lastChangesBuilds;
     private final String jobName;
     
-    public LastChangesProjectAction(Job<?, ?> job, List<Run<?, ?>> lastChangesBuilds) {
+    public LastChangesProjectAction(Job<?, ?> job, List<LastChangesBuild> lastChangesBuilds) {
         this.job = job;
         this.lastChangesBuilds = lastChangesBuilds;
         this.jobName = job.getName();
@@ -37,7 +38,7 @@ public class LastChangesProjectAction extends LastChangesBaseAction implements P
         return this.job.getDisplayName();
     }
 
-    public List<Run<?, ?>> getLastChangesBuilds() {
+    public List<LastChangesBuild> getLastChangesBuilds() {
         return lastChangesBuilds;
     }
     
@@ -46,13 +47,13 @@ public class LastChangesProjectAction extends LastChangesBaseAction implements P
 
         @Override
         public Collection<? extends Action> createFor(Job<?, ?> j) {
-            List<Run<?, ?>> lastChangesBuilds = new ArrayList<>();
+            List<LastChangesBuild> lastChangesBuilds = new ArrayList<>();
 
             //collects the list of builds that published last changes to show on the last changes history 
             if (j.getBuilds() != null && !j.getBuilds().isEmpty()) {
                 for (Run<?, ?> build : j.getBuilds()) {
                     if (build.getAction(LastChangesBuildAction.class) != null) {
-                        lastChangesBuilds.add(build);
+                        lastChangesBuilds.add(new LastChangesBuild(build.getNumber(), build.getTime()));
                     }
                 }
             }
