@@ -1,8 +1,6 @@
 package com.github.jenkins.lastchanges;
 
-import hudson.model.Action;
-
-public abstract class LastChangesBaseAction implements Action {
+public abstract class LastChangesBaseAction {
 
     protected static final String BASE_URL = "last-changes";
 
