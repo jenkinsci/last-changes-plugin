@@ -272,7 +272,7 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
             TimeZone tz = committerIdent.getTimeZone() != null ? committerIdent.getTimeZone() : TimeZone.getDefault();
             commitInfo.setCommitDate(commitInfo.format(commitDate, tz) + " " + tz.getDisplayName());
         } catch (Exception e) {
-            Logger.getLogger(GitLastChanges.class.getName()).warning(String.format("Could not get commit info from revision %d due to following error " + e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""), commitId));
+            Logger.getLogger(GitLastChanges.class.getName()).warning(String.format("Could not get commit info from revision %s due to following error " + e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""), commitId));
         } finally {
             revWalk.dispose();
         }

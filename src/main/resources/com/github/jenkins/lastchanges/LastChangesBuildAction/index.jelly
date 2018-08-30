@@ -3,16 +3,15 @@
    xmlns:t="/lib/hudson" xmlns:f="/lib/form">
    <l:layout>
       <l:header>
-      <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/github-9.5.0.min.css"/>
-      <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/diff2html-2.3.1.min.css"/>
-      <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/jquery.min.js"/>
-         <script type="text/javascript">window.jQueryJenkins = jQuery.noConflict();
-      </script>
-      <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/highlightjs-9.12.0.min.js"/>
-         <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-2.3.2.min.js"/>
-         <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-ui-2.3.1.min.js"/>
-         <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/scala-9.5.0.min.js"/>
-         </l:header>
+        <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/github-9.5.0.min.css"/>
+        <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/diff2html-2.4.0.min.css"/>
+        <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/jquery.min.js"/>
+        <script type="text/javascript">window.jQueryJenkins = jQuery.noConflict();</script>
+        <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/highlightjs-9.12.0.min.js"/>
+        <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-2.4.0.min.js"/>
+        <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-ui-2.4.0.min.js"/>
+        <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/scala-9.5.0.min.js"/>
+      </l:header>
 
          <l:main-panel style="container-fluid;width:100%">
 
@@ -34,15 +33,13 @@
              html body {
                  overflow:hidden!important;
              }
-
-
          </style>
          <script>
              jQueryJenkins(document).ready(function () {
                  if (jQueryJenkins('#main-panel').length) {
                      jQueryJenkins('#main-panel').attr('class','col-sm-24 col-md-24 col-lg-24 col-xlg-24');
                  }
-                 var buildChanges = "${it.buildChanges.escapedDiff}";
+                 var buildChanges = "<j:out value="${it.buildChanges.escapedDiff}"/>";
                  var sidePanelTD = document.getElementById('side-panel');
                  if (sidePanelTD) {
                      sidePanelTD.parentNode.removeChild(sidePanelTD);
