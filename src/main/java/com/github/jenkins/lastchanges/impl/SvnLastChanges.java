@@ -214,7 +214,7 @@ public class SvnLastChanges implements VCSChanges<File, SVNRevision> {
                         .setCommitMessage(logEntry.getMessage());
             }
         } catch (Exception e) {
-            Logger.getLogger(SvnLastChanges.class.getName()).warning(String.format("Could not get commit info from revision %d due to following error " + e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""), revision));
+            Logger.getLogger(SvnLastChanges.class.getName()).warning(String.format("Could not get commit info from revision %s due to following error " + e.getMessage() + (e.getCause() != null ? " - " + e.getCause() : ""), revision));
         }
         return commitInfo;
     }
@@ -256,7 +256,7 @@ public class SvnLastChanges implements VCSChanges<File, SVNRevision> {
             }
 
         } catch (Exception e) {
-            Logger.getLogger(SvnLastChanges.class.getName()).log(Level.WARNING, String.format("Could not get commits between current revision % and previous revision %s.", currentRevision, previousRevision), e);
+            Logger.getLogger(SvnLastChanges.class.getName()).log(Level.WARNING, String.format("Could not get commits between current revision %s and previous revision %s.", currentRevision, previousRevision), e);
         }
 
         return commits;
