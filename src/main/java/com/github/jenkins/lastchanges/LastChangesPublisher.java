@@ -43,7 +43,6 @@ import hudson.util.ListBoxModel;
 import hudson.util.RunList;
 import jenkins.tasks.SimpleBuildStep;
 import jenkins.triggers.SCMTriggerItem;
-import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.jenkinsci.Symbol;
@@ -277,7 +276,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
             }
 
-            String resultMessage = String.format("Last changes from revision %s to %s published successfully!", truncate(lastChanges.getCurrentRevision().getCommitId(), 8), truncate(lastChanges.getPreviousRevision().getCommitId(), 8));
+            String resultMessage = String.format("Last changes from revision %s (current) to %s (previous) published successfully!", truncate(lastChanges.getCurrentRevision().getCommitId(), 8), truncate(lastChanges.getPreviousRevision().getCommitId(), 8));
             listener.hyperlink("../" + build.getNumber() + "/" + LastChangesBaseAction.BASE_URL, resultMessage);
             listener.getLogger().println("");
             build.addAction(new LastChangesBuildAction(build, lastChanges,

@@ -1,7 +1,6 @@
 package com.github.jenkins.lastchanges;
 
 import com.github.jenkins.lastchanges.model.CommitChanges;
-import com.github.jenkins.lastchanges.model.CommitInfo;
 import hudson.model.Action;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.StaplerRequest;

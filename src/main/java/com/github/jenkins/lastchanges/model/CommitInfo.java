@@ -134,7 +134,7 @@ public class CommitInfo implements Serializable {
     public String toString() {
         StringBuilder sb = new StringBuilder().
                 append("Commit: ").append(commitId).append(newLine).
-                append("Author: " + committerName).append(newLine).
+                append("Author: ").append(committerName).append(newLine).
                 append("E-mail: ").append(committerEmail).append(newLine).
                 append("Date: ").append(commitDate).append(newLine).
                 append("Message: ").append(commitMessage).append(newLine).append(newLine);

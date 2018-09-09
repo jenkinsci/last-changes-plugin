@@ -48,6 +48,10 @@ public class LastChangesBuildAction extends LastChangesBaseAction implements Run
         }
         return new CommitRenderer(this, commit);
     }
+    
+    public DownloadRenderer getDownload() {
+        return new DownloadRenderer(buildChanges, build.getFullDisplayName().replace(" ", ""));
+    }
 
     @Override
     public void onAttached(Run<?, ?> run) {
