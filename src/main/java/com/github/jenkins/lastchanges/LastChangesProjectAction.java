@@ -58,7 +58,7 @@ public class LastChangesProjectAction extends LastChangesBaseAction implements P
                 }
             }
             if(lastChangesBuilds.isEmpty()) {
-                return null;
+                return Collections.singleton(null);
             }
             return Collections.singleton(new LastChangesProjectAction(j, lastChangesBuilds));
         }
