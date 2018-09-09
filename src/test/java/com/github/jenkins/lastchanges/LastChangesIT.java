@@ -110,7 +110,7 @@ public class LastChangesIT {
                 .getChanges()).isEqualToIgnoringWhitespace(diff);
 
 
-        jenkins.assertLogContains("Last changes from revision 27ad83a to a511a43 published successfully!", build);
+        jenkins.assertLogContains("Last changes from revision 27ad83a (current) to a511a43 (previous) published successfully!", build);
 
     }
 
@@ -176,7 +176,7 @@ public class LastChangesIT {
                 "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", ""));
 
 
-        jenkins.assertLogContains("Last changes from revision 27ad83a to a511a43 published successfully!", build);
+        jenkins.assertLogContains("Last changes from revision 27ad83a (current) to a511a43 (previous) published successfully!", build);
 
     }
 
@@ -241,7 +241,7 @@ public class LastChangesIT {
                 "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", ""));
 
 
-        jenkins.assertLogContains("Last changes from revision 27ad83a to a511a43 published successfully!", build);
+        jenkins.assertLogContains("Last changes from revision 27ad83a (current) to a511a43 (previous) published successfully!", build);
 
     }
 
@@ -311,7 +311,7 @@ public class LastChangesIT {
                 "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", ""));
 
 
-        jenkins.assertLogContains("Last changes from revision 27ad83a to a511a43 published successfully!", build);
+        jenkins.assertLogContains("Last changes from revision 27ad83a (current) to a511a43 (previous) published successfully!", build);
 
     }
 
@@ -406,7 +406,7 @@ public class LastChangesIT {
                 " /**" + GitLastChangesTest.newLine +
                 "  * Walks over this component and all descendants of this component, breadth-first." + GitLastChangesTest.newLine +
                 "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", ""));
-        jenkins.assertLogContains("Last changes from revision 27ad83a to a511a43 published successfully!",build);
+        jenkins.assertLogContains("Last changes from revision 27ad83a (current) to a511a43 (previous) published successfully!",build);
 
     }
     
