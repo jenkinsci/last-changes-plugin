@@ -50,7 +50,7 @@ public class DownloadRenderer implements Serializable {
             } else {
                 is = new ByteArrayInputStream(buildChanges.getDiff().getBytes());
             }
-
+                
             response.addHeader("Content-Disposition", "attachment; filename=" + fileName);
             response.serveFile(request, is, 0l, 0l, -1l, fileName);
         } catch (Exception e) {
