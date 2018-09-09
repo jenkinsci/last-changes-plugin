@@ -209,6 +209,13 @@ NOTE: See https://github.com/jenkinsci/last-changes-plugin/blob/master/src/main/
 TIP: If you use declarative pipeline you can use https://jenkins.io/doc/book/pipeline/syntax/#script[script section^]. 
 
 
+== Download the diff
+
+You can also download the diff as `DIFF` or `HTML`. The download links are on the `bottom left` of the page:
+
+image::diff-download.png[link=https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/diff-download.png]
+
+
 == Docker
 
 An easy way to test this plugin is using a docker container, here are the steps (assuming you have docker installed):
