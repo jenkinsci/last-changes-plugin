@@ -216,6 +216,45 @@ You can also download the diff as `DIFF` or `HTML`. The download links are on th
 image::diff-download.png[link=https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/diff-download.png]
 
 
+== Sending the diff as email
+
+Using https://wiki.jenkins.io/display/JENKINS/Email-ext+plugin[email ext plugin^] and <<Pipeline scripting>> we can send the diff as an email attachment, see example below:
+
+----
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/jenkinsci/last-changes-plugin'
+            }
+        }
+        stage("send diff") {
+            steps {
+                script {
+                    def publisher = LastChanges.getLastChangesPublisher null, "SIDE", "LINE", true, true, "", "", "", "", ""
+                    publisher.publishLastChanges()
+                    def changes = publisher.getLastChanges()
+                    def diff = changes.getDiff()
+                    writeFile file: 'build.diff', text: diff
+                    emailext (
+                      subject: "Sending diff of Job '${env.JOB_NAME} #${env.BUILD_NUMBER}'",
+                      attachmentsPattern: '**/*.diff',
+                      mimeType: 'text/html',
+                      body: """<p>The attached diff of '${env.JOB_NAME} [${env.BUILD_NUMBER}]'.:</p>
+                        <p>Check rich diff at <a href="${env.BUILD_URL}/last-changes">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
+                      to: "rmpestano@gmail.com"
+                    )
+                   
+               }
+  
+            }
+        }
+    }
+}
+----
+
+
 == Docker
 
 An easy way to test this plugin is using a docker container, here are the steps (assuming you have docker installed):
