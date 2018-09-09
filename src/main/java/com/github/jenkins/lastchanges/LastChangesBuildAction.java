@@ -50,7 +50,11 @@ public class LastChangesBuildAction extends LastChangesBaseAction implements Run
     }
     
     public DownloadRenderer getDownload() {
-        return new DownloadRenderer(buildChanges, build.getFullDisplayName().replace(" ", ""));
+        return new DownloadRenderer(buildChanges, build.getFullDisplayName().replace(" ", ""), false);
+    }
+    
+      public DownloadRenderer getDownloadHtml() {
+        return new DownloadRenderer(buildChanges, build.getFullDisplayName().replace(" ", ""), true);
     }
 
     @Override

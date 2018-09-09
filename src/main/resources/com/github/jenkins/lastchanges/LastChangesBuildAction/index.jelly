@@ -137,8 +137,10 @@
          </div>
          <div id="side-by-side" style="margin: 0 auto;">
          </div>
-         
-        <a href="download/" style="float:right" class="d2h-file-name" >Download diff</a>
+        
+         <div style="float:right;font-size:12px">
+             <a href="download/" class="d2h-file-name">Download as DIFF</a> / <a href="downloadHtml/" class="d2h-file-name" >Download as HTML</a>
+         </div>
       </div>
       </l:main-panel>
    </l:layout>
