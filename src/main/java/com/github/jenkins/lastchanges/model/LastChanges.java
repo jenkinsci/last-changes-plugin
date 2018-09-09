@@ -1,5 +1,6 @@
 package com.github.jenkins.lastchanges.model;
 
+import java.io.Serializable;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 
@@ -20,7 +21,7 @@ import java.util.List;
  *
  * Created by rmpestano on 7/3/16.
  */
-public class LastChanges {
+public class LastChanges implements Serializable {
 
     private final CommitInfo currentRevision; //information about head commit
     private final CommitInfo previousRevision;

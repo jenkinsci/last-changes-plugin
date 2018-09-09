@@ -65,12 +65,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.github.jenkins.lastchanges.impl.GitLastChanges.repository;
+import java.io.Serializable;
 import java.nio.file.Files;
 
 /**
  * @author rmpestano
  */
-public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
+public class LastChangesPublisher extends Recorder implements SimpleBuildStep, Serializable {
 
     private static Logger LOG = Logger.getLogger(LastChangesPublisher.class.getName());
 
@@ -100,7 +101,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep {
 
     private String matchingMaxComparisons;
 
-    private Repository gitRepository = null;
+    private transient Repository gitRepository = null;
 
     private File svnRepository = null;
 
