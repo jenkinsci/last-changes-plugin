@@ -1,6 +1,7 @@
 package com.github.jenkins.lastchanges;
 
 import com.github.jenkins.lastchanges.model.*;
+import hudson.model.Actionable;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
@@ -13,17 +14,22 @@ import hudson.plugins.git.extensions.impl.DisableRemotePoll;
 import hudson.scm.SubversionSCM.ModuleLocation;
 import hudson.slaves.DumbSlave;
 import org.assertj.core.api.Assertions;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
+import java.util.logging.StreamHandler;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
@@ -35,6 +41,27 @@ public class LastChangesIT {
 
     private File sampleRepoDir = new File(LastChangesIT.class.getResource("/git-sample-repo").getFile());
 
+    private static Logger log = Logger.getLogger(Actionable.class.getName()); // matches the logger in the affected class
+    private static OutputStream logCapturingStream;
+    private static StreamHandler customLogHandler;
+
+    @Before
+    public void attachLogCapturer() {
+        logCapturingStream = new ByteArrayOutputStream();
+        Handler[] handlers = log.getParent().getHandlers();
+        customLogHandler = new StreamHandler(logCapturingStream, handlers[0].getFormatter());
+        log.addHandler(customLogHandler);
+    }
+
+    @After
+    public void clearLog() throws IOException {
+        logCapturingStream.close();
+    }
+
+    public String getTestCapturedLog() throws IOException {
+        customLogHandler.flush();
+        return logCapturingStream.toString();
+    }
 
 
     @Test
@@ -113,6 +140,34 @@ public class LastChangesIT {
         jenkins.assertLogContains("Last changes from revision 27ad83a (current) to a511a43 (previous) published successfully!", build);
 
     }
+
+
+
+    @Test
+    @Issue("JENKINS-53860")
+    public void shouldNotProduceWarnWhenJobDoesNotPublishLastChanges() throws Exception {
+
+        // given
+        List<UserRemoteConfig> remoteConfigs = new ArrayList<UserRemoteConfig>();
+        remoteConfigs.add(new UserRemoteConfig(sampleRepoDir.getAbsolutePath(), "origin", "", null));
+        List<BranchSpec> branches = new ArrayList<>();
+        branches.add(new BranchSpec("master"));
+        GitSCM scm = new GitSCM(remoteConfigs, branches, false,
+                Collections.<SubmoduleConfig>emptyList(), null, null,
+                Collections.<GitSCMExtension>singletonList(new DisableRemotePoll()));
+        FreeStyleProject project = jenkins.createFreeStyleProject("git-test");
+        project.setScm(scm);
+        project.save();
+
+        // when
+        FreeStyleBuild build = jenkins.buildAndAssertSuccess(project);
+        // then
+        String logResult = getTestCapturedLog();
+        System.out.println(logResult);
+
+        assertThat(logResult).doesNotContain("WARNING\thudson.model.Actionable#createFor: Actions from com.github.jenkins.lastchanges.LastChangesProjectAction$LastChangesActionFactory");
+    }
+
 
     @Ignore("Can't test it because when cloning git plugin will create just a .git and it is done at execution time, so there is nothing we can do but test manually")
     @Test
