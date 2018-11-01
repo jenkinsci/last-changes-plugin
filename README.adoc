@@ -310,3 +310,7 @@ mvn clean package -DskipTests
 
 It will generate `last-changes.hpi` in target folder. You can install it on jenkins via upload in `jenkins/pluginManager`.
 ====
+
+== Contributing
+
+See https://github.com/jenkinsci/last-changes-plugin/wiki/Contributors-guide[contributors guide^].
