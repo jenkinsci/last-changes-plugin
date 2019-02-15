@@ -135,6 +135,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
         FilePath workspaceTargetDir = getMasterWorkspaceDir(build);//always on master
         FilePath vcsDirParam = null; //folder to be used as param on vcs directory search
         FilePath vcsTargetDir = null; //directory on master workspace containing a copy of vcsDir (.git or .svn)
+        Boolean copiedVcsDir = false; // if we copied vcs data to workspaceTargetDir
 
         if (this.vcsDir != null && !"".equals(vcsDir.trim())) {
             vcsDirParam = new FilePath(workspace, this.vcsDir);
@@ -174,6 +175,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
             //copy only if directory doesn't exists
             if (!remoteSvnDir.exists() || !Files.newDirectoryStream(remoteSvnDir.toPath()).iterator().hasNext()) {
                 vcsDirFound.copyRecursiveTo("**/*", vcsTargetDir);
+                copiedVcsDir = true;
             }
             
             svnRepository = new File(workspaceTargetDir.getRemote());
@@ -286,7 +288,10 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
             listener.error("Last Changes NOT published due to the following error: " + (e.getMessage() == null ? e.toString() : e.getMessage()) + (e.getCause() != null ? " - " + e.getCause() : ""));
             LOG.log(Level.SEVERE, "Could not publish LastChanges.", e);
         } finally {
-            if (vcsTargetDir != null && vcsTargetDir.exists()) {
+            if (vcsTargetDir != null && vcsTargetDir.exists() && copiedVcsDir) {
+                if (isGit) {
+                    gitRepository = null; // hopefully this will close any open friggin' filehandles
+                }
                 vcsTargetDir.deleteRecursive();//delete copied dir on master
             }
         }
