@@ -1,11 +1,11 @@
 package com.github.jenkins.lastchanges.model;
 
 import java.io.Serializable;
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 
 /**
  * This class represents the changes between two trees (in git) and two revisions (in svn).
@@ -50,7 +50,7 @@ public class LastChanges implements Serializable {
     public String getDiff() {
         return diff;
     }
-
+    
     @Whitelisted
     public String getEscapedDiff() {
         if (diff != null) {

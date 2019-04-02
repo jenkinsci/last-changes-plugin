@@ -8,7 +8,8 @@ import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
+import static org.assertj.core.api.Assertions.assertThat;
+import java.io.File;
 import java.util.Arrays;
 
 public class LastChangesPipelineIT {
@@ -31,7 +32,6 @@ public class LastChangesPipelineIT {
         j.assertLogContains("published successfully!", run);
     }
 
-
     @Test
     public void shouldNotPublishLastChangesViaPipelineWithoutScm() throws Exception {
         WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "last-changes");
@@ -42,6 +42,32 @@ public class LastChangesPipelineIT {
                 "}"), "\n"),true));
         WorkflowRun run = j.assertBuildStatus(Result.FAILURE,job.scheduleBuild2(0).get());
         j.assertLogContains("Git or Svn directories not found in workspace", run);
+    }
+    
+    @Test
+    public void shouldGetHtmlDiffViaPipeline() throws Exception {
+        WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "last-changes");
+        job.setDefinition(new CpsFlowDefinition(StringUtils.join(Arrays.asList(
+                "pipeline {\n" + 
+                "    agent any\n" + 
+                "    stages {\n" + 
+                "        stage('Checkout') {\n" + 
+                "            steps {\n" + 
+                "                git 'https://github.com/jenkinsci/last-changes-plugin.git'\n" + 
+                "                script {\n" + 
+                "                  def publisher = LastChanges.getLastChangesPublisher \"PREVIOUS_REVISION\", \"SIDE\", \"LINE\", true, true, \"\", \"\", \"\", \"\", \"\"\n" + 
+                "                  publisher.publishLastChanges()\n" + 
+                "                  def htmlDiff = publisher.getHtmlDiff()\n" + 
+                "                   writeFile file: 'build-diff.html', text: htmlDiff\n" + 
+                "                } //end script\n" + 
+                "            }\n" + 
+                "        }\n" + 
+                "    }\n" + 
+                "}"), "\n"),true));
+        WorkflowRun run = j.assertBuildStatusSuccess(job.scheduleBuild2(0).get());
+        j.assertLogContains("Last changes from revision", run);
+        j.assertLogContains("published successfully!", run);
+        assertThat(new File(run.getRootDir().getAbsolutePath()+"/build-diff.html")).exists();
     }
 
 }

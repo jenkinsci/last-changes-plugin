@@ -220,6 +220,7 @@ image::diff-download.png[link=https://raw.githubusercontent.com/jenkinsci/last-c
 
 Using https://wiki.jenkins.io/display/JENKINS/Email-ext+plugin[email ext plugin^] and <<Pipeline scripting>> we can send the diff as an email attachment, see example below:
 
+. Diff in text format
 ----
 pipeline {
     agent any
@@ -234,8 +235,7 @@ pipeline {
                 script {
                     def publisher = LastChanges.getLastChangesPublisher null, "SIDE", "LINE", true, true, "", "", "", "", ""
                     publisher.publishLastChanges()
-                    def changes = publisher.getLastChanges()
-                    def diff = changes.getDiff()
+                    def diff = publisher.getDiff()
                     writeFile file: 'build.diff', text: diff
                     emailext (
                       subject: "Sending diff of Job '${env.JOB_NAME} #${env.BUILD_NUMBER}'",
@@ -243,7 +243,7 @@ pipeline {
                       mimeType: 'text/html',
                       body: """<p>See attached diff of '${env.JOB_NAME} [${env.BUILD_NUMBER}]'.:</p>
                         <p>Check rich diff at <a href="${env.BUILD_URL}/last-changes">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
-                      to: "rmpestano@gmail.com"
+                      to: "YOUR-EMAIL@gmail.com"
                     )
                    
                }
@@ -253,6 +253,35 @@ pipeline {
     }
 }
 ----
+
+. Html diff
+
+----
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/jenkinsci/last-changes-plugin.git'
+                script {
+                  def publisher = LastChanges.getLastChangesPublisher "PREVIOUS_REVISION", "SIDE", "LINE", true, true, "", "", "", "", ""
+                  publisher.publishLastChanges()
+                  def htmlDiff = publisher.getHtmlDiff()
+                   writeFile file: 'build-diff.html', text: htmlDiff
+                    emailext (
+                      subject: "Jenkins - changes of ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                      attachmentsPattern: '**/*build-diff.html',
+                      mimeType: 'text/html',
+                      body: """<p>See attached diff of build <b>${env.JOB_NAME} #${env.BUILD_NUMBER}</b>.</p>
+                        <p>Check build changes on Jenkins <b><a href="${env.BUILD_URL}/last-changes">here</a></b>.</p>""",
+                      to: "YOUR-EMAIL@gmail.com" )
+                } //end script
+            }
+        }
+    }
+}
+----
+
 
 
 == Docker

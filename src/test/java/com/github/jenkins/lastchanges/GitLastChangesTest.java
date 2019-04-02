@@ -1,30 +1,27 @@
 package com.github.jenkins.lastchanges;
 
-import com.github.jenkins.lastchanges.exception.GitTreeNotFoundException;
-import com.github.jenkins.lastchanges.impl.GitLastChanges;
-import com.github.jenkins.lastchanges.model.LastChanges;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.internal.storage.dfs.DfsRepositoryBuilder;
-import org.eclipse.jgit.internal.storage.file.FileRepository;
+import static com.github.jenkins.lastchanges.impl.GitLastChanges.repository;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.nio.file.Paths;
+import java.util.Locale;
+import java.util.TimeZone;
+
 import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevWalk;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.*;
-
-import static com.github.jenkins.lastchanges.impl.GitLastChanges.repository;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import com.github.jenkins.lastchanges.exception.GitTreeNotFoundException;
+import com.github.jenkins.lastchanges.impl.GitLastChanges;
+import com.github.jenkins.lastchanges.model.LastChanges;
 
 /**
  * Created by rmpestano on 6/5/16.

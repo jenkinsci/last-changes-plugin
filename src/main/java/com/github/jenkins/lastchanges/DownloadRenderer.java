@@ -41,12 +41,8 @@ public class DownloadRenderer implements Serializable {
         InputStream is = null;
         try {
             if (isHtml) {
-                final StringWriter writer = new StringWriter();
-                IOUtils.copy(getClass().getResourceAsStream("/htmlDiffTemplate"), writer, Charset.forName("UTF-8"));
-                String htmlTemplate = writer.toString();
-                htmlTemplate = htmlTemplate.replace("[TITLE]", "Diff of build " + buildName);
-                htmlTemplate = htmlTemplate.replace("[DIFF]", buildChanges.getEscapedDiff());
-                is = new ByteArrayInputStream(htmlTemplate.getBytes());
+                String htmlDiff = LastChangesUtil.toHtmlDiff(buildChanges.getEscapedDiff(), buildName);
+                is = new ByteArrayInputStream(htmlDiff.getBytes());
             } else {
                 is = new ByteArrayInputStream(buildChanges.getDiff().getBytes());
             }

@@ -1,6 +1,7 @@
 package com.github.jenkins.lastchanges.pipeline;
 
 import com.github.jenkins.lastchanges.LastChangesPublisher;
+import com.github.jenkins.lastchanges.LastChangesUtil;
 import com.github.jenkins.lastchanges.model.LastChanges;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -32,7 +33,7 @@ public class LastChangesPublisherScript implements Serializable {
     }
 
     @Whitelisted
-    public LastChangesPublisherScript publishLastChanges () throws Exception {
+    public LastChangesPublisherScript publishLastChanges() throws Exception {
         Map<String, Object> stepVariables = new LinkedHashMap<>();
         stepVariables.put("publisher", this);
         LastChangesPublisherScript buildInfo = (LastChangesPublisherScript) cpsScript.invokeMethod("publishLastChanges", stepVariables);
@@ -41,7 +42,25 @@ public class LastChangesPublisherScript implements Serializable {
     }
 
     @Whitelisted
-    public LastChanges getLastChanges () throws Exception {
+    public LastChanges getLastChanges() throws Exception {
         return this.publisher.getLastChanges();
+    }
+    
+    @Whitelisted
+    public String getHtmlDiff() throws IOException {
+    	LastChanges lastChanges = publisher.getLastChanges();
+    	return LastChangesUtil.toHtmlDiff(lastChanges.getEscapedDiff(), cpsScript.$build().getFullDisplayName().replace(" ", ""));
+    }
+    
+    @Whitelisted
+    public String getHtmlDiff(String title) throws IOException {
+    	LastChanges lastChanges = publisher.getLastChanges();
+    	return LastChangesUtil.toHtmlDiff(lastChanges.getEscapedDiff(), title);
+    }
+    
+    @Whitelisted
+    public String getDiff() throws IOException {
+    	LastChanges lastChanges = publisher.getLastChanges();
+    	return lastChanges.getDiff();
     }
 }
