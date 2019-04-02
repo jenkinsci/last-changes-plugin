@@ -3,8 +3,12 @@ package com.github.jenkins.lastchanges.pipeline;
 import hudson.model.Result;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
+import org.jenkinsci.plugins.workflow.graph.FlowGraphWalker;
+import org.jenkinsci.plugins.workflow.graphanalysis.DepthFirstScanner;
+import org.jenkinsci.plugins.workflow.graphanalysis.NodeStepTypePredicate;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -67,7 +71,8 @@ public class LastChangesPipelineIT {
         WorkflowRun run = j.assertBuildStatusSuccess(job.scheduleBuild2(0).get());
         j.assertLogContains("Last changes from revision", run);
         j.assertLogContains("published successfully!", run);
-        assertThat(new File(run.getRootDir().getAbsolutePath()+"/build-diff.html")).exists();
+        
+        assertThat(run.getArtifactManager().root().child("build-diff.html").exists()).isTrue();
     }
 
 }
