@@ -253,7 +253,7 @@ pipeline {
     }
 }
 ----
-
++
 . Html diff
 
 ----
@@ -267,7 +267,7 @@ pipeline {
                   def publisher = LastChanges.getLastChangesPublisher "PREVIOUS_REVISION", "SIDE", "LINE", true, true, "", "", "", "", ""
                   publisher.publishLastChanges()
                   def htmlDiff = publisher.getHtmlDiff()
-                   writeFile file: 'build-diff.html', text: htmlDiff
+                  writeFile file: 'build-diff.html', text: htmlDiff
                     emailext (
                       subject: "Jenkins - changes of ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                       attachmentsPattern: '**/*build-diff.html',
