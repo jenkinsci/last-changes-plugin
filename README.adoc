@@ -220,7 +220,7 @@ image::diff-download.png[link=https://raw.githubusercontent.com/jenkinsci/last-c
 
 Using https://wiki.jenkins.io/display/JENKINS/Email-ext+plugin[email ext plugin^] and <<Pipeline scripting>> we can send the diff as an email attachment, see example below:
 
-. Diff in text format
+. Diff in *plain text*
 ----
 pipeline {
     agent any
@@ -254,7 +254,7 @@ pipeline {
 }
 ----
 +
-. Html diff
+. Diff in *Html format*
 
 ----
 pipeline {
