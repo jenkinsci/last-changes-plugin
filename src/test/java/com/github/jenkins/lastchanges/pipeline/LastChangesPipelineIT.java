@@ -1,5 +1,6 @@
 package com.github.jenkins.lastchanges.pipeline;
 
+import hudson.FilePath;
 import hudson.model.Result;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
@@ -62,7 +63,7 @@ public class LastChangesPipelineIT {
                 "                  def publisher = LastChanges.getLastChangesPublisher \"PREVIOUS_REVISION\", \"SIDE\", \"LINE\", true, true, \"\", \"\", \"\", \"\", \"\"\n" + 
                 "                  publisher.publishLastChanges()\n" + 
                 "                  def htmlDiff = publisher.getHtmlDiff()\n" + 
-                "                   writeFile file: 'build-diff.html', text: htmlDiff\n" + 
+                "                  writeFile file: 'build-diff.html', text: htmlDiff\n" + 
                 "                } //end script\n" + 
                 "            }\n" + 
                 "        }\n" + 
@@ -71,8 +72,8 @@ public class LastChangesPipelineIT {
         WorkflowRun run = j.assertBuildStatusSuccess(job.scheduleBuild2(0).get());
         j.assertLogContains("Last changes from revision", run);
         j.assertLogContains("published successfully!", run);
-        
-        assertThat(run.getArtifactManager().root().child("build-diff.html").exists()).isTrue();
+        FilePath htmlDiff = j.jenkins.getWorkspaceFor(job).child("build-diff.html");
+        assertThat(htmlDiff.exists()).isTrue();
     }
 
 }
