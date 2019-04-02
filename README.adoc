@@ -239,16 +239,16 @@ pipeline {
                     def diff = publisher.getDiff()
                     writeFile file: 'build.diff', text: diff
                     emailext (
-                      subject: "Sending diff of Job '${env.JOB_NAME} #${env.BUILD_NUMBER}'",
+                      subject: "Jenkins - changes of ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                       attachmentsPattern: '**/*.diff',
                       mimeType: 'text/html',
-                      body: """<p>See attached diff of '${env.JOB_NAME} [${env.BUILD_NUMBER}]'.:</p>
-                        <p>Check rich diff at <a href="${env.BUILD_URL}/last-changes">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
+                      body: """<p>See attached diff of <b>${env.JOB_NAME} #${env.BUILD_NUMBER}</b>.</p>
+                        <p>Check build changes on Jenkins <b><a href="${env.BUILD_URL}/last-changes">here</a></b>.</p>""",
                       to: "YOUR-EMAIL@gmail.com"
                     )
-                   
+
                }
-  
+
             }
         }
     }
@@ -260,7 +260,7 @@ pipeline {
 pipeline {
     agent any
     stages {
-        stage('Checkout') {
+        stage('Send html diff') {
             steps {
                 git 'https://github.com/jenkinsci/last-changes-plugin.git'
                 script {
