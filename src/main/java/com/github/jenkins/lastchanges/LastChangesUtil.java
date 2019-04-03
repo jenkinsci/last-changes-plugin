@@ -23,17 +23,18 @@ public class LastChangesUtil {
         	LOG.log(Level.SEVERE, "Could not generate html diff",e);
         }
         String htmlTemplate = writer.toString();
+        boolean hasPreviousRevision = buildChanges.getPreviousRevision() != null;
         String htmlDiff = htmlTemplate.replace("[TITLE]", "Changes of build " + buildName)
-                .replace("[PREV_REVISION]", buildChanges.getPreviousRevision() != null ? buildChanges.getPreviousRevision().getCommitId() : "")
-                .replace("[PREV_AUTHOR]", buildChanges.getPreviousRevision() != null ? buildChanges.getPreviousRevision().getCommitterName() : "" )
-                .replace("[PREV_EMAIL]", buildChanges.getPreviousRevision() != null ? buildChanges.getPreviousRevision().getCommitterEmail() : "" )
-                .replace("[PREV_DATE]", buildChanges.getPreviousRevision() != null ? buildChanges.getPreviousRevision().getCommitDate() : "" )
-                .replace("[PREV_MESSAGE]", buildChanges.getPreviousRevision() != null ? buildChanges.getPreviousRevision().getCommitMessage() : "" )
-                .replace("[CURRENT_REVISION]", buildChanges.getCurrentRevision() != null ? buildChanges.getCurrentRevision().getCommitId() : "")
-                .replace("[CURRENT_AUTHOR]", buildChanges.getCurrentRevision() != null ? buildChanges.getCurrentRevision().getCommitterName() : "" )
-                .replace("[CURRENT_EMAIL]", buildChanges.getCurrentRevision() != null ? buildChanges.getCurrentRevision().getCommitterEmail() : "" )
-                .replace("[CURRENT_DATE]", buildChanges.getCurrentRevision() != null ? buildChanges.getCurrentRevision().getCommitDate() : "" )
-                .replace("[CURRENT_MESSAGE]", buildChanges.getCurrentRevision() != null ? buildChanges.getCurrentRevision().getCommitMessage() : "" )
+                .replace("[PREV_REVISION]", hasPreviousRevision ? buildChanges.getPreviousRevision().getCommitId() : "")
+                .replace("[PREV_AUTHOR]", (hasPreviousRevision && buildChanges.getPreviousRevision().getCommitterName() != null) ? buildChanges.getPreviousRevision().getCommitterName() : "" )
+                .replace("[PREV_EMAIL]", (hasPreviousRevision && buildChanges.getPreviousRevision().getCommitterEmail() != null) ? buildChanges.getPreviousRevision().getCommitterEmail() : "" )
+                .replace("[PREV_DATE]", (hasPreviousRevision && buildChanges.getPreviousRevision().getCommitDate() != null) ? buildChanges.getPreviousRevision().getCommitDate() : "" )
+                .replace("[PREV_MESSAGE]", (hasPreviousRevision && buildChanges.getPreviousRevision().getCommitterName() != null) ? buildChanges.getPreviousRevision().getCommitMessage() : "" )
+                .replace("[CURRENT_REVISION]", buildChanges.getCurrentRevision().getCommitId())
+                .replace("[CURRENT_AUTHOR]", buildChanges.getCurrentRevision().getCommitterName() != null ? buildChanges.getCurrentRevision().getCommitterName() : "" )
+                .replace("[CURRENT_EMAIL]", buildChanges.getCurrentRevision().getCommitterEmail() != null ? buildChanges.getCurrentRevision().getCommitterEmail() : "" )
+                .replace("[CURRENT_DATE]", buildChanges.getCurrentRevision().getCommitDate() != null ? buildChanges.getCurrentRevision().getCommitDate() : "" )
+                .replace("[CURRENT_MESSAGE]", buildChanges.getCurrentRevision().getCommitMessage() != null ? buildChanges.getCurrentRevision().getCommitMessage() : "" )
         		.replace("[DIFF]", buildChanges.getEscapedDiff());
         return htmlDiff;
 	}
