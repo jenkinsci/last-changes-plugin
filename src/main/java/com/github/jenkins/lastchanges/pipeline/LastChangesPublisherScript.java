@@ -49,13 +49,13 @@ public class LastChangesPublisherScript implements Serializable {
     @Whitelisted
     public String getHtmlDiff() throws IOException {
     	LastChanges lastChanges = publisher.getLastChanges();
-    	return LastChangesUtil.toHtmlDiff(lastChanges.getEscapedDiff(), cpsScript.$build().getFullDisplayName().replace(" ", ""));
+    	return LastChangesUtil.toHtmlDiff(lastChanges, cpsScript.$build().getFullDisplayName().replace(" ", ""));
     }
     
     @Whitelisted
     public String getHtmlDiff(String title) throws IOException {
     	LastChanges lastChanges = publisher.getLastChanges();
-    	return LastChangesUtil.toHtmlDiff(lastChanges.getEscapedDiff(), title);
+    	return LastChangesUtil.toHtmlDiff(lastChanges, title);
     }
     
     @Whitelisted

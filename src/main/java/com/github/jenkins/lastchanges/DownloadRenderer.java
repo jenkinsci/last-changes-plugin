@@ -41,7 +41,7 @@ public class DownloadRenderer implements Serializable {
         InputStream is = null;
         try {
             if (isHtml) {
-                String htmlDiff = LastChangesUtil.toHtmlDiff(buildChanges.getEscapedDiff(), buildName);
+                String htmlDiff = LastChangesUtil.toHtmlDiff(buildChanges, buildName);
                 is = new ByteArrayInputStream(htmlDiff.getBytes());
             } else {
                 is = new ByteArrayInputStream(buildChanges.getDiff().getBytes());
