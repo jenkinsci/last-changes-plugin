@@ -35,7 +35,6 @@ public class LastChanges implements Serializable {
         commits = new ArrayList<>();
     }
 
-
     @Whitelisted
     public CommitInfo getCurrentRevision() {
         return currentRevision;
