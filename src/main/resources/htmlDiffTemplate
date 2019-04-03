@@ -16,6 +16,7 @@
      }
 
      .responsive {
+        font-family: 'Source Sans Pro',sans-serif;
         width: 50%;
 	    position: relative;
         display: table-cell;
