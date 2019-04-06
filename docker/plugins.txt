@@ -1,11 +1,12 @@
 scm-api:2.2.7
-credentials:2.1.16
-ssh-credentials:1.13
+credentials:2.1.17
+ssh-credentials:1.14
 plain-credentials:1.3
 mapdb-api:1.0.1.0
 subversion:2.9
 display-url-api:2.2.0
 mailer:1.21
+email-ext:2.51
 matrix-project:1.7.1
 junit:1.3
 git-client:2.7.3
@@ -47,4 +48,4 @@ workflow-job:2.25
 workflow-scm-step:2.6
 workflow-step-api:2.16
 workflow-support:2.20
-last-changes:latest
+last-changes:2.7.4
