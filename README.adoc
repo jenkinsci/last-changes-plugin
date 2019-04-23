@@ -211,7 +211,7 @@ TIP: If you use declarative pipeline you can use https://jenkins.io/doc/book/pip
 
 == Download the diff
 
-You can also download the diff as `DIFF` or `HTML`. The download links are on the `bottom left` of the page:
+You can also download the diff as `DIFF` or `HTML`. The download links are on the `bottom right` corner of the page:
 
 image::diff-download.png[link=https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/diff-download.png]
 
