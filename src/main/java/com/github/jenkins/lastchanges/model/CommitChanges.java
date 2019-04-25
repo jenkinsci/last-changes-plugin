@@ -3,6 +3,8 @@ package com.github.jenkins.lastchanges.model;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 
+import com.github.jenkins.lastchanges.LastChangesUtil;
+
 import java.io.Serializable;
 
 /**
@@ -13,10 +15,17 @@ public class CommitChanges implements Serializable {
 
     private CommitInfo commitInfo;
     private String changes;
+    private byte[] compressedChanges;
 
     public CommitChanges(CommitInfo commitInfo, String changes) {
         this.commitInfo = commitInfo;
-        this.changes = changes;
+        if (LastChangesUtil.shouldCompressDiff(changes)) {
+            this.changes = null;
+            this.compressedChanges = LastChangesUtil.compress(changes);
+        } else {
+            this.changes = changes;
+            this.compressedChanges = null;
+        }
     }
 
     @Whitelisted
@@ -24,12 +33,17 @@ public class CommitChanges implements Serializable {
         return commitInfo;
     }
 
-    @Whitelisted	
-    public String getChanges() {
-        return changes;
-    }
+	@Whitelisted
+	public String getChanges() {
+		if (changes == null) {
+			return LastChangesUtil.decompress(compressedChanges);
+		} else {
+			return changes;
+		}
+	}
 
     public String getEscapedDiff() {
+    	String changes = getChanges();
         if (changes != null) {
             return StringEscapeUtils.escapeEcmaScript(changes);
         } else {

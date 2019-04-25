@@ -41,7 +41,6 @@ public class LastChanges implements Serializable {
         } else {
             this.diff = diff;
             compressedDiff = null;
-
         }
         commits = new ArrayList<>();
     }
