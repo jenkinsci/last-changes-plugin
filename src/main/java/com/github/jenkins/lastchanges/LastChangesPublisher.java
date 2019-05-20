@@ -31,13 +31,11 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.*;
+import hudson.remoting.VirtualChannel;
 import hudson.scm.SCM;
 import hudson.scm.SubversionSCM;
 import hudson.slaves.SlaveComputer;
-import hudson.tasks.BuildStepDescriptor;
-import hudson.tasks.BuildStepMonitor;
-import hudson.tasks.Publisher;
-import hudson.tasks.Recorder;
+import hudson.tasks.*;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import hudson.util.RunList;
@@ -46,6 +44,7 @@ import jenkins.triggers.SCMTriggerItem;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.jenkinsci.Symbol;
+import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.AncestorInPath;
@@ -57,6 +56,7 @@ import org.tmatesoft.svn.core.wc.SVNRevision;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -67,6 +67,7 @@ import java.util.logging.Logger;
 import static com.github.jenkins.lastchanges.impl.GitLastChanges.repository;
 import java.io.Serializable;
 import java.nio.file.Files;
+import java.util.stream.Stream;
 
 /**
  * @author rmpestano
@@ -132,11 +133,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
     public void perform(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
 
         ISVNAuthenticationProvider svnAuthProvider = null;
-        FilePath workspaceTargetDir = getMasterWorkspaceDir(build);//always on master
         FilePath vcsDirParam = null; //folder to be used as param on vcs directory search
-        FilePath vcsTargetDir = null; //directory on master workspace containing a copy of vcsDir (.git or .svn)
-        Boolean copiedVcsDir = false; // if we copied vcs data to workspaceTargetDir
-
         if (this.vcsDir != null && !"".equals(vcsDir.trim())) {
             vcsDirParam = new FilePath(workspace, this.vcsDir);
         } else {
@@ -145,14 +142,9 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
 
         if (findVCSDir(vcsDirParam, GIT_DIR)) {
             isGit = true;
-            // workspace can be on slave so copy resources to master
-            vcsTargetDir = new FilePath(new File(workspaceTargetDir.getRemote() + "/.git"));
-            File remoteGitDir = new File(workspaceTargetDir.getRemote() + "/.git");
-            //copy only if directory doesn't exists
-            if (!remoteGitDir.exists() || !Files.newDirectoryStream(remoteGitDir.toPath()).iterator().hasNext()) {
-                vcsDirFound.copyRecursiveTo("**/*", vcsTargetDir);
+            if(!isSlave()) {
+                gitRepository = repository(vcsDirFound.getRemote());
             }
-            gitRepository = repository(workspaceTargetDir.getRemote() + "/.git");
         } else if (findVCSDir(vcsDirParam, SVN_DIR)) {
             isSvn = true;
 
@@ -170,16 +162,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
                 LOG.log(Level.WARNING,"Problem creating svn auth provider",ex);
             }
 
-            vcsTargetDir = new FilePath(new File(workspaceTargetDir.getRemote() + "/.svn"));
-            File remoteSvnDir = new File(workspaceTargetDir.getRemote() + "/.svn");
-            //copy only if directory doesn't exists
-            if (!remoteSvnDir.exists() || !Files.newDirectoryStream(remoteSvnDir.toPath()).iterator().hasNext()) {
-                vcsDirFound.copyRecursiveTo("**/*", vcsTargetDir);
-                copiedVcsDir = true;
-            }
-            
-            svnRepository = new File(workspaceTargetDir.getRemote());
-
+            svnRepository = new File(vcsDirFound.getRemote());
         }
 
         if (!isGit && !isSvn) {
@@ -224,7 +207,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
                 }
 
                 case LAST_TAG: {
-
                     try {
                         if (isGit) {
                             ObjectId lastTagRevision = GitLastChanges.getInstance().getLastTagRevision(gitRepository);
@@ -258,8 +240,12 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
                     lastChanges.addCommits(commitChanges(commitInfoList, lastChanges.getPreviousRevision().getCommitId(), null));
                 } else {
                     //compares current repository revision with previous one
-                    lastChanges = GitLastChanges.getInstance().changesOf(gitRepository);
-                    lastChanges.addCommit(new CommitChanges(lastChanges.getCurrentRevision(), lastChanges.getDiff()));
+                    if(isSlave()) {
+                       lastChanges = new LastChangesCallable().invoke(new File(vcsDirFound.getRemote()), Computer.currentComputer().getChannel());
+                    } else {
+                        lastChanges = GitLastChanges.getInstance().changesOf(gitRepository);
+                        lastChanges.addCommit(new CommitChanges(lastChanges.getCurrentRevision(), lastChanges.getDiff()));
+                    }
                 }
 
             } else if (isSvn) {
@@ -287,18 +273,9 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
         } catch (Exception e) {
             listener.error("Last Changes NOT published due to the following error: " + (e.getMessage() == null ? e.toString() : e.getMessage()) + (e.getCause() != null ? " - " + e.getCause() : ""));
             LOG.log(Level.SEVERE, "Could not publish LastChanges.", e);
-        } finally {
-            if (vcsTargetDir != null && vcsTargetDir.exists() && copiedVcsDir) {
-                if (isGit) {
-                    gitRepository = null; // hopefully this will close any open friggin' filehandles
-                }
-                vcsTargetDir.deleteRecursive();//delete copied dir on master
-            }
         }
         // always success (only warn when no diff was generated)
-
         build.setResult(Result.SUCCESS);
-
     }
 
     /**
@@ -656,4 +633,27 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
         this.specificBuild = buildNumber;
     }
 
+    private static class LastChangesCallable implements FilePath.FileCallable<LastChanges> {
+
+        @Override
+        public LastChanges invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+            LOG.info("Invoking last changes remotely...");
+            LOG.info("File absolute: "+f.getAbsolutePath());
+            try (Stream<Path> paths = Files.walk(Paths.get(f.getParent()))) {
+                paths.forEach(path -> {
+                    LOG.info(path.toString());
+                    LOG.info("ABS:"+path.toAbsolutePath().toString());
+                });
+            }
+            Repository gitRepository = repository(f.getAbsolutePath());
+            LastChanges lastChanges = GitLastChanges.getInstance().changesOf(gitRepository);
+            lastChanges.addCommit(new CommitChanges(lastChanges.getCurrentRevision(), lastChanges.getDiff()));
+            return lastChanges;
+        }
+
+        @Override
+        public void checkRoles(RoleChecker roleChecker) throws SecurityException {
+
+        }
+    }
 }
