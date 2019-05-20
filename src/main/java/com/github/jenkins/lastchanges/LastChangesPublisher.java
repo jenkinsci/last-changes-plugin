@@ -639,7 +639,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
         public LastChanges invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
             LOG.info("Invoking last changes remotely...");
             LOG.info("File absolute: "+f.getAbsolutePath());
-            try (Stream<Path> paths = Files.walk(Paths.get(f.getParent()))) {
+            try (Stream<Path> paths = Files.walk(Paths.get(f.getAbsolutePath()))) {
                 paths.forEach(path -> {
                     LOG.info(path.toString());
                     LOG.info("ABS:"+path.toAbsolutePath().toString());
