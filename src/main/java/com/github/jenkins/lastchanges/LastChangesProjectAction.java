@@ -23,7 +23,6 @@ public class LastChangesProjectAction extends LastChangesBaseAction implements P
     
     public LastChangesProjectAction(Job<?, ?> job, List<LastChangesBuild> lastChangesBuilds) {
         this.job = job;
-
         this.lastChangesBuilds = lastChangesBuilds;
         this.jobName = job.getName();
     }
