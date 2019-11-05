@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+
+import jenkins.branch.MultiBranchProject;
 import jenkins.model.TransientActionFactory;
 
 public class LastChangesProjectAction extends LastChangesBaseAction implements ProminentProjectAction {
@@ -47,6 +49,10 @@ public class LastChangesProjectAction extends LastChangesBaseAction implements P
 
         @Override
         public Collection<? extends Action> createFor(Job<?, ?> j) {
+            //Dont' run for multibranch projects
+            if (j.getParent() instanceof MultiBranchProject) {
+                return Collections.emptyList();
+            }
             List<LastChangesBuild> lastChangesBuilds = new ArrayList<>();
 
             //collects the list of builds that published last changes to show on the last changes history 
