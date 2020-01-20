@@ -257,7 +257,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
 
         try {
             if (isGit) {
-                lastChanges = vcsDirFound.act(new gitCallableAction(hasTargetRevision, targetRevision, listener));
+                lastChanges = vcsDirFound.act(new getLastChangesGitCallableAction(hasTargetRevision, targetRevision, listener));
 
                 //TODO: Apply changes FOR SVN so the code runs on the workspace selected (master or slave) as it is done for git.
             } else if (isSvn) {
@@ -505,7 +505,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
                     return null;
                 }
             } else {
-                String lasTagRevisionErrorMsg = "Could not find workspace directory when trying the last tag revision";
+                String lasTagRevisionErrorMsg = "Could not find the workspace directory when it was trying to obtain the last tag revision: " + workspace.getAbsolutePath();
                 LOG.log(Level.WARNING, lasTagRevisionErrorMsg);
                 listener.error(lasTagRevisionErrorMsg);
                 throw new RepositoryNotFoundException(lasTagRevisionErrorMsg);
@@ -520,9 +520,9 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
 
     /**
      * The callable will identify if it is being run by the Master node or by the slave node
-     * and thus it will execute the calculation on the corresponding node.
+     * and thus it will execute the operation to obtain the last changes on the corresponding node.
      */
-    private static final class gitCallableAction implements FilePath.FileCallable <LastChanges> {
+    private static final class getLastChangesGitCallableAction implements FilePath.FileCallable <LastChanges> {
 
         boolean isGit = true;
 
@@ -532,7 +532,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
 
         TaskListener listener;
 
-        gitCallableAction(boolean hasTargetRevision, String targetRevision, TaskListener listener) {
+        getLastChangesGitCallableAction(boolean hasTargetRevision, String targetRevision, TaskListener listener) {
             this.hasTargetRevisionCallable = hasTargetRevision;
             this.targetRevisionCallable = targetRevision;
             this.listener = listener;
@@ -558,7 +558,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
                     }
                     return lastChanges;
                 } else {
-                    String lastChangesWorkDirErrorMsg = "Could not find workspace directory when tried to get last changes of the revision";
+                    String lastChangesWorkDirErrorMsg = "Could not find workspace directory when tried to get last changes of the revision: " + workspace.getAbsolutePath();
                     LOG.log(Level.WARNING, lastChangesWorkDirErrorMsg);
                     listener.error(lastChangesWorkDirErrorMsg);
                     throw new RepositoryNotFoundException(lastChangesWorkDirErrorMsg);

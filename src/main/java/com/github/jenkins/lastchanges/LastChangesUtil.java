@@ -126,8 +126,18 @@ public class LastChangesUtil implements Serializable {
     /**
      * Retrieve commits between two revisions
      *
-     * @param currentRevision
-     * @param previousRevision
+     * @param gitRepository the git repository to work on, null in case of a svn project
+     *
+     * @param isGit boolean value that specifies if the project is a git project if it is true or
+     * false in case of a svn project*
+     *
+     * @param currentRevision the actual revision to compare against a previous one
+     *
+     * @param previousRevision the previous revision to be compared against
+     *
+     * @param svnRepository the svn repository to work on, null in case of a git project
+     *
+     * @param svnAuthProvider
      */
     public static List<CommitInfo> getCommitsBetweenRevisions(Repository gitRepository, boolean isGit, String currentRevision, String previousRevision, File svnRepository,  ISVNAuthenticationProvider svnAuthProvider) throws IOException {
 
@@ -148,11 +158,19 @@ public class LastChangesUtil implements Serializable {
      * Gets the commit changes of each commitInfo First we sort commits by date
      * and then call lastChanges of each commit with previous one
      *
+     * @param gitRepository the git repository to work on, null in case of a svn project
+     *
+     * @param isGit boolean value that specifies if the project is a git project if it is true or
+     * false in case of a svn project
+     *
      * @param commitInfoList list of commits between current and previous
      * revision
      *
      * @param oldestCommit is the first commit from previous tree (in
      * git)/revision(in svn) see {@link LastChanges}
+     *
+     * @param svnRepository the svn repository to work on, null in case of a git project
+     *
      * @param svnAuthProvider
      * @return
      */
