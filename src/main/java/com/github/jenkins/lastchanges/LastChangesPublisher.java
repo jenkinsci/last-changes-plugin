@@ -23,6 +23,8 @@
  */
 package com.github.jenkins.lastchanges;
 
+import com.github.jenkins.lastchanges.exception.LastChangesException;
+import com.github.jenkins.lastchanges.exception.RepositoryNotFoundException;
 import com.github.jenkins.lastchanges.impl.GitLastChanges;
 import com.github.jenkins.lastchanges.impl.SvnLastChanges;
 import com.github.jenkins.lastchanges.model.*;
@@ -31,6 +33,7 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.*;
+import hudson.remoting.VirtualChannel;
 import hudson.scm.SCM;
 import hudson.scm.SubversionSCM;
 import hudson.slaves.SlaveComputer;
@@ -46,6 +49,7 @@ import jenkins.triggers.SCMTriggerItem;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.jenkinsci.Symbol;
+import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.AncestorInPath;
@@ -63,10 +67,10 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import static com.github.jenkins.lastchanges.impl.GitLastChanges.repository;
 import java.io.Serializable;
 import java.nio.file.Files;
+
 
 /**
  * @author rmpestano
@@ -132,9 +136,16 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
     public void perform(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
 
         ISVNAuthenticationProvider svnAuthProvider = null;
+
+        //TODO: Delete when svn version is fixed
         FilePath workspaceTargetDir = getMasterWorkspaceDir(build);//always on master
+
         FilePath vcsDirParam = null; //folder to be used as param on vcs directory search
+
+        //TODO: Delete when svn version is fixed
         FilePath vcsTargetDir = null; //directory on master workspace containing a copy of vcsDir (.git or .svn)
+
+        //TODO: Delete when svn version is fixed
         Boolean copiedVcsDir = false; // if we copied vcs data to workspaceTargetDir
 
         if (this.vcsDir != null && !"".equals(vcsDir.trim())) {
@@ -145,14 +156,12 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
 
         if (findVCSDir(vcsDirParam, GIT_DIR)) {
             isGit = true;
-            // workspace can be on slave so copy resources to master
-            vcsTargetDir = new FilePath(new File(workspaceTargetDir.getRemote() + "/.git"));
-            File remoteGitDir = new File(workspaceTargetDir.getRemote() + "/.git");
-            //copy only if directory doesn't exists
-            if (!remoteGitDir.exists() || !Files.newDirectoryStream(remoteGitDir.toPath()).iterator().hasNext()) {
-                vcsDirFound.copyRecursiveTo("**/*", vcsTargetDir);
+            if(isSlave())
+            {
+                //TODO: It is needed to set gitRepository var so it could be used for "LAST_TAG" use case
+            } else{
+                gitRepository = repository(vcsDirFound.getRemote());
             }
-            gitRepository = repository(workspaceTargetDir.getRemote() + "/.git");
         } else if (findVCSDir(vcsDirParam, SVN_DIR)) {
             isSvn = true;
 
@@ -223,7 +232,8 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
                     break;
                 }
 
-                case LAST_TAG: {
+                //TODO: This should be executed inside a Callable, otherwise if it is in a slave node, it wont be able to do it.
+                /*case LAST_TAG: {
 
                     try {
                         if (isGit) {
@@ -242,24 +252,25 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
                         listener.error("Could not resolve last tag revision, last changes will use previous revision.");
                     }
                 }
-                break;
+                break;*/
             }
 
         }
 
         hasTargetRevision = targetRevision != null && !"".equals(targetRevision);
-
+        //TODO: Apply changes FOR SVN so the code runs on the workspace selected (master or slave) as it is done for git.
         try {
             if (isGit) {
                 if (hasTargetRevision) {
                     //compares current repository revision with provided revision
-                    lastChanges = GitLastChanges.getInstance().changesOf(gitRepository, GitLastChanges.getInstance().resolveCurrentRevision(gitRepository), gitRepository.resolve(targetRevision));
+                    lastChanges = vcsDirFound.act(new gitCallableAction(hasTargetRevision, targetRevision, listener));
+
+                    //TODO: This should be performed inside the callable.
                     List<CommitInfo> commitInfoList = getCommitsBetweenRevisions(lastChanges.getCurrentRevision().getCommitId(), targetRevision, null);
                     lastChanges.addCommits(commitChanges(commitInfoList, lastChanges.getPreviousRevision().getCommitId(), null));
                 } else {
                     //compares current repository revision with previous one
-                    lastChanges = GitLastChanges.getInstance().changesOf(gitRepository);
-                    lastChanges.addCommit(new CommitChanges(lastChanges.getCurrentRevision(), lastChanges.getDiff()));
+                    lastChanges = vcsDirFound.act(new gitCallableAction(hasTargetRevision, null, listener));
                 }
 
             } else if (isSvn) {
@@ -287,18 +298,17 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
         } catch (Exception e) {
             listener.error("Last Changes NOT published due to the following error: " + (e.getMessage() == null ? e.toString() : e.getMessage()) + (e.getCause() != null ? " - " + e.getCause() : ""));
             LOG.log(Level.SEVERE, "Could not publish LastChanges.", e);
-        } finally {
+        } /*finally {
             if (vcsTargetDir != null && vcsTargetDir.exists() && copiedVcsDir) {
                 if (isGit) {
                     gitRepository = null; // hopefully this will close any open friggin' filehandles
                 }
                 vcsTargetDir.deleteRecursive();//delete copied dir on master
             }
-        }
+        }*/
         // always success (only warn when no diff was generated)
 
         build.setResult(Result.SUCCESS);
-
     }
 
     /**
@@ -509,7 +519,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
          * This human readable name is used in the configuration screen.
          */
         public String getDisplayName() {
-            return "Publish Last Changes";
+            return "Publish Last Changes2";
         }
 
         @Restricted(NoExternalUse.class) // Only for UI calls
@@ -564,6 +574,57 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
             }
         }
 
+    }
+
+    /**
+     * The callable will identify if it is being run by the Master node or by the slave node
+     * and thus it will execute the calculation on the corresponding node.
+     */
+    private static final class gitCallableAction implements FilePath.FileCallable <LastChanges> {
+
+        String targetRevisionCallable = null;
+        boolean hasTargetRevisionCallable;
+        TaskListener listener;
+
+        gitCallableAction(boolean hasTargetRevision, String targetRevision, TaskListener listener) throws IOException {
+            this.hasTargetRevisionCallable = hasTargetRevision;
+            this.targetRevisionCallable = targetRevision;
+            this.listener = listener;
+        }
+
+        @Override
+        public LastChanges invoke(File workspace, VirtualChannel channel) {
+
+            LastChanges lastChanges = null;
+            try {
+                if(workspace.exists() && workspace.isDirectory()) {
+                    Repository gitRepository = repository(workspace.getAbsolutePath());
+                    if (hasTargetRevisionCallable) {
+                        //compares current repository revision with provided revision
+                        lastChanges = GitLastChanges.getInstance().changesOf(gitRepository, GitLastChanges.getInstance().resolveCurrentRevision(gitRepository), gitRepository.resolve(targetRevisionCallable));
+                    } else {
+                        //compares current repository revision with previous one
+                        lastChanges = GitLastChanges.getInstance().changesOf(gitRepository);
+                        lastChanges.addCommit(new CommitChanges(lastChanges.getCurrentRevision(), lastChanges.getDiff()));
+                    }
+                    gitRepository = null;
+                    return lastChanges;
+                } else {
+                    LOG.log(Level.WARNING, "Could not find workspace directory when trying to get last changes of previous revision");
+                    listener.error("Could not find workspace directory when trying to get last changes of previous revision");
+                    throw new RepositoryNotFoundException("Could not find workspace directory when trying to get last changes of previous revision");
+                }
+            } catch (IOException e) {
+                LOG.log(Level.SEVERE, "Could not get last changes of the revisions", e);
+                listener.error("Could not get last changes of the previous revision");
+                throw new LastChangesException("Could not get last changes of the revisions", e);
+            }
+        }
+
+        @Override
+        public void checkRoles(RoleChecker roleChecker) throws SecurityException {
+            //Nothing to do
+        }
     }
 
     public SinceType getSince() {
