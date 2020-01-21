@@ -255,7 +255,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
 
         try {
             if (isGit) {
-                //Obtain the last changes and the differences between revisions in the corresponding node (master or slave)
+                //The callable will obtain the last changes between revisions in the corresponding node (master or slave)
                 lastChanges = vcsDirFound.act(new GetLastChangesGitCallable(hasTargetRevision, targetRevision, listener));
 
                 //TODO: Apply changes FOR SVN so the code runs on the workspace selected (master or slave) as it is done for git.
@@ -321,7 +321,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
      * @param svnAuthProvider
      * @return
      */
-    public static List<CommitChanges> commitChanges(Repository gitRepository, boolean isGit, List<CommitInfo> commitInfoList, String oldestCommit, File svnRepository, ISVNAuthenticationProvider svnAuthProvider) {
+    public static List<CommitChanges> commitChanges(final Repository gitRepository, final boolean isGit, List<CommitInfo> commitInfoList, String oldestCommit, final File svnRepository, ISVNAuthenticationProvider svnAuthProvider) {
         if (commitInfoList == null || commitInfoList.isEmpty()) {
             return null;
         }
@@ -414,7 +414,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
      *
      * @param svnAuthProvider
      */
-    public static List<CommitInfo> getCommitsBetweenRevisions(Repository gitRepository, boolean isGit, String currentRevision, String previousRevision, File svnRepository,  ISVNAuthenticationProvider svnAuthProvider) throws IOException {
+    public static List<CommitInfo> getCommitsBetweenRevisions(final Repository gitRepository, final boolean isGit, String currentRevision, String previousRevision, final File svnRepository,  ISVNAuthenticationProvider svnAuthProvider) throws IOException {
 
         List<CommitInfo> commits = new ArrayList<>();
         if (isGit) {
@@ -595,14 +595,14 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
                     return null;
                 }
             } else {
-                String lasTagRevisionErrorMsg = "Could not find the workspace directory when it was trying to obtain the last tag revision: " + workspace.getAbsolutePath();
+                String lasTagRevisionErrorMsg = "Last Changes Plugin: Could not find the workspace directory in order to obtain the last changes of the revisions: " + workspace.getAbsolutePath();
                 listener.error(lasTagRevisionErrorMsg);
                 throw new RepositoryNotFoundException(lasTagRevisionErrorMsg);
             }
         }
     }
 
-    private static final class GetLastChangesGitCallable extends MasterToSlaveFileCallable<LastChanges> {
+    private static final class GetLastChangesGitCallable extends MasterToSlaveFileCallable <LastChanges> {
 
         private final boolean isGit = true;
 
@@ -619,7 +619,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
         }
 
         @Override
-        public LastChanges invoke(File workspace, VirtualChannel channel) {
+        public LastChanges invoke(final File workspace, VirtualChannel channel) {
 
             LastChanges lastChanges = null;
             try {
@@ -637,12 +637,12 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
                     }
                     return lastChanges;
                 } else {
-                    String lastChangesWorkDirErrorMsg = "Could not find workspace directory when tried to get last changes of the revision: " + workspace.getAbsolutePath();
+                    String lastChangesWorkDirErrorMsg = "Last Changes Plugin: Could not find the workspace directory in order to obtain the last changes of the revisions: " + workspace.getAbsolutePath();
                     listener.error(lastChangesWorkDirErrorMsg);
                     throw new RepositoryNotFoundException(lastChangesWorkDirErrorMsg);
                 }
             } catch (IOException e) {
-                String lastChangesErrorMsg = "Could not get last changes of the revisions";
+                String lastChangesErrorMsg = "Last Changes Plugin: Last changes between revisions were not obtain";
                 listener.error(lastChangesErrorMsg);
                 throw new LastChangesException(lastChangesErrorMsg);
             }
