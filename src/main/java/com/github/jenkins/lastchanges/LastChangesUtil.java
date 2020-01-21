@@ -2,14 +2,10 @@ package com.github.jenkins.lastchanges;
 
 import java.io.*;
 import java.nio.charset.Charset;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.apache.commons.io.IOUtils;
-
 import com.github.jenkins.lastchanges.model.LastChanges;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
