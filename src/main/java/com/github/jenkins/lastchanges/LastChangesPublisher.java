@@ -70,7 +70,6 @@ import java.util.logging.Logger;
 
 import static com.github.jenkins.lastchanges.impl.GitLastChanges.repository;
 import java.io.Serializable;
-import java.nio.file.Files;
 
 /**
  * @author rmpestano
@@ -105,8 +104,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
 
     private String matchingMaxComparisons;
 
-    private File svnRepository = null;
-
     private boolean isGit = false;
 
     private boolean isSvn = false;
@@ -135,16 +132,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
 
         ISVNAuthenticationProvider svnAuthProvider = null;
 
-        //TODO: Delete when svn version is fixed
-        FilePath workspaceTargetDir = getMasterWorkspaceDir(build);//always on master
-
         FilePath vcsDirParam = null; //folder to be used as param on vcs directory search
-
-        //TODO: Delete when svn version is fixed
-        FilePath vcsTargetDir = null; //directory on master workspace containing a copy of vcsDir (.git or .svn)
-
-        //TODO: Delete when svn version is fixed
-        Boolean copiedVcsDir = false; // if we copied vcs data to workspaceTargetDir
 
         if (this.vcsDir != null && !"".equals(vcsDir.trim())) {
             vcsDirParam = new FilePath(workspace, this.vcsDir);
@@ -171,17 +159,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
             } catch (Exception ex) {
                 LOG.log(Level.WARNING,"Problem creating svn auth provider",ex);
             }
-
-            vcsTargetDir = new FilePath(new File(workspaceTargetDir.getRemote() + "/.svn"));
-            File remoteSvnDir = new File(workspaceTargetDir.getRemote() + "/.svn");
-            //copy only if directory doesn't exists
-            if (!remoteSvnDir.exists() || !Files.newDirectoryStream(remoteSvnDir.toPath()).iterator().hasNext()) {
-                vcsDirFound.copyRecursiveTo("**/*", vcsTargetDir);
-                copiedVcsDir = true;
-            }
-            
-            svnRepository = new File(workspaceTargetDir.getRemote());
-
         }
 
         if (!isGit && !isSvn) {
@@ -228,18 +205,16 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
                 case LAST_TAG: {
 
                     try {
+                        //The callable will obtain the target revision selected by the user in the corresponding node (master or slave)
                         if (isGit) {
-                            //The callable will obtain the target revision selected by the user in the corresponding node (master or slave)
-                            String lastTagRevision = vcsDirFound.act(new GetGitTargetRevisionCallable(listener));
+                            String lastTagRevision = vcsDirFound.act(new GetTargetRevisionCallable(listener, isGit));
                             if (lastTagRevision != null) {
                                 targetRevision = lastTagRevision;
                             }
-
-                        //TODO: Implement case inside the Callable method for SVN version.
                         } else if (isSvn) {
-                            SVNRevision lastTagRevision = getSvnLastChanges(svnAuthProvider).getLastTagRevision(svnRepository);
+                            String lastTagRevision = vcsDirParam.act(new GetTargetRevisionCallable(listener, false, svnAuthProvider));
                             if (lastTagRevision != null) {
-                                targetRevision = lastTagRevision.toString();
+                                targetRevision = lastTagRevision;
                             }
                         }
                     } catch (Exception e) {
@@ -254,25 +229,11 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
         hasTargetRevision = targetRevision != null && !"".equals(targetRevision);
 
         try {
+            //The callable will obtain the last changes between revisions in the corresponding node (master or slave)
             if (isGit) {
-                //The callable will obtain the last changes between revisions in the corresponding node (master or slave)
-                lastChanges = vcsDirFound.act(new GetLastChangesGitCallable(hasTargetRevision, targetRevision, listener));
-
-                //TODO: Apply changes FOR SVN so the code runs on the workspace selected (master or slave) as it is done for git.
+                lastChanges = vcsDirFound.act(new GetLastChangesCallable(hasTargetRevision, targetRevision, listener));
             } else if (isSvn) {
-                SvnLastChanges svnLastChanges = getSvnLastChanges(svnAuthProvider);
-                if (hasTargetRevision) {
-                    //compares current repository revision with provided revision
-                    Long svnRevision = Long.parseLong(targetRevision);
-                    lastChanges = svnLastChanges.changesOf(svnRepository, SVNRevision.HEAD, SVNRevision.create(svnRevision));
-                    List<CommitInfo> commitInfoList = getCommitsBetweenRevisions(null, false, lastChanges.getCurrentRevision().getCommitId(), targetRevision, svnRepository, svnAuthProvider);
-                    lastChanges.addCommits(commitChanges(null, false, commitInfoList, lastChanges.getPreviousRevision().getCommitId(), svnRepository, svnAuthProvider));
-                } else {
-                    //compares current repository revision with previous one
-                    lastChanges = svnLastChanges.changesOf(svnRepository);
-                    //in this case there will be only one commit
-                    lastChanges.addCommit(new CommitChanges(lastChanges.getCurrentRevision(), lastChanges.getDiff()));
-                }
+                lastChanges = vcsDirParam.act(new GetLastChangesCallable(hasTargetRevision, targetRevision, listener, svnAuthProvider));
             }
 
             String resultMessage = String.format("Last changes from revision %s (current) to %s (previous) published successfully!", truncate(lastChanges.getCurrentRevision().getCommitId(), 8), truncate(lastChanges.getPreviousRevision().getCommitId(), 8));
@@ -283,10 +244,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
         } catch (Exception e) {
             listener.error("Last Changes NOT published due to the following error: " + (e.getMessage() == null ? e.toString() : e.getMessage()) + (e.getCause() != null ? " - " + e.getCause() : ""));
             LOG.log(Level.SEVERE, "Could not publish LastChanges.", e);
-        } finally {
-            if (vcsTargetDir != null && vcsTargetDir.exists() && copiedVcsDir) {
-                vcsTargetDir.deleteRecursive();//delete copied dir on master
-            }
         }
         // always success (only warn when no diff was generated)
 
@@ -406,9 +363,9 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
      * @param isGit boolean value that specifies if the project is a git project if it is true, or
      *              false in case of a svn project
      *
-     * @param currentRevision the actual revision to compare against a previous one
+     * @param currentRevision
      *
-     * @param previousRevision the previous revision to be compared against
+     * @param previousRevision
      *
      * @param svnRepository the svn repository to work on, null in case of a git project
      *
@@ -432,7 +389,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
         return Computer.currentComputer() instanceof SlaveComputer;
     }
 
-    private SvnLastChanges getSvnLastChanges(ISVNAuthenticationProvider svnAuthProvider) {
+    public static SvnLastChanges getSvnLastChanges(ISVNAuthenticationProvider svnAuthProvider) {
         return svnAuthProvider != null ? SvnLastChanges.getInstance(svnAuthProvider) : SvnLastChanges.getInstance();
     }
 
@@ -575,80 +532,6 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
 
     }
 
-    private static final class GetGitTargetRevisionCallable extends MasterToSlaveFileCallable <String> {
-
-        private TaskListener listener;
-
-        GetGitTargetRevisionCallable(final TaskListener listener) {
-            this.listener = listener;
-        }
-
-        @Override
-        public String invoke(File workspace, VirtualChannel virtualChannel) throws RepositoryNotFoundException {
-
-            if (workspace.exists() && workspace.isDirectory()) {
-                Repository gitRepository = repository(workspace.getAbsolutePath());
-                ObjectId lastTagRevision = GitLastChanges.getInstance().getLastTagRevision(gitRepository);
-                if (lastTagRevision != null) {
-                    return lastTagRevision.name();
-                } else {
-                    return null;
-                }
-            } else {
-                String lasTagRevisionErrorMsg = "Last Changes Plugin: Could not find the workspace directory in order to obtain the last changes of the revisions: " + workspace.getAbsolutePath();
-                listener.error(lasTagRevisionErrorMsg);
-                throw new RepositoryNotFoundException(lasTagRevisionErrorMsg);
-            }
-        }
-    }
-
-    private static final class GetLastChangesGitCallable extends MasterToSlaveFileCallable <LastChanges> {
-
-        private final boolean isGit = true;
-
-        private boolean hasTargetRevision;
-
-        private String targetRevision = null;
-
-        private TaskListener listener;
-
-        GetLastChangesGitCallable(final boolean hasTargetRevision, final String targetRevision, final TaskListener listener) {
-            this.hasTargetRevision = hasTargetRevision;
-            this.targetRevision = targetRevision;
-            this.listener = listener;
-        }
-
-        @Override
-        public LastChanges invoke(final File workspace, VirtualChannel channel) {
-
-            LastChanges lastChanges = null;
-            try {
-                if(workspace.exists() && workspace.isDirectory()) {
-                    Repository gitRepository = repository(workspace.getAbsolutePath());
-                    if (hasTargetRevision) {
-                        //compares current repository revision with provided revision
-                        lastChanges = GitLastChanges.getInstance().changesOf(gitRepository, GitLastChanges.getInstance().resolveCurrentRevision(gitRepository), gitRepository.resolve(targetRevision));
-                        List<CommitInfo> commitInfoList = LastChangesPublisher.getCommitsBetweenRevisions(gitRepository, isGit, lastChanges.getCurrentRevision().getCommitId(), targetRevision, null,null);
-                        lastChanges.addCommits(LastChangesPublisher.commitChanges(gitRepository, isGit, commitInfoList, lastChanges.getPreviousRevision().getCommitId(), null, null));
-                    } else {
-                        //compares current repository revision with previous one
-                        lastChanges = GitLastChanges.getInstance().changesOf(gitRepository);
-                        lastChanges.addCommit(new CommitChanges(lastChanges.getCurrentRevision(), lastChanges.getDiff()));
-                    }
-                    return lastChanges;
-                } else {
-                    String lastChangesWorkDirErrorMsg = "Last Changes Plugin: Could not find the workspace directory in order to obtain the last changes of the revisions: " + workspace.getAbsolutePath();
-                    listener.error(lastChangesWorkDirErrorMsg);
-                    throw new RepositoryNotFoundException(lastChangesWorkDirErrorMsg);
-                }
-            } catch (IOException e) {
-                String lastChangesErrorMsg = "Last Changes Plugin: Last changes between revisions were not obtain";
-                listener.error(lastChangesErrorMsg);
-                throw new LastChangesException(lastChangesErrorMsg);
-            }
-        }
-    }
-
     public SinceType getSince() {
         return since;
     }
@@ -739,4 +622,161 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
         this.specificBuild = buildNumber;
     }
 
+    private static final class GetTargetRevisionCallable extends MasterToSlaveFileCallable <String> {
+
+        private TaskListener listener;
+
+        private boolean isGit;
+
+        private ISVNAuthenticationProvider svnAuthProvider = null;
+
+        public GetTargetRevisionCallable(final TaskListener listener, final boolean isGit) {
+            this.listener = listener;
+            this.isGit = isGit;
+        }
+        public GetTargetRevisionCallable(final TaskListener listener, final boolean isGit, final ISVNAuthenticationProvider svnAuthProvider) {
+            this.listener = listener;
+            this.isGit = isGit;
+            this.svnAuthProvider = svnAuthProvider;
+        }
+
+        @Override
+        public String invoke(File workspace, VirtualChannel virtualChannel) throws RepositoryNotFoundException {
+
+            if (workspace.exists() && workspace.isDirectory()) {
+                if(isGit) {
+                    return getGitTargetRevisionCallable(workspace);
+
+                } else if (!isGit && svnAuthProvider!= null) {
+                    return getSVNTargetRevisionCallable(workspace);
+
+                } else {
+                    String lastChangesVersionMsg = "Last Changes Plugin: Could not get Last Target Revision, svn authentication failed";
+                    listener.error(lastChangesVersionMsg);
+                    throw new RepositoryNotFoundException(lastChangesVersionMsg);
+                }
+            } else {
+                String lasTagRevisionErrorMsg = "Last Changes Plugin: Could not find the workspace directory for GIT in order to obtain the last changes of the revisions: " + workspace.getAbsolutePath();
+                listener.error(lasTagRevisionErrorMsg);
+                throw new RepositoryNotFoundException(lasTagRevisionErrorMsg);
+            }
+        }
+
+        private String getGitTargetRevisionCallable(final File workspace) {
+            Repository gitRepository = repository(workspace.getAbsolutePath());
+            ObjectId lastTagRevision = GitLastChanges.getInstance().getLastTagRevision(gitRepository);
+            if (lastTagRevision != null) {
+                return lastTagRevision.name();
+            } else {
+                return null;
+            }
+        }
+
+        private String getSVNTargetRevisionCallable(final File workspace) {
+            File svnRepository = new File(workspace.getAbsolutePath());
+            SVNRevision lastTagRevision = getSvnLastChanges(svnAuthProvider).getLastTagRevision(svnRepository);
+            if (lastTagRevision != null) {
+                return lastTagRevision.toString();
+            } else {
+                return null;
+            }
+        }
+    }
+
+    private static final class GetLastChangesCallable extends MasterToSlaveFileCallable <LastChanges> {
+
+        private boolean isGit = false;
+
+        private boolean hasTargetRevision;
+
+        private String targetRevision = null;
+
+        private TaskListener listener;
+
+        private ISVNAuthenticationProvider svnAuthProvider = null;
+
+        public GetLastChangesCallable (final boolean hasTargetRevision, final String targetRevision, final TaskListener listener) {
+            this.hasTargetRevision = hasTargetRevision;
+            this.targetRevision = targetRevision;
+            this.listener = listener;
+            this.isGit = true;
+        }
+
+        public GetLastChangesCallable (final boolean hasTargetRevision, final String targetRevision, final TaskListener listener, final ISVNAuthenticationProvider svnAuthProvider) {
+            this.hasTargetRevision = hasTargetRevision;
+            this.targetRevision = targetRevision;
+            this.listener = listener;
+            this.isGit = false;
+            this.svnAuthProvider = svnAuthProvider;
+        }
+
+        @Override
+        public LastChanges invoke(final File workspace, VirtualChannel channel) {
+            if(workspace.exists() && workspace.isDirectory()) {
+                if(isGit) {
+                    return getGitLastChangesCallable(workspace);
+
+                } else if ((!isGit) && (svnAuthProvider != null)) {
+                    return getSvnLastChangesCallable(workspace);
+
+                } else {
+                    String lastChangesVersionMsg = "Last Changes Plugin: Could not get Last Changes, svn authentication is not not valid";
+                    listener.error(lastChangesVersionMsg);
+                    throw new RepositoryNotFoundException(lastChangesVersionMsg);
+                }
+            } else {
+                String lastChangesWorkDirErrorMsg = "Last Changes Plugin: Could not find the workspace directory in order to obtain the last changes of the revisions: " + workspace.getAbsolutePath();
+                listener.error(lastChangesWorkDirErrorMsg);
+                throw new RepositoryNotFoundException(lastChangesWorkDirErrorMsg);
+            }
+        }
+
+        private LastChanges getGitLastChangesCallable (final File workspace) {
+            LastChanges lastChanges = null;
+            try {
+                Repository gitRepository = repository(workspace.getAbsolutePath());
+                if (hasTargetRevision) {
+                    //compares current repository revision with provided revision
+                    lastChanges = GitLastChanges.getInstance().changesOf(gitRepository, GitLastChanges.getInstance().resolveCurrentRevision(gitRepository), gitRepository.resolve(targetRevision));
+                    List<CommitInfo> commitInfoList = LastChangesPublisher.getCommitsBetweenRevisions(gitRepository, isGit, lastChanges.getCurrentRevision().getCommitId(), targetRevision, null,null);
+                    lastChanges.addCommits(LastChangesPublisher.commitChanges(gitRepository, isGit, commitInfoList, lastChanges.getPreviousRevision().getCommitId(), null, null));
+                } else {
+                    //compares current repository revision with previous one
+                    lastChanges = GitLastChanges.getInstance().changesOf(gitRepository);
+                    lastChanges.addCommit(new CommitChanges(lastChanges.getCurrentRevision(), lastChanges.getDiff()));
+                }
+                return lastChanges;
+            } catch (IOException e) {
+                String lastChangesErrorMsg = "Last Changes Plugin: Last changes between revisions from Git workspace were not obtain";
+                listener.error(lastChangesErrorMsg);
+                throw new LastChangesException(lastChangesErrorMsg);
+            }
+        }
+
+        private LastChanges getSvnLastChangesCallable(final File workspace) {
+            LastChanges lastChanges = null;
+            try {
+                SvnLastChanges svnLastChanges = getSvnLastChanges(svnAuthProvider);
+                File svnRepository = new File(workspace.getAbsolutePath());
+                if(hasTargetRevision) {
+                    //compares current repository revision with provided revision
+                    Long svnRevision = Long.parseLong(targetRevision);
+                    lastChanges = svnLastChanges.changesOf(svnRepository, SVNRevision.HEAD, SVNRevision.create(svnRevision));
+                    List<CommitInfo> commitInfoList = getCommitsBetweenRevisions(null, false, lastChanges.getCurrentRevision().getCommitId(), targetRevision, svnRepository, svnAuthProvider);
+                    lastChanges.addCommits(commitChanges(null, false, commitInfoList, lastChanges.getPreviousRevision().getCommitId(), svnRepository, svnAuthProvider));
+
+                } else {
+                    //compares current repository revision with previous one
+                    lastChanges = svnLastChanges.changesOf(svnRepository);
+                    //in this case there will be only one commit
+                    lastChanges.addCommit(new CommitChanges(lastChanges.getCurrentRevision(), lastChanges.getDiff()));
+                }
+                return lastChanges;
+            } catch (IOException e) {
+                String lastChangesErrorMsg = "Last Changes Plugin: Last changes between revisions from SVN workspace were not obtain";
+                listener.error(lastChangesErrorMsg);
+                throw new LastChangesException(lastChangesErrorMsg);
+            }
+        }
+    }
 }
