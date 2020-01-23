@@ -1,11 +1,20 @@
 package com.github.jenkins.lastchanges;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.apache.commons.io.IOUtils;
+
 import com.github.jenkins.lastchanges.model.LastChanges;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStreamReader;
+import java.io.Serializable;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -26,17 +35,17 @@ public class LastChangesUtil implements Serializable {
         String htmlTemplate = writer.toString();
         boolean hasPreviousRevision = buildChanges.getPreviousRevision() != null;
         String htmlDiff = htmlTemplate.replace("[TITLE]", "Changes of build " + buildName)
-                .replace("[PREV_REVISION]", hasPreviousRevision ? buildChanges.getPreviousRevision().getCommitId() : "")
-                .replace("[PREV_AUTHOR]", (hasPreviousRevision && buildChanges.getPreviousRevision().getCommitterName() != null) ? buildChanges.getPreviousRevision().getCommitterName() : "")
-                .replace("[PREV_EMAIL]", (hasPreviousRevision && buildChanges.getPreviousRevision().getCommitterEmail() != null) ? buildChanges.getPreviousRevision().getCommitterEmail() : "")
-                .replace("[PREV_DATE]", (hasPreviousRevision && buildChanges.getPreviousRevision().getCommitDate() != null) ? buildChanges.getPreviousRevision().getCommitDate() : "")
-                .replace("[PREV_MESSAGE]", (hasPreviousRevision && buildChanges.getPreviousRevision().getCommitterName() != null) ? buildChanges.getPreviousRevision().getCommitMessage() : "")
-                .replace("[CURRENT_REVISION]", buildChanges.getCurrentRevision().getCommitId())
-                .replace("[CURRENT_AUTHOR]", buildChanges.getCurrentRevision().getCommitterName() != null ? buildChanges.getCurrentRevision().getCommitterName() : "")
-                .replace("[CURRENT_EMAIL]", buildChanges.getCurrentRevision().getCommitterEmail() != null ? buildChanges.getCurrentRevision().getCommitterEmail() : "")
-                .replace("[CURRENT_DATE]", buildChanges.getCurrentRevision().getCommitDate() != null ? buildChanges.getCurrentRevision().getCommitDate() : "")
-                .replace("[CURRENT_MESSAGE]", buildChanges.getCurrentRevision().getCommitMessage() != null ? buildChanges.getCurrentRevision().getCommitMessage() : "")
-                .replace("[DIFF]", buildChanges.getEscapedDiff());
+            .replace("[PREV_REVISION]", hasPreviousRevision ? buildChanges.getPreviousRevision().getCommitId() : "")
+            .replace("[PREV_AUTHOR]", (hasPreviousRevision && buildChanges.getPreviousRevision().getCommitterName() != null) ? buildChanges.getPreviousRevision().getCommitterName() : "")
+            .replace("[PREV_EMAIL]", (hasPreviousRevision && buildChanges.getPreviousRevision().getCommitterEmail() != null) ? buildChanges.getPreviousRevision().getCommitterEmail() : "")
+            .replace("[PREV_DATE]", (hasPreviousRevision && buildChanges.getPreviousRevision().getCommitDate() != null) ? buildChanges.getPreviousRevision().getCommitDate() : "")
+            .replace("[PREV_MESSAGE]", (hasPreviousRevision && buildChanges.getPreviousRevision().getCommitterName() != null) ? buildChanges.getPreviousRevision().getCommitMessage() : "")
+            .replace("[CURRENT_REVISION]", buildChanges.getCurrentRevision().getCommitId())
+            .replace("[CURRENT_AUTHOR]", buildChanges.getCurrentRevision().getCommitterName() != null ? buildChanges.getCurrentRevision().getCommitterName() : "")
+            .replace("[CURRENT_EMAIL]", buildChanges.getCurrentRevision().getCommitterEmail() != null ? buildChanges.getCurrentRevision().getCommitterEmail() : "")
+            .replace("[CURRENT_DATE]", buildChanges.getCurrentRevision().getCommitDate() != null ? buildChanges.getCurrentRevision().getCommitDate() : "")
+            .replace("[CURRENT_MESSAGE]", buildChanges.getCurrentRevision().getCommitMessage() != null ? buildChanges.getCurrentRevision().getCommitMessage() : "")
+            .replace("[DIFF]", buildChanges.getEscapedDiff());
         return htmlDiff;
     }
 
@@ -50,7 +59,7 @@ public class LastChangesUtil implements Serializable {
 
     public static byte[] compress(String uncompressedDiff) {
         GZIPOutputStream gzip = null;
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        try (ByteArrayOutputStream baos =  new ByteArrayOutputStream()) {
             LOG.log(Level.INFO, "Compressing diff...");
             gzip = new GZIPOutputStream(baos);
             gzip.write(uncompressedDiff.getBytes(UTF_8));
@@ -74,7 +83,7 @@ public class LastChangesUtil implements Serializable {
             BufferedReader bf = new BufferedReader(new InputStreamReader(gzipInput, "UTF-8"));
             String line;
             while ((line = bf.readLine()) != null) {
-                outStr.append(line + "\n");
+                outStr.append(line+"\n");
             }
             LOG.log(Level.INFO, "Diff decompressed.");
             return outStr.toString();
@@ -84,8 +93,6 @@ public class LastChangesUtil implements Serializable {
         }
 
     }
-}
-
 //    public static String decompress(byte[] compressedDiff) {
 //        if (compressedDiff == null || compressedDiff.length == 0) {
 //            return "";
@@ -105,3 +112,4 @@ public class LastChangesUtil implements Serializable {
 //        }
 //
 //    }
+}
