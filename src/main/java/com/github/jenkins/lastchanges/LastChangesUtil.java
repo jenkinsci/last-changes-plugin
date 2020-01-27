@@ -70,7 +70,7 @@ public class LastChangesUtil implements Serializable {
         } catch (Exception e) {
             LOG.log(Level.WARNING, "Could not compress diff.", e);
             return uncompressedDiff.getBytes(UTF_8);
-        }
+        } 
     }
 
     public static String decompress(byte[] compressedDiff) {
