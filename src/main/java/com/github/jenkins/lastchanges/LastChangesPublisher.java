@@ -257,45 +257,26 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
         return lastChanges;
     }
 
-    /**
-     *
-     * Gets the commit changes of each commitInfo First we sort commits by date
-     * and then call lastChanges of each commit with previous one
-     *
-     * @param gitRepository the git repository to work on, it can not be Null
-     *
-     * @param commitInfoList list of commits between current and previous revision. It can not be Null
-     *
-     * @return a list with the commit changes containing the last changes between two revisions in each commit
-     */
-    private static List<CommitChanges> commitGITChanges(final Repository gitRepository, final List<CommitInfo> commitInfoList) {
+    private static List<CommitChanges> obtainCommitChangesFromGit(final Repository gitRepository, final List<CommitInfo> commitInfoList) {
         if (commitInfoList == null || commitInfoList.isEmpty()) {
             return null;
         }
         List<CommitChanges> commitChanges = new ArrayList<>();
 
         try {
-            Collections.sort(commitInfoList, new Comparator<CommitInfo>() {
-                @Override
-                public int compare(CommitInfo c1, CommitInfo c2) {
-                    try {
-                        DateFormat format = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT);
-                        return format.parse(c1.getCommitDate()).compareTo(format.parse(c2.getCommitDate()));
-                    } catch (ParseException e) {
-                        LOG.severe(String.format("Could not parse commit dates %s and %s ", c1.getCommitDate(), c2.getCommitDate()));
-                        return 0;
-                    }
-                }
-            });
+            Collections.sort(commitInfoList, new CommitsByDateComparator());
 
             for (int i = commitInfoList.size() - 1; i >= 0; i--) {
-                ObjectId previousCommit = gitRepository.resolve(commitInfoList.get(i).getCommitId() + "^1");
-                LastChanges lastChanges = GitLastChanges.getInstance().changesOf(
-                        gitRepository,
-                        gitRepository.resolve(commitInfoList.get(i).getCommitId()),
-                        previousCommit
-                );
-                String diff = lastChanges != null ? lastChanges.getDiff() : "";
+                ObjectId previousRevision = gitRepository.resolve(commitInfoList.get(i).getCommitId() + "^1");
+                ObjectId currentRevision = gitRepository.resolve(commitInfoList.get(i).getCommitId());
+                LastChanges lastChanges = GitLastChanges.getInstance().changesOf(gitRepository, currentRevision, previousRevision);
+
+                String diff;
+                if(lastChanges != null) {
+                    diff = lastChanges.getDiff();
+                } else {
+                    diff = "";
+                }
                 commitChanges.add(new CommitChanges(commitInfoList.get(i), diff));
             }
         } catch (Exception e) {
@@ -305,57 +286,37 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
         return commitChanges;
     }
 
-    /**
-     *
-     * Gets the commit changes of each commitInfo First we sort commits by date
-     * and then call lastChanges of each commit with previous one
-     *
-     * @param commitInfoList list of commits between current and previous revision, it can not be Null
-     *
-     * @param oldestCommit is the first commit from previous revision (svn) see {@link LastChanges}, it can not be Null
-     *
-     * @param svnRepository the svn repository to work on, it can not be Null
-     *
-     * @param svnAuthProvider Authentication token to access to svn workspace, can not be Null
-     *
-     * @return a list with the commit changes containing the last changes between the two revisions in each commit
-     */
-    private static List<CommitChanges> commitSVNChanges(final List<CommitInfo> commitInfoList, final String oldestCommit, final File svnRepository, final ISVNAuthenticationProvider svnAuthProvider) {
+    private static List<CommitChanges> obtainCommitChangesFromSvn(final File svnRepository, final List<CommitInfo> commitInfoList, final String oldestCommit, final ISVNAuthenticationProvider svnAuthProvider) {
         if (commitInfoList == null || commitInfoList.isEmpty()) {
             return null;
         }
         List<CommitChanges> commitChanges = new ArrayList<>();
 
         try {
-            Collections.sort(commitInfoList, new Comparator<CommitInfo>() {
-                @Override
-                public int compare(CommitInfo c1, CommitInfo c2) {
-                    try {
-                        DateFormat format = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT);
-                        return format.parse(c1.getCommitDate()).compareTo(format.parse(c2.getCommitDate()));
-                    } catch (ParseException e) {
-                        LOG.severe(String.format("Could not parse commit dates %s and %s ", c1.getCommitDate(), c2.getCommitDate()));
-                        return 0;
-                    }
-                }
-            });
+            Collections.sort(commitInfoList, new CommitsByDateComparator());
+
             for (int i = commitInfoList.size() - 1; i >= 0; i--) {
                 LastChanges lastChanges;
+                SVNRevision previousRevision;
+                SVNRevision currentRevision;
+
                 if (i == 0) { //here we can't compare with (i -1) so we compare with first commit of oldest commit (retrieved in main diff)
                     //here we have the older commit from current tree (see LastChanges.java) which diff must be compared with oldestCommit which is currentRevision from previous tree
-                    lastChanges = SvnLastChanges.getInstance(svnAuthProvider).changesOf(
-                            svnRepository,
-                            SVNRevision.parse(commitInfoList.get(i).getCommitId()),
-                            SVNRevision.parse(oldestCommit)
-                    );
-                } else { //get changes comparing current commit (i) with previous one (i -1)
-                    lastChanges = SvnLastChanges.getInstance(svnAuthProvider).changesOf(
-                            svnRepository,
-                            SVNRevision.parse(commitInfoList.get(i).getCommitId()),
-                            SVNRevision.parse(commitInfoList.get(i - 1).getCommitId())
-                    );
+                    previousRevision = SVNRevision.parse(oldestCommit);
+                    currentRevision = SVNRevision.parse(commitInfoList.get(i).getCommitId());
+                    lastChanges = SvnLastChanges.getInstance(svnAuthProvider).changesOf(svnRepository, currentRevision, previousRevision);
+                } else {
+                    //get changes comparing current commit (i) with previous one (i -1)
+                    previousRevision = SVNRevision.parse(commitInfoList.get(i - 1).getCommitId());
+                    currentRevision = SVNRevision.parse(commitInfoList.get(i).getCommitId());
+                    lastChanges = SvnLastChanges.getInstance(svnAuthProvider).changesOf(svnRepository, currentRevision, previousRevision);
                 }
-                String diff = lastChanges != null ? lastChanges.getDiff() : "";
+                String diff;
+                if(lastChanges != null) {
+                    diff = lastChanges.getDiff();
+                } else {
+                    diff = "";
+                }
                 commitChanges.add(new CommitChanges(commitInfoList.get(i), diff));
             }
         } catch (Exception e) {
@@ -399,7 +360,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
         return Computer.currentComputer() instanceof SlaveComputer;
     }
 
-    public static SvnLastChanges getSvnLastChanges(ISVNAuthenticationProvider svnAuthProvider) {
+    private static SvnLastChanges getSvnLastChanges(ISVNAuthenticationProvider svnAuthProvider) {
         return svnAuthProvider != null ? SvnLastChanges.getInstance(svnAuthProvider) : SvnLastChanges.getInstance();
     }
 
@@ -719,13 +680,13 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
                 Repository gitRepository = repository(workspace.getAbsolutePath());
                 if (hasTargetRevision) {
                     //compares current repository revision with provided revision
-                    lastChanges = GitLastChanges.getInstance().changesOf(gitRepository, GitLastChanges.getInstance().resolveCurrentRevision(gitRepository), gitRepository.resolve(targetRevision));
-                    List<CommitInfo> commitInfoList = GitLastChanges.getInstance().getCommitsBetweenRevisions(
-                            gitRepository,
-                            gitRepository.resolve(lastChanges.getCurrentRevision().getCommitId()), //Current Revision
-                            gitRepository.resolve(targetRevision) //Previous Revision
-                    );
-                    lastChanges.addCommits(LastChangesPublisher.commitGITChanges(gitRepository, commitInfoList));
+                    ObjectId previousRevision = gitRepository.resolve(targetRevision);
+                    ObjectId currentRevision = GitLastChanges.getInstance().resolveCurrentRevision(gitRepository);
+                    lastChanges = GitLastChanges.getInstance().changesOf(gitRepository, currentRevision, previousRevision);
+
+                    currentRevision = gitRepository.resolve(lastChanges.getCurrentRevision().getCommitId());
+                    List<CommitInfo> commitInfoList = GitLastChanges.getInstance().getCommitsBetweenRevisions(gitRepository, currentRevision, previousRevision);
+                    lastChanges.addCommits(LastChangesPublisher.obtainCommitChangesFromGit(gitRepository, commitInfoList));
                 } else {
                     //compares current repository revision with previous one
                     lastChanges = GitLastChanges.getInstance().changesOf(gitRepository);
@@ -776,13 +737,14 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
                 if(hasTargetRevision) {
                     //compares current repository revision with provided revision
                     final Long svnRevision = Long.parseLong(targetRevision);
-                    lastChanges = svnLastChanges.changesOf(svnRepository, SVNRevision.HEAD, SVNRevision.create(svnRevision));
-                    List<CommitInfo> commitInfoList = SvnLastChanges.getInstance(svnAuthProvider).getCommitsBetweenRevisions(
-                            svnRepository,
-                            SVNRevision.create(Long.parseLong(lastChanges.getCurrentRevision().getCommitId())), //Current Revision
-                            SVNRevision.create(svnRevision) //Previous Revision
-                    );
-                    lastChanges.addCommits(commitSVNChanges(commitInfoList, lastChanges.getPreviousRevision().getCommitId(), svnRepository, svnAuthProvider));
+                    SVNRevision previousRevision = SVNRevision.create(svnRevision);
+                    SVNRevision currentRevision = SVNRevision.HEAD;
+                    lastChanges = svnLastChanges.changesOf(svnRepository, currentRevision, previousRevision);
+
+                    currentRevision = SVNRevision.create(Long.parseLong(lastChanges.getCurrentRevision().getCommitId()));
+                    List<CommitInfo> commitInfoList = SvnLastChanges.getInstance(svnAuthProvider).getCommitsBetweenRevisions(svnRepository, currentRevision, previousRevision);
+                    String oldestCommit = lastChanges.getPreviousRevision().getCommitId();
+                    lastChanges.addCommits(obtainCommitChangesFromSvn(svnRepository, commitInfoList, oldestCommit, svnAuthProvider));
                 } else {
                     //compares current repository revision with previous one
                     lastChanges = svnLastChanges.changesOf(svnRepository);
@@ -794,6 +756,19 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
                 String lastChangesErrorMsg = "Last Changes Plugin: Last changes between revisions from SVN workspace were not obtained";
                 listener.error(lastChangesErrorMsg);
                 throw new LastChangesException(lastChangesErrorMsg);
+            }
+        }
+    }
+
+    private static final class CommitsByDateComparator implements Comparator<CommitInfo> {
+        @Override
+        public int compare(CommitInfo c1, CommitInfo c2) {
+            try {
+                DateFormat format = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT);
+                return format.parse(c1.getCommitDate()).compareTo(format.parse(c2.getCommitDate()));
+            } catch (ParseException e) {
+                LOG.severe(String.format("Could not parse commit dates %s and %s ", c1.getCommitDate(), c2.getCommitDate()));
+                return 0;
             }
         }
     }
