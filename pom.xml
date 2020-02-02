@@ -8,7 +8,7 @@
 		<relativePath />
 	</parent>
 	<artifactId>last-changes</artifactId>
-	<version>2.7.9-SNAPSHOT</version>
+	<version>2.7.8</version>
 	<packaging>hpi</packaging>
 
 	<properties>
@@ -25,7 +25,7 @@
 
 	<name>Last Changes Plugin</name>
 	<description>Shows build last changes via VCS diff between latest revisions.</description>
-	<url>https://wiki.jenkins-ci.org/display/JENKINS/Last+Changes+Plugin</url>
+	<url>https://github.com/jenkinsci/last-changes-plugin</url>
 
 	<licenses>
 		<license>

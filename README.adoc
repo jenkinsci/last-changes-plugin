@@ -345,4 +345,4 @@ See https://github.com/jenkinsci/last-changes-plugin/wiki/Contributors-guide[con
 
 == Relase notes
 
-Please follow https://github.com/jenkinsci/last-changes-plugin/releases[releases pages^] for details of each release.
+Please follow https://github.com/jenkinsci/last-changes-plugin/releases[releases page^] for details of each release.
