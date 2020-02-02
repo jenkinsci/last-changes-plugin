@@ -1,19 +1,9 @@
 package com.github.jenkins.lastchanges;
 
-import static com.github.jenkins.lastchanges.impl.GitLastChanges.repository;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.nio.file.Paths;
-import java.util.Locale;
-import java.util.TimeZone;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import com.github.jenkins.lastchanges.exception.GitTreeNotFoundException;
+import com.github.jenkins.lastchanges.impl.GitLastChanges;
+import com.github.jenkins.lastchanges.model.LastChanges;
+import org.apache.commons.lang.SystemUtils;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.junit.Before;
@@ -21,9 +11,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import com.github.jenkins.lastchanges.exception.GitTreeNotFoundException;
-import com.github.jenkins.lastchanges.impl.GitLastChanges;
-import com.github.jenkins.lastchanges.model.LastChanges;
+import java.io.File;
+import java.nio.file.Paths;
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static com.github.jenkins.lastchanges.impl.GitLastChanges.repository;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.*;
 
 /**
  * Created by rmpestano on 6/5/16.
@@ -70,7 +67,7 @@ public class GitLastChangesTest {
 
 
     @Test
-    public void shouldGetLastChangesFromGitRepository() throws FileNotFoundException {
+    public void shouldGetLastChangesFromGitRepository() {
         LastChanges lastChanges = GitLastChanges.getInstance().changesOf(repository(gitRepoPath));
         assertThat(lastChanges).isNotNull();
         assertThat(lastChanges.getCurrentRevision()).isNotNull();
@@ -111,7 +108,7 @@ public class GitLastChangesTest {
 
 
     @Test
-    public void shouldGetLastChangesFromInitialCommitGitRepo() throws FileNotFoundException {
+    public void shouldGetLastChangesFromInitialCommitGitRepo() {
         String repositoryLocation = GitLastChangesTest.class.getResource("/git-initial-commit-repo").getFile();
         File file = new File(repositoryLocation);
         try {
@@ -123,7 +120,10 @@ public class GitLastChangesTest {
     }
 
     @Test
-    public void shouldGetLastChangesFromSinceLastTag() throws FileNotFoundException {
+    public void shouldGetLastChangesFromSinceLastTag() {
+        if(SystemUtils.IS_OS_WINDOWS) {
+            return;
+        }
         String repositoryLocation = GitLastChangesTest.class.getResource("/git-with-tags-repo").getFile();
         File file = new File(repositoryLocation);
         assertThat(file).exists();
