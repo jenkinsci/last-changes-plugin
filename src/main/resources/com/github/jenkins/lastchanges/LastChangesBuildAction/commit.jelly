@@ -4,13 +4,13 @@
    <l:layout title="Changes of commit ${commit.commitInfo.commitId}">
       <l:header>
       <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/github-9.5.0.min.css"/>
-      <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/diff2html-2.4.0.min.css"/>
+      <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/diff2html-2.12.2.min.css"/>
       <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/jquery.min.js"/>
          <script type="text/javascript">window.jQueryJenkins = jQuery.noConflict();
       </script>
       <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/highlightjs-9.12.0.min.js"/>
-         <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-2.4.0.min.js"/>
-         <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-ui-2.4.0.min.js"/>
+         <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-2.12.2.min.js"/>
+         <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-ui-2.12.2.min.js"/>
          <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/scala-9.5.0.min.js"/>
          </l:header>
 
