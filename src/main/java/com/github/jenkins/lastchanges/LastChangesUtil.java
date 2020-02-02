@@ -50,7 +50,7 @@ public class LastChangesUtil implements Serializable {
     }
 
     /**
-     * @param diff
+     * @param diff the diff
      * @return <code>true</code> If diff is bigger than DIFF_COMPRESS_THRESHOLD
      */
     public static boolean shouldCompressDiff(String diff) {
@@ -93,23 +93,5 @@ public class LastChangesUtil implements Serializable {
         }
 
     }
-//    public static String decompress(byte[] compressedDiff) {
-//        if (compressedDiff == null || compressedDiff.length == 0) {
-//            return "";
-//        }
-//        LOG.log(Level.INFO, "Decompressing diff...");
-//        try (final ByteArrayInputStream in = new ByteArrayInputStream(compressedDiff); final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-//            GzipCompressorOutputStream gzOut = new GzipCompressorOutputStream(out);
-//            final byte[] buffer = new byte[2048];
-//            int n = 0;
-//            while (-1 != (n = in.read(buffer))) {
-//                gzOut.write(buffer, 0, n);
-//            }
-//            return out.toString("UTF-8");
-//        } catch (Exception e) {
-//            LOG.log(Level.WARNING, "Could not decompress diff.", e);
-//            return "";
-//        }
-//
-//    }
+
 }

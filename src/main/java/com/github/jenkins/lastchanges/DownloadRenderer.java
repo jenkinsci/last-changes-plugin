@@ -29,10 +29,10 @@ public class DownloadRenderer implements Serializable {
 
     /**
      *
-     * @param request
-     * @param response
-     * @throws IOException
-     * @throws ServletException
+     * @param request request
+     * @param response response
+     * @throws IOException ioException
+     * @throws ServletException servletException
      */
     public void doIndex(StaplerRequest request, StaplerResponse response)
             throws IOException, ServletException {

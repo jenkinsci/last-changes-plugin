@@ -243,7 +243,21 @@
 					</includes>
 				</configuration>
 			</plugin>
-
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.1.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <source>8</source>
+                </configuration>
+            </plugin>
 		</plugins>
 
 	</build>
@@ -266,6 +280,7 @@
 					</plugin>
 					<plugin>
 						<artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.1.1</version>
 						<executions>
 							<execution>
 								<id>attach-javadocs</id>
@@ -274,6 +289,9 @@
 								</goals>
 							</execution>
 						</executions>
+                        <configuration>
+                            <source>8</source>
+                        </configuration>
 					</plugin>
 					<plugin>
 						<artifactId>maven-surefire-plugin</artifactId>

@@ -26,8 +26,8 @@ public class CommitInfo implements Serializable {
     }
 
     /**
-     * @deprecated
-     * Use getCommitterName
+     * @deprecated Use getCommitterName
+     * @return commiter name
      */
     @Deprecated
     public String getCommiterName() {
@@ -50,8 +50,8 @@ public class CommitInfo implements Serializable {
     }
 
     /**
-     * @deprecated
-     * Use getCommitterEmail
+     * @deprecated Use getCommitterEmail
+     * @return commiter email
      */
     @Deprecated
     public String getCommiterEmail() {
@@ -91,8 +91,10 @@ public class CommitInfo implements Serializable {
     }
 
     /**
-     * @deprecated
-     * Use setCommitterName
+     * @deprecated Use setCommitterName
+     * @param committerName committerName
+     * @return this instance
+     *
      */
     @Deprecated
     public CommitInfo setCommiterName(String committerName) {
@@ -105,8 +107,9 @@ public class CommitInfo implements Serializable {
     }
 
     /**
-     * @deprecated
-     * Use getCommitterEmail
+     * @deprecated Use getCommitterEmail
+     * @param committerEmail committerEmail
+     * @return this instance
      */
     @Deprecated
     public CommitInfo setCommiterEmail(String committerEmail) {
