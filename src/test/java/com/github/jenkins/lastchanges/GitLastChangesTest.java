@@ -11,6 +11,8 @@ import java.io.FileNotFoundException;
 import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
@@ -30,7 +32,6 @@ import com.github.jenkins.lastchanges.model.LastChanges;
 @RunWith(JUnit4.class)
 public class GitLastChangesTest {
     public static final String newLine = System.getProperty("line.separator");
-
 
     String gitRepoPath;
 
@@ -125,9 +126,9 @@ public class GitLastChangesTest {
     public void shouldGetLastChangesFromSinceLastTag() throws FileNotFoundException {
         String repositoryLocation = GitLastChangesTest.class.getResource("/git-with-tags-repo").getFile();
         File file = new File(repositoryLocation);
+        assertThat(file).exists();
         try {
             Repository repository = repository(repositoryLocation);
-
             ObjectId head = repository.resolve("HEAD^{tree}");
             ObjectId lastTagCommit = GitLastChanges.getInstance().getLastTagRevision(repository);
             LastChanges lastChanges = GitLastChanges.getInstance().changesOf(repository(repositoryLocation), head, lastTagCommit);
@@ -147,6 +148,7 @@ public class GitLastChangesTest {
                     "     <url>https://github.com/adminfaces/admin-persistence</url>"+newLine);
             
         } catch (Exception e) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, "", e);
             assertThat(e.getMessage()).isEqualTo(String.format("Could not find previous head of repository located at %s. Its your first commit?", file.getAbsolutePath()));
         }
     }
