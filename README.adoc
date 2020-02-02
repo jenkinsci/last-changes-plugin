@@ -16,6 +16,8 @@ The simplest way to know what has changed on your Jenkins builds!
 ____
 
 image:https://travis-ci.org/jenkinsci/last-changes-plugin.svg[Build Status (Travis CI), link=https://travis-ci.org/jenkinsci/last-changes-plugin]
+image:https://img.shields.io/jenkins/plugin/i/last-changes.svg?color=blue[link="https://plugins.jenkins.io/last-changes"]
+
 
 Last Changes is a *Jenkin plugin* that shows _rich VCS diffs_ between builds.
 
