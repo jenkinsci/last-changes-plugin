@@ -283,7 +283,6 @@ pipeline {
 ----
 
 
-
 == Docker
 
 An easy way to test this plugin is using a docker container, here are the steps (assuming you have docker installed):
@@ -343,3 +342,7 @@ It will generate `last-changes.hpi` in target folder. You can install it on jenk
 == Contributing
 
 See https://github.com/jenkinsci/last-changes-plugin/wiki/Contributors-guide[contributors guide^].
+
+== Relase notes
+
+Please follow https://github.com/jenkinsci/last-changes-plugin/releases[releases pages^] for details of each release.
