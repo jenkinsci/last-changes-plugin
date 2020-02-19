@@ -6,14 +6,13 @@ import hudson.model.Action;
 import hudson.model.Job;
 import hudson.model.ProminentProjectAction;
 import hudson.model.Run;
+import jenkins.branch.MultiBranchProject;
+import jenkins.model.TransientActionFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
-import jenkins.branch.MultiBranchProject;
-import jenkins.model.TransientActionFactory;
 
 public class LastChangesProjectAction extends LastChangesBaseAction implements ProminentProjectAction {
 
@@ -50,7 +49,7 @@ public class LastChangesProjectAction extends LastChangesBaseAction implements P
         @Override
         public Collection<? extends Action> createFor(Job<?, ?> j) {
             //Dont' run for multibranch projects
-            if (j.getParent() instanceof MultiBranchProject) {
+            if (isMultiBranch(j)) {
                 return Collections.emptyList();
             }
             List<LastChangesBuild> lastChangesBuilds = new ArrayList<>();
@@ -67,6 +66,20 @@ public class LastChangesProjectAction extends LastChangesBaseAction implements P
                 return Collections.emptyList();
             }
             return Collections.singleton(new LastChangesProjectAction(j, lastChangesBuilds));
+        }
+
+        private boolean isMultiBranch(Job<?, ?> j) {
+            return isMultiBranchPresentOnClasspath() && j.getParent() instanceof MultiBranchProject;
+        }
+
+        private boolean isMultiBranchPresentOnClasspath() {
+            try {
+                Class.forName("jenkins.branch.MultiBranchProject");
+                return true;
+            } catch (ClassNotFoundException cnf) {
+                return false;
+            }
+
         }
 
         @Override
