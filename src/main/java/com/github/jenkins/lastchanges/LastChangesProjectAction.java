@@ -19,7 +19,7 @@ public class LastChangesProjectAction extends LastChangesBaseAction implements P
     private final transient Job<?, ?> job;
     private final List<LastChangesBuild> lastChangesBuilds;
     private final String jobName;
-    
+
     public LastChangesProjectAction(Job<?, ?> job, List<LastChangesBuild> lastChangesBuilds) {
         this.job = job;
         this.lastChangesBuilds = lastChangesBuilds;
@@ -45,6 +45,8 @@ public class LastChangesProjectAction extends LastChangesBaseAction implements P
     
     @Extension
     public static class LastChangesActionFactory extends TransientActionFactory<Job<?, ?>> {
+
+        private Boolean isMultiBranchOnClasspath;
 
         @Override
         public Collection<? extends Action> createFor(Job<?, ?> j) {
@@ -73,13 +75,16 @@ public class LastChangesProjectAction extends LastChangesBaseAction implements P
         }
 
         private boolean isMultiBranchPresentOnClasspath() {
+            if(isMultiBranchOnClasspath != null) {
+                return isMultiBranchOnClasspath;
+            }
             try {
                 Class.forName("jenkins.branch.MultiBranchProject");
-                return true;
+                isMultiBranchOnClasspath = true;
             } catch (ClassNotFoundException cnf) {
-                return false;
+                isMultiBranchOnClasspath = false;
             }
-
+            return isMultiBranchOnClasspath;
         }
 
         @Override
