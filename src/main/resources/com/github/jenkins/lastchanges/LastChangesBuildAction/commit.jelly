@@ -31,10 +31,6 @@
                   overflow:auto!important;
              }
 
-             html body {
-                  overflow:hidden!important;
-             }
-
          </style>
          <script>
          jQueryJenkins(document).ready(function () {
