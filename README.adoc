@@ -104,7 +104,7 @@ The possible values for *Since* attribute is `Previous revision` (the default), 
 
 IMPORTANT: If *SpecificRevision* parameter is provided then *Since* configuration will be ignored and the diff will be done with provided revision id.
 
-Advanced configuration reflects https://github.com/rtfpessoa/diff2html#configuration[diff2html options^]:
+Advanced configuration reflects https://github.com/rtfpessoa/diff2html#diff2html-configuration[diff2html options^]:
 
 image:last-changes-config2.png[link=https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/last-changes-config2.png]
 
