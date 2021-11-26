@@ -211,14 +211,6 @@
 				<version>1.16</version>
 			</plugin>
 			<plugin>
-				<groupId>org.jenkins-ci.tools</groupId>
-				<artifactId>maven-hpi-plugin</artifactId>
-				<version>2.2</version>
-				<configuration>
-					<pluginFirstClassLoader>false</pluginFirstClassLoader>
-				</configuration>
-			</plugin>
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
 				<version>2.5.1</version>
