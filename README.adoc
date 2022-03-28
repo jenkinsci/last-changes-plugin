@@ -61,7 +61,7 @@ NOTE: By default previous revision is `current revision -1`.
 TIP: You can use https://wiki.jenkins.io/display/JENKINS/Parameterized+Build[parameters] in `specificRevision` parameter. In case of git, expressions like `HEAD^{tree}` or `HEAD^^` can be used.
 . The `diff` for each build can be viewed later in html format.
 
-IMPORTANT: To get most from this plugin use `periodically SCM pooling` to trigger your builds, http://www.nailedtothex.org/roller/kyle/entry/articles-jenkins-poll[more details here^].
+IMPORTANT: To get most from this plugin use `periodically SCM polling` to trigger your builds, http://www.nailedtothex.org/roller/kyle/entry/articles-jenkins-poll[more details here^].
 
 
 == Usage
@@ -186,7 +186,7 @@ Since https://github.com/jenkinsci/last-changes-plugin/releases/tag/2.5[v2.5^] i
 ```
 node {
       stage("checkout") {
-        git url: 'https://github.com/jenkinsci/last-changes-plugin.git'    
+        git url: 'https://github.com/jenkinsci/last-changes-plugin.git'
       }
 
       stage("last-changes") {
@@ -200,15 +200,15 @@ node {
                   println(commitInfo)
                   println(commitInfo.getCommitMessage())
                   println(commit.getChanges())
-              } 
-      }  
+              }
+      }
 
 }
 ```
 
 NOTE: See https://github.com/jenkinsci/last-changes-plugin/blob/master/src/main/java/com/github/jenkins/lastchanges/model[model classes^] to know what can be accessed in pipeline script. Note that only attributes https://github.com/jenkinsci/last-changes-plugin/blob/master/src/main/java/com/github/jenkins/lastchanges/model/LastChanges.java#L48[annotated with @Whitelisted^] are visible to be accessed in pipeline script.
 
-TIP: If you use declarative pipeline you can use https://jenkins.io/doc/book/pipeline/syntax/#script[script section^]. 
+TIP: If you use declarative pipeline you can use https://jenkins.io/doc/book/pipeline/syntax/#script[script section^].
 
 
 == Download the diff
@@ -296,11 +296,11 @@ docker run -it -p 8080:8080 rmpestano/jenkins-last-changes
 ----
 +
 . Access localhost:8080/ and create a job
-. Configure this svn repository: https://subversion.assembla.com/svn/cucumber-json-files/trunk/ 
+. Configure this svn repository: https://subversion.assembla.com/svn/cucumber-json-files/trunk/
 . Add the *Publish last changes* _post build action_;
 . Just run the job
 
- 
+
 Job output should look like:
 
 image:last-changes-docker.png[link=https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/last-changes-docker.png]
