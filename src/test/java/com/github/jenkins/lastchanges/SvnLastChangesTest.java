@@ -51,9 +51,14 @@ public class SvnLastChangesTest {
 
     @Test
     public void shouldGetLastChanges() {
+        String pass = System.getProperty("PASS");
+        if(pass == null || "".equals(pass)) {
+            return;
+        }
         File repository = new File(svnRepoPath);
         assertThat(repository).exists();
-        LastChanges lastChanges = SvnLastChanges.getInstance().changesOf(repository);
+        BasicAuthenticationManager basicAuthenticationManager = new BasicAuthenticationManager("rmpestano@gmail.com",pass);
+        LastChanges lastChanges = SvnLastChanges.getInstance().setSvnAuthManager(basicAuthenticationManager).changesOf(repository);
         assertNotNull(lastChanges);
         assertThat(lastChanges.getCurrentRevision()).isNotNull();
         assertThat(lastChanges.getDiff()).isNotEmpty();
