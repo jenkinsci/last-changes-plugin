@@ -216,7 +216,7 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
 
             if (tags != null && !tags.isEmpty()) {
                 Ref tag = tags.get(0);
-                Ref peeledRef = repository.peel(tag);
+                Ref peeledRef = repository.getRefDatabase().peel(tag);
                 LogCommand log = git.log();
                 if (peeledRef.getPeeledObjectId() != null) {
                     log.add(peeledRef.getPeeledObjectId());
