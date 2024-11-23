@@ -28,7 +28,7 @@ public class LastChangesPipelineTest {
         job.setDefinition(new CpsFlowDefinition(StringUtils.join(Arrays.asList(
                 "node {",
                 "  git url: 'https://github.com/jenkinsci/last-changes-plugin.git'",
-                "  def publisher = LastChanges.getLastChangesPublisher \"PREVIOUS_REVISION\", \"SIDE\", \"LINE\", true, true, \"\", \"\", \"\", \"\", \"\"",
+                "  def publisher = LastChanges.getLastChangesPublisher 'PREVIOUS_REVISION', 'SIDE', 'LINE', true, true, '', '', '', '', ''",
                 "  publisher.publishLastChanges()",
                 "}"), "\n"),true));
         WorkflowRun run = j.assertBuildStatusSuccess(job.scheduleBuild2(0).get());
@@ -41,7 +41,7 @@ public class LastChangesPipelineTest {
         WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "last-changes");
         job.setDefinition(new CpsFlowDefinition(StringUtils.join(Arrays.asList(
                 "node {",
-                "  def publisher = LastChanges.getLastChangesPublisher \"PREVIOUS_REVISION\", \"SIDE\", \"LINE\", true, true, \"\", \"\", \"\", \"\", \"\"",
+                "  def publisher = LastChanges.getLastChangesPublisher 'PREVIOUS_REVISION', 'SIDE', 'LINE', true, true, '', '', '', '', ''",
                 "  publisher.publishLastChanges()",
                 "}"), "\n"),true));
         WorkflowRun run = j.assertBuildStatus(Result.FAILURE,job.scheduleBuild2(0).get());
@@ -59,7 +59,7 @@ public class LastChangesPipelineTest {
                 "            steps {\n" +
                 "                git 'https://github.com/jenkinsci/last-changes-plugin.git'\n" +
                 "                script {\n" +
-                "                  def publisher = LastChanges.getLastChangesPublisher \"PREVIOUS_REVISION\", \"SIDE\", \"LINE\", true, true, \"\", \"\", \"\", \"\", \"\"\n" +
+                "                  def publisher = LastChanges.getLastChangesPublisher 'PREVIOUS_REVISION', 'SIDE', 'LINE', true, true, '', '', '', '', ''\n" +
                 "                  publisher.publishLastChanges()\n" +
                 "                  def htmlDiff = publisher.getHtmlDiff()\n" +
                 "                  writeFile file: 'build-diff.html', text: htmlDiff\n" +
