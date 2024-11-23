@@ -15,8 +15,6 @@ import hudson.scm.SubversionSCM.ModuleLocation;
 import hudson.slaves.DumbSlave;
 import org.assertj.core.api.Assertions;
 import org.junit.*;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
@@ -33,13 +31,12 @@ import java.util.logging.StreamHandler;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
-@RunWith(JUnit4.class)
-public class LastChangesIT {
+public class LastChangesTest {
 
     @Rule
     public JenkinsRule jenkins = new JenkinsRule();
 
-    private File sampleRepoDir = new File(LastChangesIT.class.getResource("/git-sample-repo").getFile());
+    private File sampleRepoDir = new File(LastChangesTest.class.getResource("/git-sample-repo").getFile());
 
     private static Logger log = Logger.getLogger(Actionable.class.getName()); // matches the logger in the affected class
     private static OutputStream logCapturingStream;
@@ -74,7 +71,6 @@ public class LastChangesIT {
         customLogHandler.flush();
         return logCapturingStream.toString();
     }
-
 
     @Test
     public void shouldGetLastChangesOfGitRepository() throws Exception {
@@ -138,7 +134,6 @@ public class LastChangesIT {
                 "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", "");
 
         Assertions.assertThat(lastChanges.getDiff()).isEqualToIgnoringWhitespace(diff);
-        
 
         assertThat(lastChanges.getCommits()).isNotNull()
                 .hasSize(1);
@@ -148,12 +143,9 @@ public class LastChangesIT {
         assertThat(lastChanges.getCommits().get(0)
                 .getChanges()).isEqualToIgnoringWhitespace(diff);
 
-
         jenkins.assertLogContains("Last changes from revision 27ad83a (current) to a511a43 (previous) published successfully!", build);
 
     }
-
-
 
     @Test
     @Issue("JENKINS-53860")
@@ -179,7 +171,6 @@ public class LastChangesIT {
 
         assertThat(logResult).doesNotContain("WARNING\thudson.model.Actionable#createFor: Actions from com.github.jenkins.lastchanges.LastChangesProjectAction$LastChangesActionFactory");
     }
-
 
     @Ignore("Can't test it because when cloning git plugin will create just a .git and it is done at execution time, so there is nothing we can do but test manually")
     @Test
@@ -242,11 +233,9 @@ public class LastChangesIT {
                 "  * Walks over this component and all descendants of this component, breadth-first." + GitLastChangesTest.newLine +
                 "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", ""));
 
-
         jenkins.assertLogContains("Last changes from revision 27ad83a (current) to a511a43 (previous) published successfully!", build);
 
     }
-
 
     @Test
     public void shouldGetLastChangesOfLastSuccessfulBuild() throws Exception {
@@ -307,7 +296,6 @@ public class LastChangesIT {
                 "  * Walks over this component and all descendants of this component, breadth-first." + GitLastChangesTest.newLine +
                 "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", ""));
 
-
         jenkins.assertLogContains("Last changes from revision 27ad83a (current) to a511a43 (previous) published successfully!", build);
 
     }
@@ -331,7 +319,6 @@ public class LastChangesIT {
 
         // when
         FreeStyleBuild build = jenkins.buildAndAssertSuccess(project);
-
 
         publisher = new LastChangesPublisher(SinceType.PREVIOUS_REVISION, FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null,null, build.getNumber()+"");
 
@@ -377,7 +364,6 @@ public class LastChangesIT {
                 "  * Walks over this component and all descendants of this component, breadth-first." + GitLastChangesTest.newLine +
                 "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", ""));
 
-
         jenkins.assertLogContains("Last changes from revision 27ad83a (current) to a511a43 (previous) published successfully!", build);
 
     }
@@ -402,15 +388,10 @@ public class LastChangesIT {
         // when
         FreeStyleBuild build = jenkins.assertBuildStatus(Result.FAILURE,project.scheduleBuild2(0).get());
 
-
         // then
         jenkins.assertLogContains("No build found with number 99. Maybe the build was discarded or not has published LastChanges", build);
 
     }
-
-
-
-
 
     @Test
     public void shouldGetLastChangesOfGitRepositoryOnSlaveNode() throws Exception {
@@ -476,23 +457,22 @@ public class LastChangesIT {
         jenkins.assertLogContains("Last changes from revision 27ad83a (current) to a511a43 (previous) published successfully!",build);
 
     }
-    
+
     @Test
     @Ignore("Test classpath issue, it throws: Caused by: org.tmatesoft.svn.core.SVNException: svn: E200007: Runner for 'org.tmatesoft.svn.core.wc2.SvnDiff' command have not been found; probably not yet implement in this API. Although it works on a \"real\" Jenkins.")
     public void shouldGetLastChangesOfSvnRepository() throws Exception {
 
         // given
-    	ModuleLocation location = new ModuleLocation("https://subversion.assembla.com/svn/cucumber-json-files/trunk", ""); 
-    	List<ModuleLocation> locations = new ArrayList<>();
-    	locations.add(location);
+        ModuleLocation location = new ModuleLocation("https://subversion.assembla.com/svn/cucumber-json-files/trunk", "");
+        List<ModuleLocation> locations = new ArrayList<>();
+        locations.add(location);
         SvnSCM scm = new SvnSCM(".svn",sampleRepoDir,locations);//directory content is irrelevant cause LastChangesPublisher will look only into dir name (in case of svn)
         FreeStyleProject project = jenkins.createFreeStyleProject("svn-test");
         project.setScm(scm);
         LastChangesPublisher publisher = new LastChangesPublisher(SinceType.PREVIOUS_REVISION,FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null,null, null);
         project.getPublishersList().add(publisher);
         project.save();
-        
-        
+
         // when
         FreeStyleBuild build = jenkins.buildAndAssertSuccess(project);
 

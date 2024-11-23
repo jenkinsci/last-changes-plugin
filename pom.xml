@@ -167,21 +167,5 @@
 			<id>repo.jenkins-ci.org</id>
 			<url>https://repo.jenkins-ci.org/public/</url>
 		</pluginRepository>
-
 	</pluginRepositories>
-
-	<build>
-		<finalName>last-changes</finalName>
-		<plugins>
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<includes>
-						<include>**/*Test.java</include>
-						<include>**/*IT.java</include>
-					</includes>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>
