@@ -53,9 +53,21 @@ public class LastChangesIT {
         log.addHandler(customLogHandler);
     }
 
+    @Before
+    public void enableLocalCheckout() throws IOException {
+        // Local checkout is disallowed by default for security.
+        // It is safe to enable local checkout for tests
+        GitSCM.ALLOW_LOCAL_CHECKOUT = true;
+    }
+
     @After
     public void clearLog() throws IOException {
         logCapturingStream.close();
+    }
+
+    @After
+    public void disableLocalCheckout() throws IOException {
+        GitSCM.ALLOW_LOCAL_CHECKOUT = false;
     }
 
     public String getTestCapturedLog() throws IOException {
