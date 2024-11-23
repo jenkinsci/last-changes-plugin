@@ -61,9 +61,8 @@ public class LastChangesPipelineTest {
                 "                script {\n" +
                 "                  def publisher = LastChanges.getLastChangesPublisher 'PREVIOUS_REVISION', 'SIDE', 'LINE', true, true, '', '', '', '', ''\n" +
                 "                  publisher.publishLastChanges()\n" +
-                "                  def htmlDiff = publisher.getHtmlDiff()\n" +
-                "                  writeFile file: 'build-diff.html', text: htmlDiff\n" +
-                "                } //end script\n" +
+                "                  writeFile file: 'build-diff.html', text: publisher.getHtmlDiff()\n" +
+                "                }\n" +
                 "            }\n" +
                 "        }\n" +
                 "    }\n" +
