@@ -28,7 +28,7 @@ public class LastChangesUtil implements Serializable {
     public static String toHtmlDiff(LastChanges buildChanges, String buildName) {
         final StringWriter writer = new StringWriter();
         try (InputStream is = LastChangesUtil.class.getResourceAsStream("/htmlDiffTemplate")) {
-            IOUtils.copy(is, writer, Charset.forName("UTF-8"));
+            IOUtils.copy(is, writer, UTF_8);
         } catch (IOException e) {
             LOG.log(Level.SEVERE, "Could not generate html diff", e);
         }
