@@ -12,7 +12,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.io.File;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.logging.Level;
@@ -57,7 +57,7 @@ public class GitLastChangesTest {
 
     @Test
     public void shouldNotInitRepositoryWithNonExistingRepository() {
-        String repoPath = Paths.get("").toAbsolutePath().toString();
+        String repoPath = Path.of("").toAbsolutePath().toString();
         try {
             repository(repoPath);
         } catch (RuntimeException e) {
