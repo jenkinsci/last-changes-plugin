@@ -141,7 +141,7 @@ Parameters should be declared as `key: 'value'` as example below:
 ----
 node {
      git 'https://github.com/jenkinsci/last-changes-plugin.git'
-     lastChanges format:'SIDE',matching: 'WORD', specificRevision: 'c546ec31e854de3f27755273d3e1db6185aee4b4'
+     lastChanges format:'SIDE', matching: 'WORD', specificRevision: '156e2508a31d8835ec4e5ba7e206ecd2e406f202'
 }
 ----
 
@@ -154,7 +154,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 git 'https://github.com/jenkinsci/last-changes-plugin.git'
-                lastChanges since: 'LAST_SUCCESSFUL_BUILD', format:'SIDE',matching: 'LINE'
+                lastChanges since: 'LAST_SUCCESSFUL_BUILD', format:'SIDE', matching: 'LINE'
             }
         }
     }
@@ -170,7 +170,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 git 'https://github.com/jenkinsci/last-changes-plugin.git'
-                lastChanges format:'SIDE',matching: 'WORD', specificRevision: "${REV}"
+                lastChanges format:'SIDE', matching: 'WORD', specificRevision: "${REV}"
             }
         }
     }
