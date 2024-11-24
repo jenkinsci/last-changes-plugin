@@ -68,8 +68,35 @@ public class LastChangesPipelineTest {
     }
 
     @Test
-    public void shouldNotPublishLastChangesViaPipelineWithoutScm() throws Exception {
+    public void shouldPublishLastChangesViaPipelineScriptFromReadmeB() throws Exception {
         WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "last-changes-d");
+        job.setDefinition(new CpsFlowDefinition(StringUtils.join(Arrays.asList(
+                "node {",
+                "  stage('checkout') {",
+                "    git url: 'https://github.com/jenkinsci/last-changes-plugin.git'",
+                "  }",
+                "  stage('last-changes') {",
+                "    def publisher = LastChanges.getLastChangesPublisher 'PREVIOUS_REVISION', 'SIDE', 'LINE', true, true, '', '', '', '', ''",
+                "    publisher.publishLastChanges()",
+                "    def changes = publisher.getLastChanges()",
+                "    println(changes.getEscapedDiff())",
+                "    for (commit in changes.getCommits()) {",
+                "      println(commit)",
+                "      def commitInfo = commit.getCommitInfo()",
+                "      println(commitInfo)",
+                "      println(commitInfo.getCommitMessage())",
+                "      println(commit.getChanges())",
+                "    }",
+                "  }",
+                "}"), "\n"),true));
+        WorkflowRun run = j.assertBuildStatusSuccess(job.scheduleBuild2(0).get());
+        j.assertLogContains("Last changes from revision ", run);
+        j.assertLogContains(" (previous) published successfully!", run);
+    }
+
+    @Test
+    public void shouldNotPublishLastChangesViaPipelineWithoutScm() throws Exception {
+        WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "last-changes-e");
         job.setDefinition(new CpsFlowDefinition(StringUtils.join(Arrays.asList(
                 "node {",
                 "  def publisher = LastChanges.getLastChangesPublisher 'PREVIOUS_REVISION', 'SIDE', 'LINE', true, true, '', '', '', '', ''",
@@ -81,7 +108,7 @@ public class LastChangesPipelineTest {
 
     @Test
     public void shouldGetHtmlDiffViaPipeline() throws Exception {
-        WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "last-changes-e");
+        WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "last-changes-f");
         job.setDefinition(new CpsFlowDefinition(StringUtils.join(Arrays.asList(
                 "pipeline {\n" +
                 "    agent any\n" +
