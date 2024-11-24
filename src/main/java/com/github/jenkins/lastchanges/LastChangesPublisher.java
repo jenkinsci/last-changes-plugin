@@ -497,7 +497,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
             if (isOk) {
                 return FormValidation.ok();
             } else {
-                return FormValidation.error(String.format("Build #%s is invalid or does not exists anymore or not has published LastChanges.", specificBuild));
+                return FormValidation.error(String.format("Build #%s is invalid, no longer exists, or has not published last changes.", specificBuild));
             }
         }
 
