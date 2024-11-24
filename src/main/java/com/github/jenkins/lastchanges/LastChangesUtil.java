@@ -28,7 +28,7 @@ public class LastChangesUtil implements Serializable {
     public static String toHtmlDiff(LastChanges buildChanges, String buildName) {
         final StringWriter writer = new StringWriter();
         try (InputStream is = LastChangesUtil.class.getResourceAsStream("/htmlDiffTemplate")) {
-            IOUtils.copy(is, writer, Charset.forName("UTF-8"));
+            IOUtils.copy(is, writer, UTF_8);
         } catch (IOException e) {
             LOG.log(Level.SEVERE, "Could not generate html diff", e);
         }
@@ -54,7 +54,7 @@ public class LastChangesUtil implements Serializable {
      * @return <code>true</code> If diff is bigger than DIFF_COMPRESS_THRESHOLD
      */
     public static boolean shouldCompressDiff(String diff) {
-        return diff != null && diff.length() > 0 && ((diff.getBytes().length / 1024) > DIFF_COMPRESS_THRESHOLD);
+        return diff != null && diff.length() > 0 && ((diff.getBytes(UTF_8).length / 1024) > DIFF_COMPRESS_THRESHOLD);
     }
 
     public static byte[] compress(String uncompressedDiff) {

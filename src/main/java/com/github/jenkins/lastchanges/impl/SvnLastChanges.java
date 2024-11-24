@@ -16,6 +16,7 @@ import org.tmatesoft.svn.core.internal.wc2.ng.SvnDiffGenerator;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
 import org.tmatesoft.svn.core.wc2.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -95,7 +96,7 @@ public class SvnLastChanges implements VCSChanges<File, SVNRevision> {
             CommitInfo oldCommitInfo = commitInfo(repository, previousRevision);
 
 
-            return new LastChanges(lastCommitInfo, oldCommitInfo, new String(diffStream.toByteArray(), Charset.forName("UTF-8")));
+            return new LastChanges(lastCommitInfo, oldCommitInfo, new String(diffStream.toByteArray(), UTF_8));
         } catch (Exception e) {
             throw new RuntimeException("Could not retrieve last changes of svn repository located at " + repository + " due to following error: " + (e.getMessage() == null ? e.toString() : e.getMessage()) + (e.getCause() != null ? " - " + e.getCause() : ""), e);
 
