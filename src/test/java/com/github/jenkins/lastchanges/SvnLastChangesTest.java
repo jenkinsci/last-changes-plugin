@@ -19,6 +19,8 @@ import java.util.TimeZone;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeNotNull;
+import static org.junit.Assume.assumeFalse;
 
 /**
  * Created by rmpestano on 6/5/16.
@@ -27,8 +29,6 @@ import static org.junit.Assert.assertNotNull;
 public class SvnLastChangesTest {
 
     public static final String newLine = System.getProperty("line.separator");
-
-
 
     String svnRepoPath;
     String svnWithTagsRepoPath;
@@ -49,9 +49,8 @@ public class SvnLastChangesTest {
     @Test
     public void shouldGetLastChanges() {
         String pass = System.getProperty("PASS");
-        if(pass == null || "".equals(pass)) {
-            return;
-        }
+        assumeNotNull(pass);
+        assumeFalse(pass.isEmpty());
         File repository = new File(svnRepoPath);
         assertThat(repository).exists();
         BasicAuthenticationManager basicAuthenticationManager = new BasicAuthenticationManager("rmpestano@gmail.com",pass);
@@ -65,9 +64,8 @@ public class SvnLastChangesTest {
     @Test
     public void shouldGetLastChangesFromLatestTag() throws SVNException {
         String pass = System.getProperty("PASS");
-        if(pass == null || "".equals(pass)) {
-            return;
-        }
+        assumeNotNull(pass);
+        assumeFalse(pass.isEmpty());
         File repository = new File(svnWithTagsRepoPath);
         assertThat(repository).exists();
         BasicAuthenticationManager basicAuthenticationManager = new BasicAuthenticationManager("rmpestano@gmail.com",pass);
@@ -88,6 +86,4 @@ public class SvnLastChangesTest {
                 " :icons: font"+newLine);
         assertThat(lastChanges.getCurrentRevision().getCommitMessage()).isEqualTo("perf");
     }
-
-
 }
