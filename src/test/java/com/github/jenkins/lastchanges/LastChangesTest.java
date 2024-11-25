@@ -167,7 +167,6 @@ public class LastChangesTest {
         FreeStyleBuild build = jenkins.buildAndAssertSuccess(project);
         // then
         String logResult = getTestCapturedLog();
-        System.out.println(logResult);
 
         assertThat(logResult).doesNotContain("WARNING\thudson.model.Actionable#createFor: Actions from com.github.jenkins.lastchanges.LastChangesProjectAction$LastChangesActionFactory");
     }
