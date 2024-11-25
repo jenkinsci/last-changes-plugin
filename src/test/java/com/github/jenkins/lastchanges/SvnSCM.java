@@ -45,30 +45,4 @@ public class SvnSCM extends SubversionSCM {
         }
     	return true;
     }
-    
-    
-    @Override
-    public hudson.scm.SubversionSCM.DescriptorImpl getDescriptor() {
-    	// TODO Auto-generated method stub
-    	return new DescriptorImpl();
-    }
-    
-    @Extension(ordinal = Integer.MAX_VALUE)
-    public static class DescriptorImpl extends hudson.scm.SubversionSCM.DescriptorImpl {
-
-        public DescriptorImpl() {
-            super(SvnSCM.class, RepositoryBrowser.class);
-        }
-
-        @Override public String getDisplayName() {
-            return Messages.NullSCM_DisplayName();
-        }
-
-        @Override
-        public SCM newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return new SvnSCM(targetWorkspaceDirName,null, new ArrayList<ModuleLocation>());
-        }
-    }
-
-
 }

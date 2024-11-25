@@ -17,6 +17,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.*;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import jenkins.plugins.git.GitSampleRepoRule;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -25,22 +26,29 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
-public class LastChangesIT {
+public class LastChangesTest {
 
     @Rule
     public JenkinsRule jenkins = new JenkinsRule();
 
-    private File sampleRepoDir = new File(LastChangesIT.class.getResource("/git-sample-repo").getFile());
+    @ClassRule
+    public static GitSampleRepoRule sampleRepo = new GitSampleRepoRule();
+
+    private File sampleRepoDir = new File(LastChangesTest.class.getResource("/git-sample-repo").getFile());
 
     private static Logger log = Logger.getLogger(Actionable.class.getName()); // matches the logger in the affected class
     private static OutputStream logCapturingStream;
     private static StreamHandler customLogHandler;
+    private static Random random = new Random();
+    private static final String INITIAL_COMMIT_MESSAGE = "initial-commit-" + random.nextInt(10000);
+    private static String sampleRepoHead = null;
 
     @Before
     public void attachLogCapturer() {
@@ -50,16 +58,35 @@ public class LastChangesIT {
         log.addHandler(customLogHandler);
     }
 
+    @Before
+    public void enableLocalCheckout() throws IOException {
+        // Local checkout is disallowed by default for security.
+        // It is safe to enable local checkout for tests
+        GitSCM.ALLOW_LOCAL_CHECKOUT = true;
+    }
+
+    @BeforeClass
+    public static void initializeSampleRepo() throws Exception {
+        sampleRepo.init();
+        sampleRepo.write("file", INITIAL_COMMIT_MESSAGE);
+        sampleRepo.git("commit", "--all", "--message=" + INITIAL_COMMIT_MESSAGE);
+        sampleRepoHead = sampleRepo.head();
+    }
+
     @After
     public void clearLog() throws IOException {
         logCapturingStream.close();
+    }
+
+    @After
+    public void disableLocalCheckout() throws IOException {
+        GitSCM.ALLOW_LOCAL_CHECKOUT = false;
     }
 
     public String getTestCapturedLog() throws IOException {
         customLogHandler.flush();
         return logCapturingStream.toString();
     }
-
 
     @Test
     public void shouldGetLastChangesOfGitRepository() throws Exception {
@@ -123,7 +150,6 @@ public class LastChangesIT {
                 "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", "");
 
         Assertions.assertThat(lastChanges.getDiff()).isEqualToIgnoringWhitespace(diff);
-        
 
         assertThat(lastChanges.getCommits()).isNotNull()
                 .hasSize(1);
@@ -133,12 +159,9 @@ public class LastChangesIT {
         assertThat(lastChanges.getCommits().get(0)
                 .getChanges()).isEqualToIgnoringWhitespace(diff);
 
-
         jenkins.assertLogContains("Last changes from revision 27ad83a (current) to a511a43 (previous) published successfully!", build);
 
     }
-
-
 
     @Test
     @Issue("JENKINS-53860")
@@ -162,14 +185,12 @@ public class LastChangesIT {
         assertThat(getTestCapturedLog()).doesNotContain("WARNING\thudson.model.Actionable#createFor: Actions from com.github.jenkins.lastchanges.LastChangesProjectAction$LastChangesActionFactory");
     }
 
-
-    @Ignore("Can't test it because when cloning git plugin will create just a .git and it is done at execution time, so there is nothing we can do but test manually")
     @Test
     public void shouldGetLastChangesUsingVcsDir() throws Exception {
 
         // given
         List<UserRemoteConfig> remoteConfigs = new ArrayList<UserRemoteConfig>();
-        remoteConfigs.add(new UserRemoteConfig(sampleRepoDir.getParentFile().getAbsolutePath(), "origin", "", null));
+        remoteConfigs.add(new UserRemoteConfig(sampleRepo.fileUrl(), "origin", "", null));
         List<BranchSpec> branches = new ArrayList<>();
         branches.add(new BranchSpec("master"));
         GitSCM scm = new GitSCM(remoteConfigs, branches, false,
@@ -177,7 +198,7 @@ public class LastChangesIT {
                 Collections.<GitSCMExtension>singletonList(new DisableRemotePoll()));
         FreeStyleProject project = jenkins.createFreeStyleProject("git-test");
         project.setScm(scm);
-        LastChangesPublisher publisher = new LastChangesPublisher(SinceType.PREVIOUS_REVISION, FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null,"git-sample-repo", null);
+        LastChangesPublisher publisher = new LastChangesPublisher(SinceType.PREVIOUS_REVISION, FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null,".", null);
         project.getPublishersList().add(publisher);
         project.save();
 
@@ -191,44 +212,12 @@ public class LastChangesIT {
         assertThat(lastChanges).isNotNull();
         assertThat(lastChanges).isNotNull();
         assertThat(lastChanges.getCurrentRevision()).isNotNull();
-        assertThat(lastChanges.getCurrentRevision().getCommitMessage()).isEqualTo("Added javadoc\n");
-        assertThat(lastChanges.getCurrentRevision().getCommitId()).isEqualTo("27ad83a8fbee4b551670a03fc035bf87f7a3bcfb");
-        Assertions.assertThat(lastChanges.getDiff()).isEqualToIgnoringWhitespace(("diff --git a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + GitLastChangesTest.newLine +
-                "index 6d28c9b..bcc2ac0 100644" + GitLastChangesTest.newLine +
-                "--- a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + GitLastChangesTest.newLine +
-                "+++ b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + GitLastChangesTest.newLine +
-                "@@ -31,6 +31,12 @@" + GitLastChangesTest.newLine +
-                " /**" + GitLastChangesTest.newLine +
-                "  * Creates a container which lists all instances of given entity. To restrict the list to a particular entity only," + GitLastChangesTest.newLine +
-                "  * simply call [JPAContainer.addContainerFilter] on the container produced." + GitLastChangesTest.newLine +
-                "+ *" + GitLastChangesTest.newLine +
-                "+ * Containers produced by this method have the following properties:" + GitLastChangesTest.newLine +
-                "+ * * The container's [Item] IDs are not the entity instances themselves - instead, [Item] ID contains the value of the JPA entity ID. This is important when using the container" + GitLastChangesTest.newLine +
-                "+ * together with [AbstractSelect] as the select's value is taken amongst the Item ID." + GitLastChangesTest.newLine +
-                "+ * * [Item]'s Property IDs are [String] values - the field names of given JPA bean." + GitLastChangesTest.newLine +
-                "+ *" + GitLastChangesTest.newLine +
-                "  * @param entity the entity type" + GitLastChangesTest.newLine +
-                "  * @return the new container which can be assigned to a [Grid]" + GitLastChangesTest.newLine +
-                "  */" + GitLastChangesTest.newLine +
-                "@@ -279,9 +285,12 @@" + GitLastChangesTest.newLine +
-                "  * An utility method which adds an item and sets item's caption." + GitLastChangesTest.newLine +
-                "  * @param the Identification of the item to be created." + GitLastChangesTest.newLine +
-                "  * @param caption the new caption" + GitLastChangesTest.newLine +
-                "+ * @return the newly created item ID." + GitLastChangesTest.newLine +
-                "  */" + GitLastChangesTest.newLine +
-                " fun AbstractSelect.addItem(itemId: Any?, caption: String) = addItem(itemId).apply { setItemCaption(itemId, caption) }!!" + GitLastChangesTest.newLine +
-                " " + GitLastChangesTest.newLine +
-                "+" + GitLastChangesTest.newLine +
-                "+" + GitLastChangesTest.newLine +
-                " /**" + GitLastChangesTest.newLine +
-                "  * Walks over this component and all descendants of this component, breadth-first." + GitLastChangesTest.newLine +
-                "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", ""));
-
-
-        jenkins.assertLogContains("Last changes from revision 27ad83a (current) to a511a43 (previous) published successfully!", build);
-
+        assertThat(lastChanges.getCurrentRevision().getCommitMessage()).isEqualTo(INITIAL_COMMIT_MESSAGE + "\n");
+        assertThat(lastChanges.getCurrentRevision().getCommitId()).isEqualTo(sampleRepoHead);
+        Assertions.assertThat(lastChanges.getDiff()).startsWith("diff --git a/file b/file");
+        jenkins.assertLogContains("Last changes from revision ", build);
+        jenkins.assertLogContains(" (previous) published successfully!", build);
     }
-
 
     @Test
     public void shouldGetLastChangesOfLastSuccessfulBuild() throws Exception {
@@ -289,7 +278,6 @@ public class LastChangesIT {
                 "  * Walks over this component and all descendants of this component, breadth-first." + GitLastChangesTest.newLine +
                 "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", ""));
 
-
         jenkins.assertLogContains("Last changes from revision 27ad83a (current) to a511a43 (previous) published successfully!", build);
 
     }
@@ -313,7 +301,6 @@ public class LastChangesIT {
 
         // when
         FreeStyleBuild build = jenkins.buildAndAssertSuccess(project);
-
 
         publisher = new LastChangesPublisher(SinceType.PREVIOUS_REVISION, FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null,null, build.getNumber()+"");
 
@@ -359,7 +346,6 @@ public class LastChangesIT {
                 "  * Walks over this component and all descendants of this component, breadth-first." + GitLastChangesTest.newLine +
                 "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", ""));
 
-
         jenkins.assertLogContains("Last changes from revision 27ad83a (current) to a511a43 (previous) published successfully!", build);
 
     }
@@ -384,15 +370,10 @@ public class LastChangesIT {
         // when
         FreeStyleBuild build = jenkins.assertBuildStatus(Result.FAILURE,project.scheduleBuild2(0).get());
 
-
         // then
         jenkins.assertLogContains("No build found with number 99. Maybe the build was discarded or not has published LastChanges", build);
 
     }
-
-
-
-
 
     @Test
     public void shouldGetLastChangesOfGitRepositoryOnSlaveNode() throws Exception {
@@ -458,23 +439,22 @@ public class LastChangesIT {
         jenkins.assertLogContains("Last changes from revision 27ad83a (current) to a511a43 (previous) published successfully!",build);
 
     }
-    
+
     @Test
     @Ignore("Test classpath issue, it throws: Caused by: org.tmatesoft.svn.core.SVNException: svn: E200007: Runner for 'org.tmatesoft.svn.core.wc2.SvnDiff' command have not been found; probably not yet implement in this API. Although it works on a \"real\" Jenkins.")
     public void shouldGetLastChangesOfSvnRepository() throws Exception {
 
         // given
-    	ModuleLocation location = new ModuleLocation("https://subversion.assembla.com/svn/cucumber-json-files/trunk", ""); 
-    	List<ModuleLocation> locations = new ArrayList<>();
-    	locations.add(location);
+        ModuleLocation location = new ModuleLocation("https://subversion.assembla.com/svn/cucumber-json-files/trunk", "");
+        List<ModuleLocation> locations = new ArrayList<>();
+        locations.add(location);
         SvnSCM scm = new SvnSCM(".svn",sampleRepoDir,locations);//directory content is irrelevant cause LastChangesPublisher will look only into dir name (in case of svn)
         FreeStyleProject project = jenkins.createFreeStyleProject("svn-test");
         project.setScm(scm);
         LastChangesPublisher publisher = new LastChangesPublisher(SinceType.PREVIOUS_REVISION,FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null,null, null);
         project.getPublishersList().add(publisher);
         project.save();
-        
-        
+
         // when
         FreeStyleBuild build = jenkins.buildAndAssertSuccess(project);
 

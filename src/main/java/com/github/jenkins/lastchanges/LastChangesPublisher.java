@@ -62,7 +62,7 @@ import org.tmatesoft.svn.core.wc.SVNRevision;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.*;
@@ -421,7 +421,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
         if (build != null && build.getRootDir() != null) {
             return new FilePath(build.getRootDir());
         } else {
-            return new FilePath(Paths.get("").toFile());
+            return new FilePath(Path.of("").toFile());
         }
     }
 
