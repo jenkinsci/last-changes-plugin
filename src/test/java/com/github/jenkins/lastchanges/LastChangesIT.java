@@ -15,8 +15,6 @@ import hudson.scm.SubversionSCM.ModuleLocation;
 import hudson.slaves.DumbSlave;
 import org.assertj.core.api.Assertions;
 import org.junit.*;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
@@ -33,7 +31,6 @@ import java.util.logging.StreamHandler;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
-@RunWith(JUnit4.class)
 public class LastChangesIT {
 
     @Rule

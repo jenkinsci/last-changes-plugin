@@ -5,8 +5,6 @@ import com.github.jenkins.lastchanges.model.LastChanges;
 import hudson.scm.CredentialsSVNAuthenticationProviderImpl;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.auth.BasicAuthenticationManager;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
@@ -26,7 +24,6 @@ import static org.junit.Assert.assertNotNull;
  * Created by rmpestano on 6/5/16.
  */
 
-@RunWith(JUnit4.class)
 public class SvnLastChangesTest {
 
     public static final String newLine = System.getProperty("line.separator");
