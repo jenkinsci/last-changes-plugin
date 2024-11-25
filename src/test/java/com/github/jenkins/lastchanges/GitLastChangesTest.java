@@ -8,8 +8,6 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -26,7 +24,6 @@ import static org.junit.Assert.*;
  * Created by rmpestano on 6/5/16.
  */
 
-@RunWith(JUnit4.class)
 public class GitLastChangesTest {
     public static final String newLine = System.getProperty("line.separator");
 
