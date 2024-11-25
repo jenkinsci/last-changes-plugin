@@ -1,0 +1,2 @@
+_extends: .github
+tag-template: last-changes-$NEXT_PATCH_VERSION
