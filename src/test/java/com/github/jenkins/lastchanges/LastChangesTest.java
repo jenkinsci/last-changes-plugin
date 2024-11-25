@@ -17,6 +17,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.*;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import jenkins.plugins.git.GitSampleRepoRule;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -25,6 +26,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
@@ -36,11 +38,17 @@ public class LastChangesTest {
     @Rule
     public JenkinsRule jenkins = new JenkinsRule();
 
+    @ClassRule
+    public static GitSampleRepoRule sampleRepo = new GitSampleRepoRule();
+
     private File sampleRepoDir = new File(LastChangesTest.class.getResource("/git-sample-repo").getFile());
 
     private static Logger log = Logger.getLogger(Actionable.class.getName()); // matches the logger in the affected class
     private static OutputStream logCapturingStream;
     private static StreamHandler customLogHandler;
+    private static Random random = new Random();
+    private static final String INITIAL_COMMIT_MESSAGE = "initial-commit-" + random.nextInt(10000);
+    private static String sampleRepoHead = null;
 
     @Before
     public void attachLogCapturer() {
@@ -57,6 +65,14 @@ public class LastChangesTest {
         GitSCM.ALLOW_LOCAL_CHECKOUT = true;
     }
 
+    @BeforeClass
+    public static void initializeSampleRepo() throws Exception {
+        sampleRepo.init();
+        sampleRepo.write("file", INITIAL_COMMIT_MESSAGE);
+        sampleRepo.git("commit", "--all", "--message=" + INITIAL_COMMIT_MESSAGE);
+        sampleRepoHead = sampleRepo.head();
+    }
+        
     @After
     public void clearLog() throws IOException {
         logCapturingStream.close();
@@ -171,13 +187,12 @@ public class LastChangesTest {
         assertThat(logResult).doesNotContain("WARNING\thudson.model.Actionable#createFor: Actions from com.github.jenkins.lastchanges.LastChangesProjectAction$LastChangesActionFactory");
     }
 
-    @Ignore("Can't test it because when cloning git plugin will create just a .git and it is done at execution time, so there is nothing we can do but test manually")
     @Test
     public void shouldGetLastChangesUsingVcsDir() throws Exception {
 
         // given
         List<UserRemoteConfig> remoteConfigs = new ArrayList<UserRemoteConfig>();
-        remoteConfigs.add(new UserRemoteConfig(sampleRepoDir.getParentFile().getAbsolutePath(), "origin", "", null));
+        remoteConfigs.add(new UserRemoteConfig(sampleRepo.fileUrl(), "origin", "", null));
         List<BranchSpec> branches = new ArrayList<>();
         branches.add(new BranchSpec("master"));
         GitSCM scm = new GitSCM(remoteConfigs, branches, false,
@@ -185,7 +200,7 @@ public class LastChangesTest {
                 Collections.<GitSCMExtension>singletonList(new DisableRemotePoll()));
         FreeStyleProject project = jenkins.createFreeStyleProject("git-test");
         project.setScm(scm);
-        LastChangesPublisher publisher = new LastChangesPublisher(SinceType.PREVIOUS_REVISION, FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null,"git-sample-repo", null);
+        LastChangesPublisher publisher = new LastChangesPublisher(SinceType.PREVIOUS_REVISION, FormatType.LINE,MatchingType.NONE, true, false, "0.50","1500",null,".", null);
         project.getPublishersList().add(publisher);
         project.save();
 
@@ -199,41 +214,11 @@ public class LastChangesTest {
         assertThat(lastChanges).isNotNull();
         assertThat(lastChanges).isNotNull();
         assertThat(lastChanges.getCurrentRevision()).isNotNull();
-        assertThat(lastChanges.getCurrentRevision().getCommitMessage()).isEqualTo("Added javadoc\n");
-        assertThat(lastChanges.getCurrentRevision().getCommitId()).isEqualTo("27ad83a8fbee4b551670a03fc035bf87f7a3bcfb");
-        Assertions.assertThat(lastChanges.getDiff()).isEqualToIgnoringWhitespace(("diff --git a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + GitLastChangesTest.newLine +
-                "index 6d28c9b..bcc2ac0 100644" + GitLastChangesTest.newLine +
-                "--- a/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + GitLastChangesTest.newLine +
-                "+++ b/kotlinee-framework/src/main/java/com/github/kotlinee/framework/vaadin/VaadinUtils.kt" + GitLastChangesTest.newLine +
-                "@@ -31,6 +31,12 @@" + GitLastChangesTest.newLine +
-                " /**" + GitLastChangesTest.newLine +
-                "  * Creates a container which lists all instances of given entity. To restrict the list to a particular entity only," + GitLastChangesTest.newLine +
-                "  * simply call [JPAContainer.addContainerFilter] on the container produced." + GitLastChangesTest.newLine +
-                "+ *" + GitLastChangesTest.newLine +
-                "+ * Containers produced by this method have the following properties:" + GitLastChangesTest.newLine +
-                "+ * * The container's [Item] IDs are not the entity instances themselves - instead, [Item] ID contains the value of the JPA entity ID. This is important when using the container" + GitLastChangesTest.newLine +
-                "+ * together with [AbstractSelect] as the select's value is taken amongst the Item ID." + GitLastChangesTest.newLine +
-                "+ * * [Item]'s Property IDs are [String] values - the field names of given JPA bean." + GitLastChangesTest.newLine +
-                "+ *" + GitLastChangesTest.newLine +
-                "  * @param entity the entity type" + GitLastChangesTest.newLine +
-                "  * @return the new container which can be assigned to a [Grid]" + GitLastChangesTest.newLine +
-                "  */" + GitLastChangesTest.newLine +
-                "@@ -279,9 +285,12 @@" + GitLastChangesTest.newLine +
-                "  * An utility method which adds an item and sets item's caption." + GitLastChangesTest.newLine +
-                "  * @param the Identification of the item to be created." + GitLastChangesTest.newLine +
-                "  * @param caption the new caption" + GitLastChangesTest.newLine +
-                "+ * @return the newly created item ID." + GitLastChangesTest.newLine +
-                "  */" + GitLastChangesTest.newLine +
-                " fun AbstractSelect.addItem(itemId: Any?, caption: String) = addItem(itemId).apply { setItemCaption(itemId, caption) }!!" + GitLastChangesTest.newLine +
-                " " + GitLastChangesTest.newLine +
-                "+" + GitLastChangesTest.newLine +
-                "+" + GitLastChangesTest.newLine +
-                " /**" + GitLastChangesTest.newLine +
-                "  * Walks over this component and all descendants of this component, breadth-first." + GitLastChangesTest.newLine +
-                "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", ""));
-
-        jenkins.assertLogContains("Last changes from revision 27ad83a (current) to a511a43 (previous) published successfully!", build);
-
+        assertThat(lastChanges.getCurrentRevision().getCommitMessage()).isEqualTo(INITIAL_COMMIT_MESSAGE + "\n");
+        assertThat(lastChanges.getCurrentRevision().getCommitId()).isEqualTo(sampleRepoHead);
+        Assertions.assertThat(lastChanges.getDiff()).startsWith("diff --git a/file b/file" + GitLastChangesTest.newLine);
+        jenkins.assertLogContains("Last changes from revision ", build);
+        jenkins.assertLogContains(" (previous) published successfully!", build);
     }
 
     @Test
