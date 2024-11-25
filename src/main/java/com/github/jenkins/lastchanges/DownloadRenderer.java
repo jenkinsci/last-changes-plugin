@@ -14,6 +14,7 @@ import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class DownloadRenderer implements Serializable {
 
@@ -42,9 +43,9 @@ public class DownloadRenderer implements Serializable {
         try {
             if (isHtml) {
                 String htmlDiff = LastChangesUtil.toHtmlDiff(buildChanges, buildName);
-                is = new ByteArrayInputStream(htmlDiff.getBytes());
+                is = new ByteArrayInputStream(htmlDiff.getBytes(UTF_8));
             } else {
-                is = new ByteArrayInputStream(buildChanges.getDiff().getBytes());
+                is = new ByteArrayInputStream(buildChanges.getDiff().getBytes(UTF_8));
             }
                 
             response.addHeader("Content-Disposition", "attachment; filename=" + fileName);
