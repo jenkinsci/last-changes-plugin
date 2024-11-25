@@ -21,6 +21,7 @@ import org.eclipse.jgit.revwalk.RevSort;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -178,7 +179,7 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
                 throw new GitDiffException("Could not get last changes from repository located at " + repositoryLocation, e);
             }
 
-            return new LastChanges(lastCommitInfo, oldCommitInfo, new String(diffStream.toByteArray(), Charset.forName("UTF-8")));
+            return new LastChanges(lastCommitInfo, oldCommitInfo, new String(diffStream.toByteArray(), UTF_8));
         } finally {
             if (git != null) {
                 git.close();
