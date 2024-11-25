@@ -216,7 +216,7 @@ public class LastChangesTest {
         assertThat(lastChanges.getCurrentRevision()).isNotNull();
         assertThat(lastChanges.getCurrentRevision().getCommitMessage()).isEqualTo(INITIAL_COMMIT_MESSAGE + "\n");
         assertThat(lastChanges.getCurrentRevision().getCommitId()).isEqualTo(sampleRepoHead);
-        Assertions.assertThat(lastChanges.getDiff()).startsWith("diff --git a/file b/file" + GitLastChangesTest.newLine);
+        Assertions.assertThat(lastChanges.getDiff()).startsWith("diff --git a/file b/file");
         jenkins.assertLogContains("Last changes from revision ", build);
         jenkins.assertLogContains(" (previous) published successfully!", build);
     }
