@@ -8,8 +8,6 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -26,12 +24,10 @@ import static org.junit.Assert.*;
  * Created by rmpestano on 6/5/16.
  */
 
-@RunWith(JUnit4.class)
 public class GitLastChangesTest {
     public static final String newLine = System.getProperty("line.separator");
 
     String gitRepoPath;
-
 
     @Before
     public void before() {
@@ -64,7 +60,6 @@ public class GitLastChangesTest {
             assertEquals(String.format("No git repository found at %s.", repoPath), e.getMessage());
         }
     }
-
 
     @Test
     public void shouldGetLastChangesFromGitRepository() {
@@ -106,7 +101,6 @@ public class GitLastChangesTest {
                 "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", ""));
     }
 
-
     @Test
     public void shouldGetLastChangesFromInitialCommitGitRepo() {
         String repositoryLocation = GitLastChangesTest.class.getResource("/git-initial-commit-repo").getFile();
@@ -146,12 +140,10 @@ public class GitLastChangesTest {
                     " "+newLine +
                     "     <name>admin-persistence</name>"+newLine +
                     "     <url>https://github.com/adminfaces/admin-persistence</url>"+newLine);
-            
+
         } catch (Exception e) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, "", e);
             assertThat(e.getMessage()).isEqualTo(String.format("Could not find previous head of repository located at %s. Its your first commit?", file.getAbsolutePath()));
         }
     }
-
-
 }
