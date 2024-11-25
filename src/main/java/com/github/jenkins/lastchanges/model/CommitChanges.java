@@ -52,6 +52,11 @@ public class CommitChanges implements Serializable {
     }
 
     @Override
+    public int hashCode() {
+        return commitInfo != null ? commitInfo.hashCode() : 0;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if(obj instanceof CommitChanges == false) {
             return false;
