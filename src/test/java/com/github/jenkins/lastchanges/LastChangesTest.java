@@ -72,7 +72,7 @@ public class LastChangesTest {
         sampleRepo.git("commit", "--all", "--message=" + INITIAL_COMMIT_MESSAGE);
         sampleRepoHead = sampleRepo.head();
     }
-        
+
     @After
     public void clearLog() throws IOException {
         logCapturingStream.close();
