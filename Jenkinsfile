@@ -4,18 +4,15 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout scm // Checkout the code from the repository
+                checkout scm
             }
         }
 
         stage('Get Latest Changed Files') {
             steps {
                 script {
-                    // Get the names of the files changed in the latest commit
                     def changedFiles = sh(script: 'git diff --name-only HEAD~1 HEAD', returnStdout: true).trim().split('\n')
                     echo "Changed files in the latest commit:"
-                    
-                    // Loop through and print each file name
                     changedFiles.each { file ->
                         echo "File: ${file}"
                     }
@@ -25,7 +22,21 @@ pipeline {
 
         stage('Build Plugin') {
             steps {
-                // Build the plugin using the shared pipeline library
+                script {
+                    try {
+                        echo "Attempting to use Last Changes plugin for building."
+                        def publisher = new com.github.jenkins.lastchanges.LastChangesPublisher()
+                        def publisherScript = new com.github.jenkins.lastchanges.pipeline.LastChangesPublisherScript(publisher)
+                        publisherScript.publishLastChanges()
+                    } catch (Exception e) {
+                        echo "Last Changes plugin not found. Skipping Last Changes step."
+                    }
+                }
+            }
+        }
+
+        stage('Build Plugin') {
+            steps {
                 buildPlugin()
             }
         }
