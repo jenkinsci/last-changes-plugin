@@ -6,11 +6,11 @@
         <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/github-9.5.0.min.css"/>
         <link rel="stylesheet" type="text/css" href="${rootURL}/plugin/last-changes/css/diff2html-2.12.2.min.css"/>
         <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/jquery.min.js"/>
-        <script type="text/javascript">window.jQueryJenkins = jQuery.noConflict();</script>
         <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/highlightjs-9.12.0.min.js"/>
         <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-2.12.2.min.js"/>
         <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/diff2html-ui-2.12.2.min.js"/>
         <script type="text/javascript" src="${rootURL}/plugin/last-changes/js/scala-9.5.0.min.js"/>
+        <st:adjunct includes="com.github.jenkins.lastchanges.LastChangesBuildAction.last-changes"/>
       </l:header>
 
          <l:main-panel style="container-fluid;width:100%">
@@ -31,49 +31,11 @@
              }
 
          </style>
-         <script>
-             jQueryJenkins(document).ready(function () {
-                 if (jQueryJenkins('#main-panel').length) {
-                     jQueryJenkins('#main-panel').attr('class','col-sm-24 col-md-24 col-lg-24 col-xlg-24');
-                 }
-                 var buildChanges = "<j:out value="${it.buildChanges.escapedDiff}"/>";
-                 var sidePanelTD = document.getElementById('side-panel');
-                 if (sidePanelTD) {
-                     sidePanelTD.parentNode.removeChild(sidePanelTD);
-                 }
-
-                 if(buildChanges) {
-                     var diff2htmlUi = new Diff2HtmlUI({diff: buildChanges});
-
-                     diff2htmlUi.draw('#${it.config.format().getFormat()}', {
-                             inputFormat: 'json',
-                             outputFormat: '${it.config.format().getFormat()}',
-                             showFiles: ${it.config.showFiles()},
-                             synchronisedScroll: ${it.config.synchronisedScroll()},
-                             matchWordsThreshold: '${it.config.matchWordsThreshold()}',
-                             matchingMaxComparisons: '${it.config.matchingMaxComparisons()}',
-                             matching: '${it.config.matching().getMatching()}'
-                         }
-                     );
-                     diff2htmlUi.fileListCloseable('#${it.config.format().getFormat()}', false);
-                     diff2htmlUi.highlightCode('#${it.config.format().getFormat()}');
-                 } else {
-                     jQueryJenkins('#line-by-line').append('<p style="margin-top:150px;text-align:center;font-size:14px;">No changes between revision <span style="font-weight:600;text-decoration:underline">${it.buildChanges.currentRevision.commitId}</span> and <span style="font-weight:600;text-decoration:underline">${it.buildChanges.previousRevision.commitId}</span> </p>')
-                     jQueryJenkins('#changes-info, .d2h-show2').hide();
-                 }
-
-             }); //end documentReady
-
-            function showCommits() {
-                    jQueryJenkins('.d2h-show2').hide();
-                    jQueryJenkins('.d2h-hide2, #commits').show();
-                   }
-
-            function hideCommits() {
-                    jQueryJenkins('.d2h-show2').show();
-                    jQueryJenkins('.d2h-hide2, #commits').hide();
-                 }
-      </script>
+         <span class="last-changes-data" data-build-changes="${it.buildChanges.diff}" data-format="${it.config.format().getFormat()}"
+               data-show-files="${it.config.showFiles()}" data-synchronized-scroll="${it.config.synchronisedScroll()}"
+               data-match-words-threshold="${it.config.matchWordsThreshold()}" data-matching-max-comparisons="${it.config.matchingMaxComparisons()}"
+               data-matching="${it.config.matching().getMatching()}" data-current-revision-commit-id="${it.buildChanges.currentRevision.commitId}"
+               data-previous-revision-commit-id="${it.buildChanges.previousRevision.commitId}"/>
       <div class="col-sm-24 col-md-24" style="width:100%; font-family: 'Source Sans Pro',sans-serif;">
          <div style="text-align:center;margin: 0 auto;">
             <div class="col-sm-24 col-md-24 col-lg-12 col-xlg-12">
@@ -115,8 +77,8 @@
                  <div class="d2h-file-list-wrapper">
                     <div class="d2h-file-list-header">
                          <span class="d2h-file-list-title">Commits (${it.buildChanges.numCommits})</span>
-                         <a class="d2h-file-switch d2h-hide2" style="display: none;" onclick="hideCommits()"> hide</a>
-                         <a class="d2h-file-switch d2h-show2" style="display: inline;" onclick="showCommits()"> show</a>
+                         <a class="d2h-file-switch d2h-hide2" style="display: none;"> hide</a>
+                         <a class="d2h-file-switch d2h-show2" style="display: inline;"> show</a>
                     </div>
                     <ol id="commits" class="d2h-file-list" style="display: none;" >
                        <j:forEach items="${it.buildChanges.commits}" var="c">
