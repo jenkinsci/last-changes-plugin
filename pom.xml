@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<version>4.88</version>
+		<version>5.8</version>
 		<relativePath />
 	</parent>
 	<artifactId>last-changes</artifactId>
@@ -12,13 +12,13 @@
 	<packaging>hpi</packaging>
 
 	<properties>
-		<revision>2.8.1</revision>
+		<revision>2.9.0</revision>
 		<changelist>-SNAPSHOT</changelist>
 		<gitHubRepo>jenkinsci/last-changes-plugin</gitHubRepo>
 		<!-- Baseline Jenkins version you use to build the plugin. Users must have
 			this version or newer to run. -->
-		<jenkins.baseline>2.452</jenkins.baseline>
-		<jenkins.version>${jenkins.baseline}.4</jenkins.version>
+		<jenkins.baseline>2.479</jenkins.baseline>
+		<jenkins.version>${jenkins.baseline}.3</jenkins.version>
 		<spotbugs.effort>Min</spotbugs.effort>
 		<spotbugs.threshold>High</spotbugs.threshold>
 	</properties>
@@ -44,8 +44,8 @@
 		<dependencies>
 			<dependency>
 				<groupId>io.jenkins.tools.bom</groupId>
-				<artifactId>bom-2.452.x</artifactId>
-				<version>3722.vcc62e7311580</version>
+				<artifactId>bom-${jenkins.baseline}.x</artifactId>
+				<version>4228.v0a_71308d905b_</version>
 				<scope>import</scope>
 				<type>pom</type>
 			</dependency>
@@ -61,9 +61,23 @@
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>git</artifactId>
 		</dependency>
+		<!-- TODO: Remove when included in plugin BOM -->
+		<dependency>
+			<groupId>io.jenkins.plugins.mina-sshd-api</groupId>
+			<artifactId>mina-sshd-api-common</artifactId>
+			<version>2.15.0-156.v48eb_e3c5a_805</version>
+		</dependency>
+		<!-- TODO: Remove when included in plugin BOM -->
+		<dependency>
+			<groupId>io.jenkins.plugins.mina-sshd-api</groupId>
+			<artifactId>mina-sshd-api-core</artifactId>
+			<version>2.15.0-156.v48eb_e3c5a_805</version>
+		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>git-client</artifactId>
+			<!-- TODO: Remove when included in plugin BOM -->
+			<version>6.2.0-rc3710.111f814fdc4b_</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
