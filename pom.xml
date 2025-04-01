@@ -8,12 +8,11 @@
 		<relativePath />
 	</parent>
 	<artifactId>last-changes</artifactId>
-	<version>${revision}${changelist}</version>
+	<version>${changelist}</version>
 	<packaging>hpi</packaging>
 
 	<properties>
-		<revision>2.8.1</revision>
-		<changelist>-SNAPSHOT</changelist>
+		<changelist>999999-SNAPSHOT</changelist>
 		<gitHubRepo>jenkinsci/last-changes-plugin</gitHubRepo>
 		<!-- Baseline Jenkins version you use to build the plugin. Users must have
 			this version or newer to run. -->
