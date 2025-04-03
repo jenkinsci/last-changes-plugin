@@ -1,13 +1,14 @@
 package com.github.jenkins.lastchanges;
 
 import com.github.jenkins.lastchanges.exception.GitTreeNotFoundException;
+import com.github.jenkins.lastchanges.exception.RepositoryNotFoundException;
 import com.github.jenkins.lastchanges.impl.GitLastChanges;
 import com.github.jenkins.lastchanges.model.LastChanges;
-import org.apache.commons.lang.SystemUtils;
+import hudson.Functions;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -18,19 +19,22 @@ import java.util.logging.Logger;
 
 import static com.github.jenkins.lastchanges.impl.GitLastChanges.repository;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 /**
  * Created by rmpestano on 6/5/16.
  */
 
-public class GitLastChangesTest {
-    public static final String newLine = System.getProperty("line.separator");
+class GitLastChangesTest {
+    private static final String newLine = System.lineSeparator();
 
-    String gitRepoPath;
+    private String gitRepoPath;
 
-    @Before
-    public void before() {
+    @BeforeEach
+    void setUp() {
         gitRepoPath = GitLastChangesTest.class.getResource("/git-sample-repo").getFile();
 
         Locale.setDefault(Locale.ENGLISH);
@@ -38,31 +42,27 @@ public class GitLastChangesTest {
     }
 
     @Test
-    public void shouldInitRepository() {
+    void shouldInitRepository() {
         assertNotNull(repository(gitRepoPath));
     }
 
     @Test
-    public void shouldNotInitRepositoryWithBlankPath() {
-        try {
-            repository("");
-        } catch (RuntimeException e) {
-            assertEquals("Git repository path cannot be empty.", e.getMessage());
-        }
+    void shouldNotInitRepositoryWithBlankPath() {
+        RepositoryNotFoundException e = assertThrows(RepositoryNotFoundException.class,
+                () -> repository(""));
+        assertEquals("Git repository path cannot be empty.", e.getMessage());
     }
 
     @Test
-    public void shouldNotInitRepositoryWithNonExistingRepository() {
+    void shouldNotInitRepositoryWithNonExistingRepository() {
         String repoPath = Path.of("").toAbsolutePath().toString();
-        try {
-            repository(repoPath);
-        } catch (RuntimeException e) {
-            assertEquals(String.format("No git repository found at %s.", repoPath), e.getMessage());
-        }
+        RepositoryNotFoundException e = assertThrows(RepositoryNotFoundException.class,
+                () -> repository(repoPath));
+        assertEquals(String.format("No git repository found at %s.", repoPath), e.getMessage());
     }
 
     @Test
-    public void shouldGetLastChangesFromGitRepository() {
+    void shouldGetLastChangesFromGitRepository() {
         LastChanges lastChanges = GitLastChanges.getInstance().changesOf(repository(gitRepoPath));
         assertThat(lastChanges).isNotNull();
         assertThat(lastChanges.getCurrentRevision()).isNotNull();
@@ -102,22 +102,18 @@ public class GitLastChangesTest {
     }
 
     @Test
-    public void shouldGetLastChangesFromInitialCommitGitRepo() {
+    void shouldGetLastChangesFromInitialCommitGitRepo() {
         String repositoryLocation = GitLastChangesTest.class.getResource("/git-initial-commit-repo").getFile();
         File file = new File(repositoryLocation);
-        try {
-            GitLastChanges.getInstance().changesOf(repository(repositoryLocation));
-            fail("Should not get here");
-        } catch (GitTreeNotFoundException e) {
-            assertThat(e.getMessage()).isEqualTo(String.format("Could not find previous head of repository located at %s. Its your first commit?", file.getAbsolutePath()));
-        }
+        GitTreeNotFoundException e = assertThrows(GitTreeNotFoundException.class,
+                () -> GitLastChanges.getInstance().changesOf(repository(repositoryLocation)));
+        assertThat(e.getMessage()).isEqualTo(String.format("Could not find previous head of repository located at %s. Its your first commit?", file.getAbsolutePath()));
     }
 
     @Test
-    public void shouldGetLastChangesFromSinceLastTag() {
-        if(SystemUtils.IS_OS_WINDOWS) {
-            return;
-        }
+    void shouldGetLastChangesFromSinceLastTag() {
+        assumeFalse(Functions.isWindows());
+
         String repositoryLocation = GitLastChangesTest.class.getResource("/git-with-tags-repo").getFile();
         File file = new File(repositoryLocation);
         assertThat(file).exists();
@@ -127,20 +123,19 @@ public class GitLastChangesTest {
             ObjectId lastTagCommit = GitLastChanges.getInstance().getLastTagRevision(repository);
             LastChanges lastChanges = GitLastChanges.getInstance().changesOf(repository(repositoryLocation), head, lastTagCommit);
             assertThat(lastChanges).isNotNull();
-            assertThat(lastChanges.getDiff()).isEqualToIgnoringWhitespace("diff --git a/pom.xml b/pom.xml"+newLine +
-                    "index d93b4a4..0fcdc51 100644"+newLine +
-                    "--- a/pom.xml"+newLine +
-                    "+++ b/pom.xml"+newLine +
-                    "@@ -11,7 +11,7 @@"+newLine +
-                    " "+newLine +
-                    "     <groupId>com.github.adminfaces</groupId>"+newLine +
-                    "     <artifactId>admin-persistence</artifactId>"+newLine +
-                    "-    <version>1.0.0-RC10</version>"+newLine +
-                    "+    <version>1.0.0-RC11-SNAPSHOT</version>"+newLine +
-                    " "+newLine +
-                    "     <name>admin-persistence</name>"+newLine +
-                    "     <url>https://github.com/adminfaces/admin-persistence</url>"+newLine);
-
+            assertThat(lastChanges.getDiff()).isEqualToIgnoringWhitespace("diff --git a/pom.xml b/pom.xml" + newLine +
+                    "index d93b4a4..0fcdc51 100644" + newLine +
+                    "--- a/pom.xml" + newLine +
+                    "+++ b/pom.xml" + newLine +
+                    "@@ -11,7 +11,7 @@" + newLine +
+                    " " + newLine +
+                    "     <groupId>com.github.adminfaces</groupId>" + newLine +
+                    "     <artifactId>admin-persistence</artifactId>" + newLine +
+                    "-    <version>1.0.0-RC10</version>" + newLine +
+                    "+    <version>1.0.0-RC11-SNAPSHOT</version>" + newLine +
+                    " " + newLine +
+                    "     <name>admin-persistence</name>" + newLine +
+                    "     <url>https://github.com/adminfaces/admin-persistence</url>" + newLine);
         } catch (Exception e) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, "", e);
             assertThat(e.getMessage()).isEqualTo(String.format("Could not find previous head of repository located at %s. Its your first commit?", file.getAbsolutePath()));
