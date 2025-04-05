@@ -62,7 +62,7 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
         File repositoryPath = new File(path);
 
         if (!repositoryPath.exists()) {
-            throw new RepositoryNotFoundException(String.format("Git repository path not found at location %s.", repositoryPath));
+            throw new RepositoryNotFoundException("Git repository path not found at location %s.".formatted(repositoryPath));
         }
 
         Repository repository = null;
@@ -72,7 +72,7 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
             throw new RepositoryNotFoundException("Could not find git repository at " + path);
         }
         if (repository.isBare()) {
-            throw new RepositoryNotFoundException(String.format("No git repository found at %s.", path));
+            throw new RepositoryNotFoundException("No git repository found at %s.".formatted(path));
         }
 
         return repository;
@@ -96,7 +96,7 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
             try {
                 previousHead = repository.resolve("HEAD~^{tree}");
                 if (previousHead == null) {
-                    throw new GitTreeNotFoundException(String.format("Could not find previous head of repository located at %s. Its your first commit?", repositoryLocation));
+                    throw new GitTreeNotFoundException("Could not find previous head of repository located at %s. Its your first commit?".formatted(repositoryLocation));
                 }
             } catch (IOException e) {
                 throw new GitTreeNotFoundException("Could not resolve previous head of repository located at " + repositoryLocation, e);
@@ -302,7 +302,7 @@ public class GitLastChanges implements VCSChanges<Repository, ObjectId> {
                 }
             }
         }catch (Exception e) {
-            Logger.getLogger(GitLastChanges.class.getName()).log(Level.WARNING, String.format("Could not get commits between current revision %s and previous revision %s.", currentRevision, previousRevision), e);
+            Logger.getLogger(GitLastChanges.class.getName()).log(Level.WARNING, "Could not get commits between current revision %s and previous revision %s.".formatted(currentRevision, previousRevision), e);
         }
 
         return commits;

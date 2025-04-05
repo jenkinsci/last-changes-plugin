@@ -163,7 +163,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
         }
 
         if (!isGit && !isSvn) {
-            throw new RuntimeException(String.format("Git or Svn directories not found in workspace %s.", vcsDirParam.toURI().toString()));
+            throw new RuntimeException("Git or Svn directories not found in workspace %s.".formatted(vcsDirParam.toURI().toString()));
         }
 
         boolean hasTargetRevision = false;
@@ -237,7 +237,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
                 lastChanges = vcsDirParam.act(new GetSVNLastChangesCallable(hasTargetRevision, targetRevision, listener, svnAuthProvider));
             }
 
-            String resultMessage = String.format("Last changes from revision %s (current) to %s (previous) published successfully!", truncate(lastChanges.getCurrentRevision().getCommitId(), 8), truncate(lastChanges.getPreviousRevision().getCommitId(), 8));
+            String resultMessage = "Last changes from revision %s (current) to %s (previous) published successfully!".formatted(truncate(lastChanges.getCurrentRevision().getCommitId(), 8), truncate(lastChanges.getPreviousRevision().getCommitId(), 8));
             listener.hyperlink("../" + build.getNumber() + "/" + LastChangesBaseAction.BASE_URL, resultMessage);
             listener.getLogger().println("");
             build.addAction(new LastChangesBuildAction(build, lastChanges,
@@ -339,7 +339,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
 
         }
         if (buildParam == null) {
-            throw new RuntimeException(String.format("%s is an invalid build number for 'specificBuild' param. It must resolve to an integer.", targetBuild));
+            throw new RuntimeException("%s is an invalid build number for 'specificBuild' param. It must resolve to an integer.".formatted(targetBuild));
         }
         LastChangesBuildAction actionFound = null;
         for (Run build : builds) {
@@ -350,7 +350,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
         }
 
         if (actionFound == null) {
-            throw new RuntimeException(String.format("No build found with number %s. Maybe the build was discarded or not has published LastChanges.", buildParam));
+            throw new RuntimeException("No build found with number %s. Maybe the build was discarded or not has published LastChanges.".formatted(buildParam));
         }
 
         return actionFound.getBuildChanges().getCurrentRevision().getCommitId();
@@ -497,7 +497,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
             if (isOk) {
                 return FormValidation.ok();
             } else {
-                return FormValidation.error(String.format("Build #%s is invalid, no longer exists, or has not published last changes.", specificBuild));
+                return FormValidation.error("Build #%s is invalid, no longer exists, or has not published last changes.".formatted(specificBuild));
             }
         }
 
@@ -767,7 +767,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
                 DateFormat format = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT);
                 return format.parse(c1.getCommitDate()).compareTo(format.parse(c2.getCommitDate()));
             } catch (ParseException e) {
-                String couldNotParseCommitDatesErrorMsg = String.format("Could not parse commit dates %s and %s ", c1.getCommitDate(), c2.getCommitDate());
+                String couldNotParseCommitDatesErrorMsg = "Could not parse commit dates %s and %s ".formatted(c1.getCommitDate(), c2.getCommitDate());
                 LOG.severe(couldNotParseCommitDatesErrorMsg);
                 throw new CommitInfoException(couldNotParseCommitDatesErrorMsg, e);
             }
