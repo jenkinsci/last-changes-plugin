@@ -31,12 +31,14 @@ class LastChangesPipelineTest {
     @Test
     void shouldPublishLastChangesViaPipelineScript() throws Exception {
         WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "last-changes-a");
-        job.setDefinition(new CpsFlowDefinition(StringUtils.join(Arrays.asList(
-                "node {",
-                "  git url: 'https://github.com/jenkinsci/last-changes-plugin.git'",
-                "  def publisher = LastChanges.getLastChangesPublisher 'PREVIOUS_REVISION', 'SIDE', 'LINE', true, true, '', '', '', '', ''",
-                "  publisher.publishLastChanges()",
-                "}"), "\n"), true));
+        job.setDefinition(new CpsFlowDefinition(
+                """
+                node {
+                  git url: 'https://github.com/jenkinsci/last-changes-plugin.git'
+                  def publisher = LastChanges.getLastChangesPublisher 'PREVIOUS_REVISION', 'SIDE', 'LINE', true, true, '', '', '', '', ''
+                  publisher.publishLastChanges()
+                }
+                """, true));
         WorkflowRun run = j.assertBuildStatusSuccess(job.scheduleBuild2(0).get());
         j.assertLogContains("Last changes from revision", run);
         j.assertLogContains("published successfully!", run);
@@ -45,11 +47,13 @@ class LastChangesPipelineTest {
     @Test
     void shouldPublishLastChangesViaPipelineScriptFromReadme() throws Exception {
         WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "last-changes-b");
-        job.setDefinition(new CpsFlowDefinition(StringUtils.join(Arrays.asList(
-                "node {",
-                "  git url: 'https://github.com/jenkinsci/last-changes-plugin.git'",
-                "  lastChanges()",
-                "}"), "\n"), true));
+        job.setDefinition(new CpsFlowDefinition(
+                """
+                node {
+                  git url: 'https://github.com/jenkinsci/last-changes-plugin.git'
+                  lastChanges()
+                }
+                """, true));
         WorkflowRun run = j.assertBuildStatusSuccess(job.scheduleBuild2(0).get());
         j.assertLogContains("Last changes from revision ", run);
         j.assertLogContains("published successfully!", run);
@@ -60,11 +64,13 @@ class LastChangesPipelineTest {
         assumeFalse(Functions.isWindows(), "TODO: Leaves an open file handle that fails Windows tests");
 
         WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "last-changes-c");
-        job.setDefinition(new CpsFlowDefinition(StringUtils.join(Arrays.asList(
-                "node {",
-                "  git url: 'https://github.com/jenkinsci/last-changes-plugin.git'",
-                "  lastChanges format:'SIDE', matching: 'WORD', specificRevision: '156e2508a31d8835ec4e5ba7e206ecd2e406f202'",
-                "}"), "\n"), true));
+        job.setDefinition(new CpsFlowDefinition(
+                """
+                node {
+                  git url: 'https://github.com/jenkinsci/last-changes-plugin.git'
+                  lastChanges format:'SIDE', matching: 'WORD', specificRevision: '156e2508a31d8835ec4e5ba7e206ecd2e406f202'
+                }
+                """, true));
         WorkflowRun run = j.assertBuildStatusSuccess(job.scheduleBuild2(0).get());
         j.assertLogContains("Last changes from revision ", run);
         j.assertLogContains(" to 156e250 (previous) published successfully!", run);
@@ -73,25 +79,27 @@ class LastChangesPipelineTest {
     @Test
     void shouldPublishLastChangesViaPipelineScriptFromReadmeB() throws Exception {
         WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "last-changes-d");
-        job.setDefinition(new CpsFlowDefinition(StringUtils.join(Arrays.asList(
-                "node {",
-                "  stage('checkout') {",
-                "    git url: 'https://github.com/jenkinsci/last-changes-plugin.git'",
-                "  }",
-                "  stage('last-changes') {",
-                "    def publisher = LastChanges.getLastChangesPublisher 'PREVIOUS_REVISION', 'SIDE', 'LINE', true, true, '', '', '', '', ''",
-                "    publisher.publishLastChanges()",
-                "    def changes = publisher.getLastChanges()",
-                "    println(changes.getEscapedDiff())",
-                "    for (commit in changes.getCommits()) {",
-                "      println(commit)",
-                "      def commitInfo = commit.getCommitInfo()",
-                "      println(commitInfo)",
-                "      println(commitInfo.getCommitMessage())",
-                "      println(commit.getChanges())",
-                "    }",
-                "  }",
-                "}"), "\n"), true));
+        job.setDefinition(new CpsFlowDefinition(
+                """
+                node {
+                  stage('checkout') {
+                    git url: 'https://github.com/jenkinsci/last-changes-plugin.git'
+                  }
+                  stage('last-changes') {
+                    def publisher = LastChanges.getLastChangesPublisher 'PREVIOUS_REVISION', 'SIDE', 'LINE', true, true, '', '', '', '', ''
+                    publisher.publishLastChanges()
+                    def changes = publisher.getLastChanges()
+                    println(changes.getEscapedDiff())
+                    for (commit in changes.getCommits()) {
+                      println(commit)
+                      def commitInfo = commit.getCommitInfo()
+                      println(commitInfo)
+                      println(commitInfo.getCommitMessage())
+                      println(commit.getChanges())
+                    }
+                  }
+                }
+                """, true));
         WorkflowRun run = j.assertBuildStatusSuccess(job.scheduleBuild2(0).get());
         j.assertLogContains("Last changes from revision ", run);
         j.assertLogContains(" (previous) published successfully!", run);
@@ -100,11 +108,13 @@ class LastChangesPipelineTest {
     @Test
     void shouldNotPublishLastChangesViaPipelineWithoutScm() throws Exception {
         WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "last-changes-e");
-        job.setDefinition(new CpsFlowDefinition(StringUtils.join(Arrays.asList(
-                "node {",
-                "  def publisher = LastChanges.getLastChangesPublisher 'PREVIOUS_REVISION', 'SIDE', 'LINE', true, true, '', '', '', '', ''",
-                "  publisher.publishLastChanges()",
-                "}"), "\n"), true));
+        job.setDefinition(new CpsFlowDefinition(
+                """
+                node {
+                  def publisher = LastChanges.getLastChangesPublisher 'PREVIOUS_REVISION', 'SIDE', 'LINE', true, true, '', '', '', '', ''
+                  publisher.publishLastChanges()
+                }
+                """, true));
         WorkflowRun run = j.assertBuildStatus(Result.FAILURE, job.scheduleBuild2(0).get());
         j.assertLogContains("Git or Svn directories not found in workspace", run);
     }
@@ -112,22 +122,24 @@ class LastChangesPipelineTest {
     @Test
     void shouldGetHtmlDiffViaPipeline() throws Exception {
         WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "last-changes-f");
-        job.setDefinition(new CpsFlowDefinition(StringUtils.join(List.of(
-                "pipeline {\n" +
-                        "    agent any\n" +
-                        "    stages {\n" +
-                        "        stage('Checkout') {\n" +
-                        "            steps {\n" +
-                        "                git 'https://github.com/jenkinsci/last-changes-plugin.git'\n" +
-                        "                script {\n" +
-                        "                  def publisher = LastChanges.getLastChangesPublisher 'PREVIOUS_REVISION', 'SIDE', 'LINE', true, true, '', '', '', '', ''\n" +
-                        "                  publisher.publishLastChanges()\n" +
-                        "                  writeFile file: 'build-diff.html', text: publisher.getHtmlDiff()\n" +
-                        "                }\n" +
-                        "            }\n" +
-                        "        }\n" +
-                        "    }\n" +
-                        "}"), "\n"), true));
+        job.setDefinition(new CpsFlowDefinition(
+                """
+                pipeline {
+                    agent any
+                    stages {
+                        stage('Checkout') {
+                            steps {
+                                git 'https://github.com/jenkinsci/last-changes-plugin.git'
+                                script {
+                                  def publisher = LastChanges.getLastChangesPublisher 'PREVIOUS_REVISION', 'SIDE', 'LINE', true, true, '', '', '', '', ''
+                                  publisher.publishLastChanges()
+                                  writeFile file: 'build-diff.html', text: publisher.getHtmlDiff()
+                                }
+                            }
+                        }
+                    }
+                }
+                """, true));
         WorkflowRun run = j.assertBuildStatusSuccess(job.scheduleBuild2(0).get());
         j.assertLogContains("Last changes from revision", run);
         j.assertLogContains("published successfully!", run);
