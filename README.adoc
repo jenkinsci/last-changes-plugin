@@ -280,28 +280,6 @@ pipeline {
 }
 ----
 
-
-== Docker
-
-An easy way to test this plugin is using a docker container, here are the steps (assuming you have docker installed):
-
-. Run the image:
-+
-----
-docker run -it -p 8080:8080 rmpestano/jenkins-last-changes
-----
-+
-. Access localhost:8080/ and create a job
-. Configure this svn repository: https://subversion.assembla.com/svn/cucumber-json-files/trunk/
-. Add the *Publish last changes* _post build action_;
-. Just run the job
-
-
-Job output should look like:
-
-image:last-changes-docker.png[link=https://raw.githubusercontent.com/jenkinsci/last-changes-plugin/master/images/last-changes-docker.png]
-
-
 == Running it locally
 
 Following are the steps to `run, debug and test` this plugin on your machine:
