@@ -143,16 +143,16 @@ public class SvnLastChanges implements VCSChanges<File, SVNRevision> {
                 if (latestTag != null) {
                     return SVNRevision.create(latestTag.getRevision());
                 } else {
-                    throw new RuntimeException(String.format("Last tag not found on repository %s", repository.toPath().toAbsolutePath()));
+                    throw new RuntimeException("Last tag not found on repository %s".formatted(repository.toPath().toAbsolutePath()));
                 }
             } else {
-                throw new RuntimeException(String.format("Tags branch not found on repository %s. Make sure your repository have the 'tags' directory.", repository.toPath().toAbsolutePath()));
+                throw new RuntimeException("Tags branch not found on repository %s. Make sure your repository have the 'tags' directory.".formatted(repository.toPath().toAbsolutePath()));
             }
 
 
         } catch (Exception e) {
             LOG.log(Level.SEVERE, "Could not retrieve last tag revision of svn repository located at " + repository + " due to following error: " + (e.getMessage() == null ? e.toString() : e.getMessage()) + (e.getCause() != null ? " - " + e.getCause() : ""), e);
-            throw new RuntimeException(String.format("Could not retrieve latest tag revision on repository %s due to following error: %s.", repository.toPath().toAbsolutePath(), e.getMessage() == null ? e.toString() : e.getMessage()));
+            throw new RuntimeException("Could not retrieve latest tag revision on repository %s due to following error: %s.".formatted(repository.toPath().toAbsolutePath(), e.getMessage() == null ? e.toString() : e.getMessage()));
         }
 
     }
@@ -257,7 +257,7 @@ public class SvnLastChanges implements VCSChanges<File, SVNRevision> {
             }
 
         } catch (Exception e) {
-            Logger.getLogger(SvnLastChanges.class.getName()).log(Level.WARNING, String.format("Could not get commits between current revision %s and previous revision %s.", currentRevision, previousRevision), e);
+            Logger.getLogger(SvnLastChanges.class.getName()).log(Level.WARNING, "Could not get commits between current revision %s and previous revision %s.".formatted(currentRevision, previousRevision), e);
         }
 
         return commits;

@@ -58,7 +58,7 @@ class GitLastChangesTest {
         String repoPath = Path.of("").toAbsolutePath().toString();
         RepositoryNotFoundException e = assertThrows(RepositoryNotFoundException.class,
                 () -> repository(repoPath));
-        assertEquals(String.format("No git repository found at %s.", repoPath), e.getMessage());
+        assertEquals("No git repository found at %s.".formatted(repoPath), e.getMessage());
     }
 
     @Test
@@ -107,7 +107,7 @@ class GitLastChangesTest {
         File file = new File(repositoryLocation);
         GitTreeNotFoundException e = assertThrows(GitTreeNotFoundException.class,
                 () -> GitLastChanges.getInstance().changesOf(repository(repositoryLocation)));
-        assertThat(e.getMessage()).isEqualTo(String.format("Could not find previous head of repository located at %s. Its your first commit?", file.getAbsolutePath()));
+        assertThat(e.getMessage()).isEqualTo("Could not find previous head of repository located at %s. Its your first commit?".formatted(file.getAbsolutePath()));
     }
 
     @Test
@@ -138,7 +138,7 @@ class GitLastChangesTest {
                     "     <url>https://github.com/adminfaces/admin-persistence</url>" + newLine);
         } catch (Exception e) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, "", e);
-            assertThat(e.getMessage()).isEqualTo(String.format("Could not find previous head of repository located at %s. Its your first commit?", file.getAbsolutePath()));
+            assertThat(e.getMessage()).isEqualTo("Could not find previous head of repository located at %s. Its your first commit?".formatted(file.getAbsolutePath()));
         }
     }
 }
