@@ -3,10 +3,10 @@ package com.github.jenkins.lastchanges;
 import com.github.jenkins.lastchanges.model.CommitChanges;
 import hudson.model.Action;
 import org.kohsuke.stapler.ForwardToView;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.io.Serializable;
 
@@ -31,7 +31,7 @@ public class CommitRenderer implements Serializable {
    * @throws IOException ioException
    * @throws ServletException servletException
    */
-  public void doIndex(StaplerRequest request, StaplerResponse response)
+  public void doIndex(StaplerRequest2 request, StaplerResponse2 response)
     throws IOException, ServletException {
     ForwardToView forward = new ForwardToView(action, "commit.jelly")
       .with("commit", commit);

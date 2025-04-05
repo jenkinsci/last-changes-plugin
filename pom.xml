@@ -16,8 +16,8 @@
 		<gitHubRepo>jenkinsci/last-changes-plugin</gitHubRepo>
 		<!-- Baseline Jenkins version you use to build the plugin. Users must have
 			this version or newer to run. -->
-		<jenkins.baseline>2.452</jenkins.baseline>
-		<jenkins.version>${jenkins.baseline}.4</jenkins.version>
+		<jenkins.baseline>2.479</jenkins.baseline>
+		<jenkins.version>${jenkins.baseline}.3</jenkins.version>
 		<spotbugs.effort>Min</spotbugs.effort>
 		<spotbugs.threshold>High</spotbugs.threshold>
 	</properties>
@@ -43,8 +43,8 @@
 		<dependencies>
 			<dependency>
 				<groupId>io.jenkins.tools.bom</groupId>
-				<artifactId>bom-2.452.x</artifactId>
-				<version>3944.v1a_e4f8b_452db_</version>
+				<artifactId>bom-${jenkins.baseline}.x</artifactId>
+				<version>4570.v1b_c718dd3b_1e</version>
 				<scope>import</scope>
 				<type>pom</type>
 			</dependency>
