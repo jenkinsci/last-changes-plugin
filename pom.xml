@@ -28,7 +28,7 @@
 	<licenses>
 		<license>
 			<name>MIT License</name>
-			<url>http://opensource.org/licenses/MIT</url>
+			<url>https://opensource.org/licenses/MIT</url>
 		</license>
 	</licenses>
 
@@ -44,7 +44,7 @@
 			<dependency>
 				<groupId>io.jenkins.tools.bom</groupId>
 				<artifactId>bom-2.452.x</artifactId>
-				<version>3722.vcc62e7311580</version>
+				<version>3944.v1a_e4f8b_452db_</version>
 				<scope>import</scope>
 				<type>pom</type>
 			</dependency>
@@ -117,7 +117,7 @@
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
-			<version>3.26.3</version>
+			<version>3.27.3</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

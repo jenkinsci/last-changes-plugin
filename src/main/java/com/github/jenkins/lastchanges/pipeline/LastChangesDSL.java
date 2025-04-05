@@ -5,21 +5,20 @@ import hudson.Extension;
 import org.jenkinsci.plugins.workflow.cps.CpsScript;
 import org.jenkinsci.plugins.workflow.cps.GlobalVariable;
 
-import javax.annotation.Nonnull;
-
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 @Extension
 public class LastChangesDSL extends GlobalVariable {
 
-    @Nonnull
+    @NonNull
     @Override
     public String getName() {
         return "LastChanges";
     }
 
-    @Nonnull
+    @NonNull
     @Override
-    public Object getValue(@Nonnull CpsScript cpsScript) throws Exception {
+    public Object getValue(@NonNull CpsScript cpsScript) throws Exception {
         Binding binding = cpsScript.getBinding();
         Object lastChanges;
         if (binding.hasVariable(getName())) {
