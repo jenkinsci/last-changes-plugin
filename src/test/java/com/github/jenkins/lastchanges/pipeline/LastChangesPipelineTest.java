@@ -3,7 +3,7 @@ package com.github.jenkins.lastchanges.pipeline;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.model.Result;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
