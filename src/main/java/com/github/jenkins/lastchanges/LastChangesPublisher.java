@@ -237,7 +237,7 @@ public class LastChangesPublisher extends Recorder implements SimpleBuildStep, S
                 lastChanges = vcsDirParam.act(new GetSVNLastChangesCallable(hasTargetRevision, targetRevision, listener, svnAuthProvider));
             }
 
-            String resultMessage = "Last changes from revision %s (current) to %s (previous) published successfully!".formatted(truncate(lastChanges.getCurrentRevision().getCommitId(), 8), truncate(lastChanges.getPreviousRevision().getCommitId(), 8));
+            String resultMessage = "Last changes from revision %s (previous) to revision %s (current) published successfully!".formatted(truncate(lastChanges.getPreviousRevision().getCommitId(), 8), truncate(lastChanges.getCurrentRevision().getCommitId(), 8));
             listener.hyperlink("../" + build.getNumber() + "/" + LastChangesBaseAction.BASE_URL, resultMessage);
             listener.getLogger().println("");
             build.addAction(new LastChangesBuildAction(build, lastChanges,

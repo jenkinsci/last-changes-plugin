@@ -161,7 +161,7 @@ class LastChangesTest {
         assertThat(lastChanges.getCommits().get(0)
                 .getChanges()).isEqualToIgnoringWhitespace(diff);
 
-        jenkins.assertLogContains("Last changes from revision 27ad83a (current) to a511a43 (previous) published successfully!", build);
+        jenkins.assertLogContains("Last changes from revision a511a43 (previous) to revision 27ad83a (current) published successfully!", build);
     }
 
     @Test
@@ -216,7 +216,7 @@ class LastChangesTest {
         assertThat(lastChanges.getCurrentRevision().getCommitId()).isEqualTo(sampleRepoHead);
         assertThat(lastChanges.getDiff()).startsWith("diff --git a/file b/file");
         jenkins.assertLogContains("Last changes from revision ", build);
-        jenkins.assertLogContains(" (previous) published successfully!", build);
+        jenkins.assertLogContains(" (current) published successfully!", build);
     }
 
     @Test
@@ -278,7 +278,7 @@ class LastChangesTest {
                 "  * Walks over this component and all descendants of this component, breadth-first." + newLine +
                 "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", ""));
 
-        jenkins.assertLogContains("Last changes from revision 27ad83a (current) to a511a43 (previous) published successfully!", build);
+        jenkins.assertLogContains("Last changes from revision a511a43 (previous) to revision 27ad83a (current) published successfully!", build);
     }
 
     @Test
@@ -344,7 +344,7 @@ class LastChangesTest {
                 "  * Walks over this component and all descendants of this component, breadth-first." + newLine +
                 "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", ""));
 
-        jenkins.assertLogContains("Last changes from revision 27ad83a (current) to a511a43 (previous) published successfully!", build);
+        jenkins.assertLogContains("Last changes from revision a511a43 (previous) to revision 27ad83a (current) published successfully!", build);
     }
 
     @Test
@@ -431,7 +431,7 @@ class LastChangesTest {
                 " /**" + newLine +
                 "  * Walks over this component and all descendants of this component, breadth-first." + newLine +
                 "  * @return iterable which iteratively walks over this component and all of its descendants.").replaceAll("\r", ""));
-        jenkins.assertLogContains("Last changes from revision 27ad83a (current) to a511a43 (previous) published successfully!", build);
+        jenkins.assertLogContains("Last changes from revision a511a43 (previous) to revision 27ad83a (current) published successfully!", build);
     }
 
     @Test
