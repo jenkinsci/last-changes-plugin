@@ -73,7 +73,7 @@ class LastChangesPipelineTest {
                 """, true));
         WorkflowRun run = j.assertBuildStatusSuccess(job.scheduleBuild2(0).get());
         j.assertLogContains("Last changes from revision ", run);
-        j.assertLogContains(" to 156e250 (previous) published successfully!", run);
+        j.assertLogContains("Last changes from revision 156e250 (previous) to revision ", run);
     }
 
     @Test
@@ -102,7 +102,7 @@ class LastChangesPipelineTest {
                 """, true));
         WorkflowRun run = j.assertBuildStatusSuccess(job.scheduleBuild2(0).get());
         j.assertLogContains("Last changes from revision ", run);
-        j.assertLogContains(" (previous) published successfully!", run);
+        j.assertLogContains(" (current) published successfully!", run);
     }
 
     @Test
